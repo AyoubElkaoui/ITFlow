@@ -3,12 +3,16 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 
 const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
+  _prisma: PrismaClient | undefined;
 };
 
-function createPool() {
-  const url = new URL(process.env.DATABASE_URL!);
-  return new Pool({
+function createPrismaClient(): PrismaClient {
+  const dbUrl = process.env.DATABASE_URL;
+  if (!dbUrl) {
+    throw new Error("DATABASE_URL environment variable is not set");
+  }
+  const url = new URL(dbUrl);
+  const pool = new Pool({
     host: url.hostname,
     port: Number(url.port) || 5432,
     user: url.username,
@@ -18,12 +22,18 @@ function createPool() {
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 5000,
   });
+
+  return new PrismaClient({
+    adapter: new PrismaPg(pool),
+  });
 }
 
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    adapter: new PrismaPg(createPool()),
-  });
-
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+// Lazy singleton - only creates the client when first accessed at runtime
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, prop: string | symbol) {
+    if (!globalForPrisma._prisma) {
+      globalForPrisma._prisma = createPrismaClient();
+    }
+    return Reflect.get(globalForPrisma._prisma, prop);
+  },
+});

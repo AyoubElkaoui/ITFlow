@@ -10,9 +10,13 @@ const dbUrl = new URL(process.env.DATABASE_URL!);
 const pool = new Pool({
   host: dbUrl.hostname,
   port: Number(dbUrl.port) || 5432,
-  user: dbUrl.username,
-  password: dbUrl.password,
+  user: decodeURIComponent(dbUrl.username),
+  password: decodeURIComponent(dbUrl.password),
   database: dbUrl.pathname.slice(1),
+  ssl:
+    dbUrl.searchParams.get("sslmode") === "require"
+      ? { rejectUnauthorized: false }
+      : undefined,
 });
 const prisma = new PrismaClient({
   adapter: new PrismaPg(pool),

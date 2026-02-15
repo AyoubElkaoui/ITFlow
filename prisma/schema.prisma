@@ -1,0 +1,448 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING
+  RESOLVED
+  CLOSED
+}
+
+enum Priority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum TicketCategory {
+  HARDWARE
+  SOFTWARE
+  NETWORK
+  ACCOUNT
+  OTHER
+}
+
+enum AssetType {
+  LAPTOP
+  DESKTOP
+  PRINTER
+  MONITOR
+  PHONE
+  NETWORK
+  OTHER
+}
+
+enum AssetStatus {
+  ACTIVE
+  IN_REPAIR
+  STORED
+  RETIRED
+}
+
+model User {
+  id               String   @id @default(cuid())
+  email            String   @unique
+  name             String
+  password         String
+  role             Role     @default(ADMIN)
+  avatar           String?
+  isActive         Boolean  @default(true)
+  twoFactorSecret  String?
+  twoFactorEnabled Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  assignedTickets Ticket[]       @relation("AssignedTickets")
+  createdTickets  Ticket[]       @relation("CreatedTickets")
+  timeEntries     TimeEntry[]
+  auditLogs       AuditLog[]
+  ticketNotes     TicketNote[]
+  notifications   Notification[]
+  kbArticles      KbArticle[]
+  activeTimer     ActiveTimer?
+
+  @@index([email])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  entityType String
+  entityId   String
+  action     String
+  changes    Json?
+  userId     String
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Company {
+  id            String   @id @default(cuid())
+  name          String
+  shortName     String   @unique
+  address       String?
+  phone         String?
+  email         String?
+  website       String?
+  contactPerson String?
+  contactEmail  String?
+  contactPhone  String?
+  hourlyRate    Decimal? @db.Decimal(10, 2)
+  notes         String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  contacts         Contact[]
+  tickets          Ticket[]
+  timeEntries      TimeEntry[]
+  assets           Asset[]
+  kbArticles       KbArticle[]
+  recurringTickets RecurringTicket[]
+
+  @@index([shortName])
+  @@index([isActive])
+}
+
+model Contact {
+  id        String   @id @default(cuid())
+  companyId String
+  name      String
+  email     String?
+  phone     String?
+  function  String?
+  isPrimary Boolean  @default(false)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  tickets Ticket[]
+
+  @@index([companyId])
+}
+
+model Ticket {
+  id           String          @id @default(cuid())
+  ticketNumber Int             @unique @default(autoincrement())
+  companyId    String
+  contactId    String?
+  subject      String
+  description  String?
+  status       TicketStatus    @default(OPEN)
+  priority     Priority        @default(NORMAL)
+  category     TicketCategory?
+  assignedToId String?
+  createdById  String
+
+  // IT Snippet fields
+  tasksPerformed String?
+  pcName         String?
+  serialNumber   String?
+  officeLicense  String?
+  pendingTasks   String?
+  equipmentTaken String?
+
+  // Kanban
+  kanbanOrder Int?
+  // Template
+  templateId  String?
+
+  // SLA
+  slaResponseDue  DateTime?
+  slaResolveDue   DateTime?
+  slaResponseMet  Boolean?
+  slaResolveMet   Boolean?
+  firstResponseAt DateTime?
+
+  resolvedAt DateTime?
+  closedAt   DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  company     Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  contact     Contact?        @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  assignedTo  User?           @relation("AssignedTickets", fields: [assignedToId], references: [id], onDelete: SetNull)
+  createdBy   User            @relation("CreatedTickets", fields: [createdById], references: [id])
+  template    TicketTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  timeEntries TimeEntry[]
+  notes       TicketNote[]
+  assetLinks  AssetTicket[]
+
+  @@index([companyId])
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
+  @@index([ticketNumber])
+  @@index([kanbanOrder])
+  @@index([assignedToId])
+}
+
+model TimeEntry {
+  id          String   @id @default(cuid())
+  ticketId    String?
+  companyId   String
+  userId      String
+  date        DateTime @db.Date
+  hours       Decimal  @db.Decimal(5, 2)
+  description String?
+  billable    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  ticket  Ticket? @relation(fields: [ticketId], references: [id], onDelete: SetNull)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@index([companyId])
+  @@index([userId])
+  @@index([date])
+  @@index([ticketId])
+}
+
+model Asset {
+  id           String      @id @default(cuid())
+  companyId    String
+  type         AssetType   @default(OTHER)
+  brand        String?
+  model        String?
+  name         String?
+  serialNumber String?
+  purchaseDate DateTime?   @db.Date
+  warrantyEnd  DateTime?   @db.Date
+  assignedTo   String?
+  status       AssetStatus @default(ACTIVE)
+  notes        String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  company     Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  ticketLinks AssetTicket[]
+
+  @@index([companyId])
+  @@index([status])
+  @@index([type])
+}
+
+model TicketNote {
+  id         String   @id @default(cuid())
+  ticketId   String
+  userId     String
+  content    String
+  isInternal Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([ticketId])
+  @@index([userId])
+}
+
+model TicketTemplate {
+  id             String          @id @default(cuid())
+  name           String
+  subject        String
+  body           String?
+  priority       Priority        @default(NORMAL)
+  category       TicketCategory?
+  // IT Snippet defaults
+  tasksPerformed String?
+  pcName         String?
+  serialNumber   String?
+  officeLicense  String?
+  pendingTasks   String?
+  equipmentTaken String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  tickets Ticket[]
+}
+
+model AssetTicket {
+  id        String   @id @default(cuid())
+  assetId   String
+  ticketId  String
+  note      String?
+  createdAt DateTime @default(now())
+
+  asset  Asset  @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@unique([assetId, ticketId])
+  @@index([assetId])
+  @@index([ticketId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  message   String?
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([createdAt])
+}
+
+model SlaPolicy {
+  id                String   @id @default(cuid())
+  name              String
+  priority          Priority @unique
+  responseTimeHours Int
+  resolveTimeHours  Int
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model KbCategory {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  icon      String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  articles KbArticle[]
+
+  @@index([slug])
+}
+
+model KbArticle {
+  id          String   @id @default(cuid())
+  companyId   String?
+  categoryId  String?
+  title       String
+  slug        String   @unique
+  content     String
+  authorId    String
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company  Company?    @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  category KbCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  author   User        @relation(fields: [authorId], references: [id])
+
+  @@index([slug])
+  @@index([categoryId])
+  @@index([isPublished])
+}
+
+model ActiveTimer {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  ticketId    String?
+  companyId   String
+  startedAt   DateTime @default(now())
+  description String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum RecurringFrequency {
+  DAILY
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+model RecurringTicket {
+  id          String             @id @default(cuid())
+  companyId   String
+  subject     String
+  description String?
+  priority    Priority           @default(NORMAL)
+  category    TicketCategory?
+  frequency   RecurringFrequency
+  dayOfWeek   Int?
+  dayOfMonth  Int?
+  nextRunAt   DateTime
+  lastRunAt   DateTime?
+  isActive    Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([nextRunAt])
+  @@index([isActive])
+}
+
+enum CustomFieldType {
+  TEXT
+  NUMBER
+  DATE
+  SELECT
+  CHECKBOX
+  TEXTAREA
+}
+
+enum CustomFieldEntity {
+  TICKET
+  COMPANY
+  CONTACT
+  ASSET
+}
+
+model CustomFieldDefinition {
+  id         String            @id @default(cuid())
+  entityType CustomFieldEntity
+  name       String
+  label      String
+  fieldType  CustomFieldType
+  options    Json?
+  required   Boolean           @default(false)
+  sortOrder  Int               @default(0)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  values CustomFieldValue[]
+
+  @@unique([entityType, name])
+  @@index([entityType])
+}
+
+model CustomFieldValue {
+  id                String   @id @default(cuid())
+  fieldDefinitionId String
+  entityType        String
+  entityId          String
+  value             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  fieldDefinition CustomFieldDefinition @relation(fields: [fieldDefinitionId], references: [id], onDelete: Cascade)
+
+  @@unique([fieldDefinitionId, entityType, entityId])
+  @@index([entityType, entityId])
+}

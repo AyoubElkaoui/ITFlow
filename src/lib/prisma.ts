@@ -15,12 +15,16 @@ function createPrismaClient(): PrismaClient {
   const pool = new Pool({
     host: url.hostname,
     port: Number(url.port) || 5432,
-    user: url.username,
-    password: url.password,
+    user: decodeURIComponent(url.username),
+    password: decodeURIComponent(url.password),
     database: url.pathname.slice(1),
     max: 10,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 5000,
+    ssl:
+      url.searchParams.get("sslmode") === "require"
+        ? { rejectUnauthorized: false }
+        : undefined,
   });
 
   return new PrismaClient({

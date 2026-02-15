@@ -35,6 +35,11 @@ yarn-error.log*
 .env.local
 .env.*.local
 
+# data files (sensitive)
+*.xlsx
+extracted_data.json
+extract.py
+
 # vercel
 .vercel
 

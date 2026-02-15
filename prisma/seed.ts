@@ -3,7 +3,7 @@ import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import { hash } from "bcryptjs";
-import { readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 
 const dbUrl = new URL(process.env.DATABASE_URL!);
@@ -18,7 +18,8 @@ const prisma = new PrismaClient({
   adapter: new PrismaPg(pool),
 });
 
-// Load extracted Excel data
+// Load extracted Excel data (optional - only available locally)
+const excelDataPath = join(__dirname, "../extracted_data.json");
 const excelData: Record<
   string,
   {
@@ -43,9 +44,9 @@ const excelData: Record<
       status: string | null;
     }>;
   }
-> = JSON.parse(
-  readFileSync(join(__dirname, "../extracted_data.json"), "utf-8"),
-);
+> = existsSync(excelDataPath)
+  ? JSON.parse(readFileSync(excelDataPath, "utf-8"))
+  : {};
 
 function parseDate(dateStr: string | null): Date | null {
   if (!dateStr) return null;

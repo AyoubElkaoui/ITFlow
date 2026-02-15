@@ -2,7 +2,8 @@ import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  // Use standalone output only for Docker builds
+  ...(process.env.DOCKER_BUILD === "1" && { output: "standalone" as const }),
   headers: async () => [
     {
       source: "/(.*)",

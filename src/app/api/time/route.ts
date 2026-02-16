@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
       : {}),
   };
 
-  const [entries, total] = await Promise.all([
+  const [entries, total, allEntries] = await Promise.all([
     prisma.timeEntry.findMany({
       where,
       include: {
@@ -49,9 +49,36 @@ export async function GET(request: NextRequest) {
       take: pageSize,
     }),
     prisma.timeEntry.count({ where }),
+    prisma.timeEntry.findMany({
+      where,
+      select: {
+        hours: true,
+        billable: true,
+        company: { select: { hourlyRate: true } },
+      },
+    }),
   ]);
 
-  return NextResponse.json({ data: entries, total, page, pageSize });
+  let totalHours = 0;
+  let billableHours = 0;
+  let totalAmount = 0;
+  for (const e of allEntries) {
+    const hours = Number(e.hours);
+    totalHours += hours;
+    if (e.billable) {
+      billableHours += hours;
+      const rate = e.company.hourlyRate ? Number(e.company.hourlyRate) : 0;
+      totalAmount += hours * rate;
+    }
+  }
+
+  return NextResponse.json({
+    data: entries,
+    total,
+    page,
+    pageSize,
+    summary: { totalHours, billableHours, totalAmount, count: total },
+  });
 }
 
 export async function POST(request: NextRequest) {

@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { typedResolver } from "@/lib/form-utils";
 import { format } from "date-fns";
@@ -68,6 +68,12 @@ interface TimeEntriesResponse {
   total: number;
   page: number;
   pageSize: number;
+  summary: {
+    totalHours: number;
+    billableHours: number;
+    totalAmount: number;
+    count: number;
+  };
 }
 
 export default function TimePage() {
@@ -97,31 +103,13 @@ export default function TimePage() {
   const createTimeEntry = useCreateTimeEntry();
   const deleteTimeEntry = useDeleteTimeEntry();
 
-  // Summary calculations
-  const summary = useMemo(() => {
-    let totalHours = 0;
-    let billableHours = 0;
-    let totalAmount = 0;
-
-    for (const entry of entries) {
-      const hours = Number(entry.hours);
-      totalHours += hours;
-      if (entry.billable) {
-        billableHours += hours;
-        const rate = entry.company.hourlyRate
-          ? Number(entry.company.hourlyRate)
-          : 0;
-        totalAmount += hours * rate;
-      }
-    }
-
-    return {
-      totalHours,
-      billableHours,
-      totalAmount,
-      count: entries.length,
-    };
-  }, [entries]);
+  // Summary from server (calculated over ALL matching entries, not just current page)
+  const summary = response?.summary || {
+    totalHours: 0,
+    billableHours: 0,
+    totalAmount: 0,
+    count: 0,
+  };
 
   // Form setup
   const form = useForm<TimeEntryCreateInput>({

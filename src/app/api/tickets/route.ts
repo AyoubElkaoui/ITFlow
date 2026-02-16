@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
   const status = searchParams.get("status");
   const priority = searchParams.get("priority");
   const companyId = searchParams.get("companyId");
+  const assignedToId = searchParams.get("assignedToId");
   const page = parseInt(searchParams.get("page") || "1");
   const pageSize = Math.min(Number(searchParams.get("pageSize")) || 20, 100);
 
@@ -41,6 +42,7 @@ export async function GET(request: NextRequest) {
       priority: priority as "LOW" | "NORMAL" | "HIGH" | "URGENT",
     }),
     ...(companyId && { companyId }),
+    ...(assignedToId && { assignedToId }),
   };
 
   const [tickets, total] = await Promise.all([

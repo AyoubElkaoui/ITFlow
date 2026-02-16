@@ -50,6 +50,8 @@
     "actions": "Acties",
     "selectCompany": "Selecteer bedrijf",
     "allCompanies": "Alle bedrijven",
+    "selectEmployee": "Selecteer medewerker",
+    "allEmployees": "Alle medewerkers",
     "selectCategory": "Selecteer categorie",
     "selectPriority": "Selecteer prioriteit",
     "selectStatus": "Selecteer status",
@@ -348,7 +350,9 @@
     "logDescription": "Registreer bestede tijd aan een taak of ticket.",
     "whatDidYouWorkOn": "Waar heeft u aan gewerkt?",
     "failedToLoad": "Uurregistraties konden niet geladen worden. Ververs de pagina.",
-    "deleteConfirm": "Weet u zeker dat u deze uurregistratie wilt verwijderen?"
+    "deleteConfirm": "Weet u zeker dat u deze uurregistratie wilt verwijderen?",
+    "employee": "Medewerker",
+    "allEmployees": "Alle medewerkers"
   },
   "reports": {
     "title": "Rapportages",
@@ -369,7 +373,10 @@
     "hours": "Uren",
     "billableHours": "Factureerbare uren",
     "amount": "Bedrag",
-    "avgResponse": "Gem. respons"
+    "avgResponse": "Gem. respons",
+    "employee": "Medewerker",
+    "allEmployees": "Alle medewerkers",
+    "employeeBreakdown": "Overzicht per medewerker"
   },
   "kb": {
     "title": "Kennisbank",

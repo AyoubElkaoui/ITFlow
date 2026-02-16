@@ -1,7 +1,10 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { TimeEntryCreateInput, TimeEntryUpdateInput } from "@/lib/validations";
+import type {
+  TimeEntryCreateInput,
+  TimeEntryUpdateInput,
+} from "@/lib/validations";
 
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, init);
@@ -15,6 +18,7 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
 interface TimeFilters {
   companyId?: string;
   ticketId?: string;
+  userId?: string;
   from?: string;
   to?: string;
   page?: number;
@@ -25,6 +29,7 @@ export function useTimeEntries(filters: TimeFilters = {}) {
   const params = new URLSearchParams();
   if (filters.companyId) params.set("companyId", filters.companyId);
   if (filters.ticketId) params.set("ticketId", filters.ticketId);
+  if (filters.userId) params.set("userId", filters.userId);
   if (filters.from) params.set("from", filters.from);
   if (filters.to) params.set("to", filters.to);
   if (filters.page) params.set("page", String(filters.page));

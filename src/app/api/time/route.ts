@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const companyId = searchParams.get("companyId");
   const ticketId = searchParams.get("ticketId");
+  const userId = searchParams.get("userId");
   const from = searchParams.get("from");
   const to = searchParams.get("to");
   const page = parseInt(searchParams.get("page") || "1");
@@ -22,6 +23,7 @@ export async function GET(request: NextRequest) {
   const where = {
     ...(companyId && { companyId }),
     ...(ticketId && { ticketId }),
+    ...(userId && { userId }),
     ...(from || to
       ? {
           date: {

@@ -17,6 +17,7 @@ interface TicketFilters {
   status?: string;
   priority?: string;
   companyId?: string;
+  assignedToId?: string;
   page?: number;
   pageSize?: number;
 }
@@ -27,6 +28,7 @@ export function useTickets(filters: TicketFilters = {}) {
   if (filters.status) params.set("status", filters.status);
   if (filters.priority) params.set("priority", filters.priority);
   if (filters.companyId) params.set("companyId", filters.companyId);
+  if (filters.assignedToId) params.set("assignedToId", filters.assignedToId);
   if (filters.page) params.set("page", String(filters.page));
   if (filters.pageSize) params.set("pageSize", String(filters.pageSize));
 

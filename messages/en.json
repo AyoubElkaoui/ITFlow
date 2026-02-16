@@ -50,6 +50,8 @@
     "actions": "Actions",
     "selectCompany": "Select company",
     "allCompanies": "All companies",
+    "selectEmployee": "Select employee",
+    "allEmployees": "All employees",
     "selectCategory": "Select category",
     "selectPriority": "Select priority",
     "selectStatus": "Select status",
@@ -348,7 +350,9 @@
     "logDescription": "Record time spent on a task or ticket.",
     "whatDidYouWorkOn": "What did you work on?",
     "failedToLoad": "Failed to load time entries. Please try refreshing the page.",
-    "deleteConfirm": "Are you sure you want to delete this time entry?"
+    "deleteConfirm": "Are you sure you want to delete this time entry?",
+    "employee": "Employee",
+    "allEmployees": "All employees"
   },
   "reports": {
     "title": "Reports",
@@ -369,7 +373,10 @@
     "hours": "Hours",
     "billableHours": "Billable Hours",
     "amount": "Amount",
-    "avgResponse": "Avg Response"
+    "avgResponse": "Avg Response",
+    "employee": "Employee",
+    "allEmployees": "All employees",
+    "employeeBreakdown": "Employee Breakdown"
   },
   "kb": {
     "title": "Knowledge Base",

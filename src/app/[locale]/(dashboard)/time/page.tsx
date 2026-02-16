@@ -43,6 +43,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { CompanySelect } from "@/components/shared/company-select";
+import { UserSelect } from "@/components/shared/user-select";
 
 const PAGE_SIZE = 20;
 
@@ -73,6 +74,7 @@ export default function TimePage() {
   const t = useTranslations("time");
   const tc = useTranslations("common");
   const [companyId, setCompanyId] = useState("all");
+  const [userId, setUserId] = useState("all");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [page, setPage] = useState(1);
@@ -80,6 +82,7 @@ export default function TimePage() {
 
   const { data, isLoading, error } = useTimeEntries({
     companyId: companyId !== "all" ? companyId : undefined,
+    userId: userId !== "all" ? userId : undefined,
     from: fromDate || undefined,
     to: toDate || undefined,
     page,
@@ -256,6 +259,17 @@ export default function TimePage() {
                 allowAll
               />
             </div>
+            <div className="w-[200px]">
+              <UserSelect
+                value={userId}
+                onValueChange={(v) => {
+                  setUserId(v);
+                  setPage(1);
+                }}
+                placeholder={t("allEmployees")}
+                allowAll
+              />
+            </div>
             <div className="flex items-center gap-2">
               <Label
                 htmlFor="from-date"
@@ -306,7 +320,7 @@ export default function TimePage() {
               <Clock className="h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium">{t("noEntries")}</h3>
               <p className="text-sm text-muted-foreground mt-1">
-                {companyId !== "all" || fromDate || toDate
+                {companyId !== "all" || userId !== "all" || fromDate || toDate
                   ? t("adjustFilters")
                   : t("logFirst")}
               </p>
@@ -317,6 +331,7 @@ export default function TimePage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>{t("date")}</TableHead>
+                    <TableHead>{t("employee")}</TableHead>
                     <TableHead>{t("company")}</TableHead>
                     <TableHead>{t("ticket")}</TableHead>
                     <TableHead>{t("description")}</TableHead>
@@ -339,6 +354,7 @@ export default function TimePage() {
                         <TableCell className="whitespace-nowrap">
                           {format(new Date(entry.date), "dd MMM yyyy")}
                         </TableCell>
+                        <TableCell>{entry.user.name}</TableCell>
                         <TableCell>{entry.company.shortName}</TableCell>
                         <TableCell>
                           {entry.ticket

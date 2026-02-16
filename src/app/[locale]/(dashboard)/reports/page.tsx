@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CompanySelect } from "@/components/shared/company-select";
+import { UserSelect } from "@/components/shared/user-select";
 import {
   Table,
   TableBody,
@@ -55,6 +56,10 @@ interface TimeEntry {
     shortName: string;
     hourlyRate: string | null;
   };
+  user: {
+    id: string;
+    name: string;
+  };
 }
 
 interface TicketRow {
@@ -62,12 +67,17 @@ interface TicketRow {
   status: string;
   priority: string;
   companyId: string;
+  assignedToId: string | null;
   createdAt: string;
   firstResponseAt: string | null;
   company: {
     id: string;
     shortName: string;
   };
+  assignedTo: {
+    id: string;
+    name: string;
+  } | null;
 }
 
 interface CompanyBreakdown {
@@ -80,6 +90,15 @@ interface CompanyBreakdown {
   avgResponse: string;
 }
 
+interface EmployeeBreakdown {
+  userId: string;
+  name: string;
+  tickets: number;
+  hours: number;
+  billableHours: number;
+  amount: number;
+}
+
 export default function ReportsPage() {
   const t = useTranslations("reports");
   const tc = useTranslations("common");
@@ -89,14 +108,17 @@ export default function ReportsPage() {
   );
   const [toDate, setToDate] = useState(format(endOfMonth(now), "yyyy-MM-dd"));
   const [companyId, setCompanyId] = useState("all");
+  const [userId, setUserId] = useState("all");
 
   const ticketFilters = {
     companyId: companyId !== "all" ? companyId : undefined,
+    assignedToId: userId !== "all" ? userId : undefined,
     pageSize: 1000,
   };
 
   const timeFilters = {
     companyId: companyId !== "all" ? companyId : undefined,
+    userId: userId !== "all" ? userId : undefined,
     from: fromDate,
     to: toDate,
     pageSize: 10000,
@@ -236,6 +258,55 @@ export default function ReportsPage() {
       .sort((a, b) => b.hours - a.hours);
   }, [timeEntries, tickets]);
 
+  // Employee breakdown table
+  const employeeBreakdown = useMemo(() => {
+    const map = new Map<string, EmployeeBreakdown>();
+
+    timeEntries.forEach((e) => {
+      const uId = e.user?.id || "unknown";
+      const existing = map.get(uId) || {
+        userId: uId,
+        name: e.user?.name || "Unknown",
+        tickets: 0,
+        hours: 0,
+        billableHours: 0,
+        amount: 0,
+      };
+      const hours = parseFloat(e.hours || "0");
+      existing.hours += hours;
+      if (e.billable) {
+        existing.billableHours += hours;
+        existing.amount += hours * parseFloat(e.company?.hourlyRate || "0");
+      }
+      map.set(uId, existing);
+    });
+
+    const ticketsByUser = new Map<string, Set<string>>();
+    tickets.forEach((t) => {
+      const uId = t.assignedTo?.id || t.assignedToId || "unknown";
+      const name = t.assignedTo?.name || "Unknown";
+      if (!ticketsByUser.has(uId)) ticketsByUser.set(uId, new Set());
+      ticketsByUser.get(uId)!.add(t.id);
+      if (!map.has(uId)) {
+        map.set(uId, {
+          userId: uId,
+          name,
+          tickets: 0,
+          hours: 0,
+          billableHours: 0,
+          amount: 0,
+        });
+      }
+    });
+
+    ticketsByUser.forEach((ticketIds, uId) => {
+      const existing = map.get(uId);
+      if (existing) existing.tickets = ticketIds.size;
+    });
+
+    return Array.from(map.values()).sort((a, b) => b.hours - a.hours);
+  }, [timeEntries, tickets]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -271,6 +342,12 @@ export default function ReportsPage() {
                 placeholder="All companies"
                 allowAll
               />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label>{t("employee")}</Label>
+            <div className="w-[200px]">
+              <UserSelect value={userId} onValueChange={setUserId} allowAll />
             </div>
           </div>
         </div>
@@ -462,9 +539,13 @@ export default function ReportsPage() {
                   <TableHead>{t("company")}</TableHead>
                   <TableHead className="text-right">{t("tickets")}</TableHead>
                   <TableHead className="text-right">{t("hours")}</TableHead>
-                  <TableHead className="text-right">{t("billableHours")}</TableHead>
+                  <TableHead className="text-right">
+                    {t("billableHours")}
+                  </TableHead>
                   <TableHead className="text-right">{t("amount")}</TableHead>
-                  <TableHead className="text-right">{t("avgResponse")}</TableHead>
+                  <TableHead className="text-right">
+                    {t("avgResponse")}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -517,6 +598,85 @@ export default function ReportsPage() {
                   </TableCell>
                   <TableCell className="text-right text-muted-foreground">
                     -
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Employee Breakdown Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("employeeBreakdown")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="space-y-3">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-12 bg-muted rounded animate-pulse" />
+              ))}
+            </div>
+          ) : employeeBreakdown.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-8 text-center">
+              {t("noData")}
+            </p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("employee")}</TableHead>
+                  <TableHead className="text-right">{t("tickets")}</TableHead>
+                  <TableHead className="text-right">{t("hours")}</TableHead>
+                  <TableHead className="text-right">
+                    {t("billableHours")}
+                  </TableHead>
+                  <TableHead className="text-right">{t("amount")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {employeeBreakdown.map((row) => (
+                  <TableRow key={row.userId}>
+                    <TableCell className="font-medium">{row.name}</TableCell>
+                    <TableCell className="text-right">{row.tickets}</TableCell>
+                    <TableCell className="text-right">
+                      {row.hours.toFixed(1)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {row.billableHours.toFixed(1)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {row.amount.toLocaleString("de-DE", {
+                        style: "currency",
+                        currency: "EUR",
+                      })}
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {/* Totals row */}
+                <TableRow className="font-semibold border-t-2">
+                  <TableCell>{tc("total")}</TableCell>
+                  <TableCell className="text-right">
+                    {employeeBreakdown.reduce((s, r) => s + r.tickets, 0)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {employeeBreakdown
+                      .reduce((s, r) => s + r.hours, 0)
+                      .toFixed(1)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {employeeBreakdown
+                      .reduce((s, r) => s + r.billableHours, 0)
+                      .toFixed(1)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {employeeBreakdown
+                      .reduce((s, r) => s + r.amount, 0)
+                      .toLocaleString("de-DE", {
+                        style: "currency",
+                        currency: "EUR",
+                      })}
                   </TableCell>
                 </TableRow>
               </TableBody>

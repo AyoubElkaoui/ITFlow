@@ -352,7 +352,11 @@
     "failedToLoad": "Failed to load time entries. Please try refreshing the page.",
     "deleteConfirm": "Are you sure you want to delete this time entry?",
     "employee": "Employee",
-    "allEmployees": "All employees"
+    "allEmployees": "All employees",
+    "addRow": "Add row",
+    "saveAll": "Save all",
+    "fillAtLeastOneRow": "Fill in at least one row with a company and hours",
+    "entriesLogged": "{count} time entries logged"
   },
   "reports": {
     "title": "Reports",

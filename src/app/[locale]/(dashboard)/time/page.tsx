@@ -2,28 +2,22 @@
 
 import { useTranslations } from "next-intl";
 
-import { useState } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { typedResolver } from "@/lib/form-utils";
+import { useState, useCallback } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { Plus, Clock, Search, Trash2 } from "lucide-react";
+import { Plus, Clock, Trash2 } from "lucide-react";
 
 import {
   useTimeEntries,
   useCreateTimeEntry,
   useDeleteTimeEntry,
 } from "@/hooks/use-time-entries";
-import {
-  timeEntryCreateSchema,
-  type TimeEntryCreateInput,
-} from "@/lib/validations";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -111,36 +105,68 @@ export default function TimePage() {
     count: 0,
   };
 
-  // Form setup
-  const form = useForm<TimeEntryCreateInput>({
-    resolver: typedResolver(timeEntryCreateSchema),
-    defaultValues: {
-      companyId: "",
-      ticketId: undefined,
-      date: new Date(),
-      hours: 0,
-      description: "",
-      billable: true,
-    },
+  // Multi-row log hours state
+  interface LogRow {
+    companyId: string;
+    hours: number;
+    description: string;
+    billable: boolean;
+  }
+
+  const emptyRow = (): LogRow => ({
+    companyId: "",
+    hours: 0,
+    description: "",
+    billable: true,
   });
 
-  async function onSubmit(values: TimeEntryCreateInput) {
+  const [logDate, setLogDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [logRows, setLogRows] = useState<LogRow[]>([emptyRow()]);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const resetDialog = useCallback(() => {
+    setLogDate(format(new Date(), "yyyy-MM-dd"));
+    setLogRows([emptyRow()]);
+  }, []);
+
+  function updateRow(index: number, updates: Partial<LogRow>) {
+    setLogRows((prev) =>
+      prev.map((row, i) => (i === index ? { ...row, ...updates } : row)),
+    );
+  }
+
+  function removeRow(index: number) {
+    setLogRows((prev) =>
+      prev.length <= 1 ? prev : prev.filter((_, i) => i !== index),
+    );
+  }
+
+  async function handleSaveAll() {
+    const validRows = logRows.filter((r) => r.companyId && r.hours > 0);
+    if (validRows.length === 0) {
+      toast.error(t("fillAtLeastOneRow"));
+      return;
+    }
+    setIsSaving(true);
     try {
-      await createTimeEntry.mutateAsync(values);
-      toast("Time entry logged");
+      for (const row of validRows) {
+        await createTimeEntry.mutateAsync({
+          companyId: row.companyId,
+          date: new Date(logDate),
+          hours: row.hours,
+          description: row.description || undefined,
+          billable: row.billable,
+        });
+      }
+      toast(t("entriesLogged", { count: validRows.length }));
       setDialogOpen(false);
-      form.reset({
-        companyId: "",
-        ticketId: undefined,
-        date: new Date(),
-        hours: 0,
-        description: "",
-        billable: true,
-      });
+      resetDialog();
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Failed to create time entry",
+        err instanceof Error ? err.message : "Failed to create time entries",
       );
+    } finally {
+      setIsSaving(false);
     }
   }
 
@@ -417,113 +443,107 @@ export default function TimePage() {
         </CardContent>
       </Card>
 
-      {/* Create Time Entry Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+      {/* Create Time Entry Dialog (multi-row) */}
+      <Dialog
+        open={dialogOpen}
+        onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) resetDialog();
+        }}
+      >
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>{t("logHours")}</DialogTitle>
             <DialogDescription>{t("logDescription")}</DialogDescription>
           </DialogHeader>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Company */}
-            <div className="space-y-2">
-              <Label>{tc("company")}</Label>
-              <Controller
-                control={form.control}
-                name="companyId"
-                render={({ field }) => (
-                  <CompanySelect
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    placeholder={tc("selectCompany")}
-                  />
-                )}
-              />
-              {form.formState.errors.companyId && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.companyId.message}
-                </p>
-              )}
-            </div>
-
-            {/* Date */}
+          <div className="space-y-4">
+            {/* Shared date */}
             <div className="space-y-2">
               <Label htmlFor="entry-date">{tc("date")}</Label>
               <Input
                 id="entry-date"
                 type="date"
-                value={
-                  form.watch("date")
-                    ? format(form.watch("date"), "yyyy-MM-dd")
-                    : ""
-                }
-                onChange={(e) => {
-                  const val = e.target.value;
-                  form.setValue("date", val ? new Date(val) : new Date(), {
-                    shouldValidate: true,
-                  });
-                }}
-              />
-              {form.formState.errors.date && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.date.message}
-                </p>
-              )}
-            </div>
-
-            {/* Hours */}
-            <div className="space-y-2">
-              <Label htmlFor="entry-hours">{tc("hours")}</Label>
-              <Input
-                id="entry-hours"
-                type="number"
-                step={0.25}
-                min={0}
-                max={24}
-                {...form.register("hours", { valueAsNumber: true })}
-              />
-              {form.formState.errors.hours && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.hours.message}
-                </p>
-              )}
-            </div>
-
-            {/* Description */}
-            <div className="space-y-2">
-              <Label htmlFor="entry-description">{tc("description")}</Label>
-              <Textarea
-                id="entry-description"
-                placeholder={t("whatDidYouWorkOn")}
-                rows={3}
-                {...form.register("description")}
+                value={logDate}
+                onChange={(e) => setLogDate(e.target.value)}
+                className="w-[180px]"
               />
             </div>
 
-            {/* Billable */}
-            <div className="flex items-center gap-2">
-              <Controller
-                control={form.control}
-                name="billable"
-                render={({ field }) => (
-                  <Checkbox
-                    id="entry-billable"
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
+            {/* Rows */}
+            <div className="space-y-3">
+              {logRows.map((row, i) => (
+                <div
+                  key={i}
+                  className="grid grid-cols-[1fr_80px_1fr_auto_auto] items-center gap-2 rounded-lg border p-3"
+                >
+                  {/* Company */}
+                  <CompanySelect
+                    value={row.companyId}
+                    onValueChange={(v) => updateRow(i, { companyId: v })}
+                    placeholder={tc("selectCompany")}
                   />
-                )}
-              />
-              <Label htmlFor="entry-billable" className="cursor-pointer">
-                {tc("billable")}
-              </Label>
+
+                  {/* Hours */}
+                  <Input
+                    type="number"
+                    step={0.25}
+                    min={0}
+                    max={24}
+                    value={row.hours || ""}
+                    onChange={(e) =>
+                      updateRow(i, { hours: parseFloat(e.target.value) || 0 })
+                    }
+                    placeholder={tc("hours")}
+                  />
+
+                  {/* Description */}
+                  <Input
+                    value={row.description}
+                    onChange={(e) =>
+                      updateRow(i, { description: e.target.value })
+                    }
+                    placeholder={t("whatDidYouWorkOn")}
+                  />
+
+                  {/* Billable */}
+                  <Checkbox
+                    checked={row.billable}
+                    onCheckedChange={(v) =>
+                      updateRow(i, { billable: v === true })
+                    }
+                  />
+
+                  {/* Remove */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => removeRow(i)}
+                    disabled={logRows.length <= 1}
+                  >
+                    <Trash2 className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                </div>
+              ))}
             </div>
+
+            {/* Add row */}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setLogRows((prev) => [...prev, emptyRow()])}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              {t("addRow")}
+            </Button>
 
             <DialogFooter>
-              <Button type="submit" disabled={createTimeEntry.isPending}>
-                {createTimeEntry.isPending ? tc("saving") : t("logHours")}
+              <Button onClick={handleSaveAll} disabled={isSaving}>
+                {isSaving ? tc("saving") : t("saveAll")}
               </Button>
             </DialogFooter>
-          </form>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

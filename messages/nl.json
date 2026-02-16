@@ -352,7 +352,11 @@
     "failedToLoad": "Uurregistraties konden niet geladen worden. Ververs de pagina.",
     "deleteConfirm": "Weet u zeker dat u deze uurregistratie wilt verwijderen?",
     "employee": "Medewerker",
-    "allEmployees": "Alle medewerkers"
+    "allEmployees": "Alle medewerkers",
+    "addRow": "Regel toevoegen",
+    "saveAll": "Alles opslaan",
+    "fillAtLeastOneRow": "Vul minimaal één regel in met een bedrijf en uren",
+    "entriesLogged": "{count} uurregistraties opgeslagen"
   },
   "reports": {
     "title": "Rapportages",

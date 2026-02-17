@@ -206,7 +206,7 @@ export default function TimePage() {
       )}
 
       {/* Summary Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -228,21 +228,6 @@ export default function TimePage() {
           <CardContent>
             <div className="text-2xl font-bold">
               {summary.billableHours.toFixed(2)}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t("totalAmount")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {new Intl.NumberFormat("en", {
-                style: "currency",
-                currency: "EUR",
-              }).format(summary.totalAmount)}
             </div>
           </CardContent>
         </Card>
@@ -351,17 +336,12 @@ export default function TimePage() {
                     <TableHead>{t("description")}</TableHead>
                     <TableHead className="text-right">{t("hours")}</TableHead>
                     <TableHead>{t("billable")}</TableHead>
-                    <TableHead className="text-right">{t("amount")}</TableHead>
                     <TableHead className="w-[60px]" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {entries.map((entry) => {
                     const hours = Number(entry.hours);
-                    const rate = entry.company.hourlyRate
-                      ? Number(entry.company.hourlyRate)
-                      : 0;
-                    const amount = entry.billable ? hours * rate : 0;
 
                     return (
                       <TableRow key={entry.id}>
@@ -387,12 +367,6 @@ export default function TimePage() {
                           >
                             {entry.billable ? tc("yes") : tc("no")}
                           </Badge>
-                        </TableCell>
-                        <TableCell className="text-right font-mono">
-                          {new Intl.NumberFormat("en", {
-                            style: "currency",
-                            currency: "EUR",
-                          }).format(amount)}
                         </TableCell>
                         <TableCell>
                           <Button

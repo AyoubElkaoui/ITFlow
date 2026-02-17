@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { BarChart3, Clock, DollarSign, Ticket } from "lucide-react";
+import { BarChart3, Clock, Ticket } from "lucide-react";
 import { format, startOfMonth, endOfMonth } from "date-fns";
 import {
   BarChart,
@@ -86,7 +86,6 @@ interface CompanyBreakdown {
   tickets: number;
   hours: number;
   billableHours: number;
-  amount: number;
   avgResponse: string;
 }
 
@@ -96,7 +95,6 @@ interface EmployeeBreakdown {
   tickets: number;
   hours: number;
   billableHours: number;
-  amount: number;
 }
 
 export default function ReportsPage() {
@@ -150,17 +148,6 @@ export default function ReportsPage() {
     [timeEntries],
   );
 
-  const revenue = useMemo(
-    () =>
-      timeEntries.reduce((sum, e) => {
-        if (!e.billable) return sum;
-        const hours = parseFloat(e.hours || "0");
-        const rate = parseFloat(e.company?.hourlyRate || "0");
-        return sum + hours * rate;
-      }, 0),
-    [timeEntries],
-  );
-
   const avgHoursPerDay = useMemo(() => {
     const uniqueDays = new Set(timeEntries.map((e) => e.date?.slice(0, 10)));
     const dayCount = uniqueDays.size;
@@ -207,7 +194,6 @@ export default function ReportsPage() {
         tickets: 0,
         hours: 0,
         billableHours: 0,
-        amount: 0,
         avgResponse: "-",
         _responseTimes: [],
       };
@@ -215,7 +201,6 @@ export default function ReportsPage() {
       existing.hours += hours;
       if (e.billable) {
         existing.billableHours += hours;
-        existing.amount += hours * parseFloat(e.company?.hourlyRate || "0");
       }
       map.set(cId, existing);
     });
@@ -228,7 +213,6 @@ export default function ReportsPage() {
         tickets: 0,
         hours: 0,
         billableHours: 0,
-        amount: 0,
         avgResponse: "-",
         _responseTimes: [],
       };
@@ -270,13 +254,11 @@ export default function ReportsPage() {
         tickets: 0,
         hours: 0,
         billableHours: 0,
-        amount: 0,
       };
       const hours = parseFloat(e.hours || "0");
       existing.hours += hours;
       if (e.billable) {
         existing.billableHours += hours;
-        existing.amount += hours * parseFloat(e.company?.hourlyRate || "0");
       }
       map.set(uId, existing);
     });
@@ -294,7 +276,6 @@ export default function ReportsPage() {
           tickets: 0,
           hours: 0,
           billableHours: 0,
-          amount: 0,
         });
       }
     });
@@ -354,7 +335,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -383,27 +364,6 @@ export default function ReportsPage() {
               <div className="h-9 w-16 bg-muted rounded animate-pulse" />
             ) : (
               <div className="text-3xl font-bold">{totalHours.toFixed(1)}</div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Revenue
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="h-9 w-24 bg-muted rounded animate-pulse" />
-            ) : (
-              <div className="text-3xl font-bold">
-                {revenue.toLocaleString("de-DE", {
-                  style: "currency",
-                  currency: "EUR",
-                })}
-              </div>
             )}
           </CardContent>
         </Card>
@@ -542,7 +502,6 @@ export default function ReportsPage() {
                   <TableHead className="text-right">
                     {t("billableHours")}
                   </TableHead>
-                  <TableHead className="text-right">{t("amount")}</TableHead>
                   <TableHead className="text-right">
                     {t("avgResponse")}
                   </TableHead>
@@ -560,12 +519,6 @@ export default function ReportsPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       {row.billableHours.toFixed(1)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {row.amount.toLocaleString("de-DE", {
-                        style: "currency",
-                        currency: "EUR",
-                      })}
                     </TableCell>
                     <TableCell className="text-right text-muted-foreground">
                       {row.avgResponse}
@@ -587,14 +540,6 @@ export default function ReportsPage() {
                     {companyBreakdown
                       .reduce((s, r) => s + r.billableHours, 0)
                       .toFixed(1)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {companyBreakdown
-                      .reduce((s, r) => s + r.amount, 0)
-                      .toLocaleString("de-DE", {
-                        style: "currency",
-                        currency: "EUR",
-                      })}
                   </TableCell>
                   <TableCell className="text-right text-muted-foreground">
                     -
@@ -632,7 +577,6 @@ export default function ReportsPage() {
                   <TableHead className="text-right">
                     {t("billableHours")}
                   </TableHead>
-                  <TableHead className="text-right">{t("amount")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -645,12 +589,6 @@ export default function ReportsPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       {row.billableHours.toFixed(1)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {row.amount.toLocaleString("de-DE", {
-                        style: "currency",
-                        currency: "EUR",
-                      })}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -669,14 +607,6 @@ export default function ReportsPage() {
                     {employeeBreakdown
                       .reduce((s, r) => s + r.billableHours, 0)
                       .toFixed(1)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {employeeBreakdown
-                      .reduce((s, r) => s + r.amount, 0)
-                      .toLocaleString("de-DE", {
-                        style: "currency",
-                        currency: "EUR",
-                      })}
                   </TableCell>
                 </TableRow>
               </TableBody>

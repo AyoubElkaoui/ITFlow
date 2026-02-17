@@ -100,20 +100,9 @@ export function CreateCompanyDialog({ open, onOpenChange }: Props) {
             <Input id="address" {...form.register("address")} />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="contactPerson">{t("contactPerson")}</Label>
-              <Input id="contactPerson" {...form.register("contactPerson")} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="hourlyRate">{t("hourlyRate")}</Label>
-              <Input
-                id="hourlyRate"
-                type="number"
-                step="0.01"
-                {...form.register("hourlyRate")}
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="contactPerson">{t("contactPerson")}</Label>
+            <Input id="contactPerson" {...form.register("contactPerson")} />
           </div>
 
           <div className="space-y-2">

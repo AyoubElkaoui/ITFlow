@@ -84,7 +84,6 @@ export default function CompaniesPage() {
                   <TableHead>{t("contact")}</TableHead>
                   <TableHead className="text-center">{t("tickets")}</TableHead>
                   <TableHead className="text-center">{t("hours")}</TableHead>
-                  <TableHead className="text-right">{t("rate")}</TableHead>
                   <TableHead>{t("status")}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -107,11 +106,6 @@ export default function CompaniesPage() {
                     </TableCell>
                     <TableCell className="text-center">
                       {company._count.timeEntries}
-                    </TableCell>
-                    <TableCell className="text-right font-mono">
-                      {company.hourlyRate
-                        ? `\u20AC${Number(company.hourlyRate).toFixed(0)}/h`
-                        : "\u2014"}
                     </TableCell>
                     <TableCell>
                       <Badge

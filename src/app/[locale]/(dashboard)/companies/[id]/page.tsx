@@ -26,7 +26,6 @@ import {
   Phone,
   Globe,
   User,
-  DollarSign,
   Pencil,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -121,7 +120,6 @@ export default function CompanyDetailPage({
   }[];
 
   const totalHours = timeEntries.reduce((sum, e) => sum + Number(e.hours), 0);
-  const totalAmount = c.hourlyRate ? totalHours * Number(c.hourlyRate) : 0;
 
   async function toggleActive() {
     try {
@@ -161,7 +159,7 @@ export default function CompanyDetailPage({
       </div>
 
       {/* Info Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold">{c._count.tickets}</div>
@@ -172,14 +170,6 @@ export default function CompanyDetailPage({
           <CardContent className="pt-6">
             <div className="text-2xl font-bold">{totalHours.toFixed(1)}h</div>
             <p className="text-sm text-muted-foreground">{t("totalHours")}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">
-              \u20AC{totalAmount.toFixed(0)}
-            </div>
-            <p className="text-sm text-muted-foreground">{t("totalAmount")}</p>
           </CardContent>
         </Card>
         <Card>
@@ -237,12 +227,6 @@ export default function CompanyDetailPage({
                     </div>
                   )}
                 </div>
-              </div>
-            )}
-            {c.hourlyRate && (
-              <div className="flex gap-3">
-                <DollarSign className="h-4 w-4 text-muted-foreground shrink-0" />
-                <span>\u20AC{Number(c.hourlyRate).toFixed(2)}/hour</span>
               </div>
             )}
             {c.notes && (

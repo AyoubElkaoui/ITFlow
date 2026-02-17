@@ -11,6 +11,7 @@ const VALID_STATUSES: TicketStatus[] = [
   "WAITING",
   "RESOLVED",
   "CLOSED",
+  "BILLABLE",
 ];
 
 const reorderSchema = z.object({

@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useState, useCallback } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { Plus, Clock, Trash2 } from "lucide-react";
+import { Plus, Clock, Trash2, Pencil } from "lucide-react";
 
 import {
   useTimeEntries,
@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/dialog";
 import { CompanySelect } from "@/components/shared/company-select";
 import { UserSelect } from "@/components/shared/user-select";
+import { EditTimeEntryDialog } from "@/components/time/edit-time-entry-dialog";
 
 const PAGE_SIZE = 20;
 
@@ -79,6 +80,7 @@ export default function TimePage() {
   const [toDate, setToDate] = useState("");
   const [page, setPage] = useState(1);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editEntry, setEditEntry] = useState<TimeEntry | null>(null);
 
   const { data, isLoading, error } = useTimeEntries({
     companyId: companyId !== "all" ? companyId : undefined,
@@ -369,14 +371,23 @@ export default function TimePage() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDelete(entry.id)}
-                            disabled={deleteTimeEntry.isPending}
-                          >
-                            <Trash2 className="h-4 w-4 text-muted-foreground" />
-                          </Button>
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setEditEntry(entry)}
+                            >
+                              <Pencil className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDelete(entry.id)}
+                              disabled={deleteTimeEntry.isPending}
+                            >
+                              <Trash2 className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
@@ -520,6 +531,17 @@ export default function TimePage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Time Entry Dialog */}
+      {editEntry && (
+        <EditTimeEntryDialog
+          open={!!editEntry}
+          onOpenChange={(open) => {
+            if (!open) setEditEntry(null);
+          }}
+          entry={editEntry}
+        />
+      )}
     </div>
   );
 }

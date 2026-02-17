@@ -10,6 +10,7 @@ const statusStyles: Record<string, string> = {
   WAITING: "bg-orange-500/15 text-orange-400 border-orange-500/30",
   RESOLVED: "bg-green-500/15 text-green-400 border-green-500/30",
   CLOSED: "bg-muted text-muted-foreground border-border",
+  BILLABLE: "bg-purple-500/15 text-purple-400 border-purple-500/30",
 };
 
 const priorityStyles: Record<string, string> = {

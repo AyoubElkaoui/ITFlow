@@ -38,7 +38,7 @@ export const ticketCreateSchema = z.object({
   subject: z.string().min(1, "Subject is required"),
   description: z.string().optional(),
   status: z
-    .enum(["OPEN", "IN_PROGRESS", "WAITING", "RESOLVED", "CLOSED"])
+    .enum(["OPEN", "IN_PROGRESS", "WAITING", "RESOLVED", "CLOSED", "BILLABLE"])
     .default("OPEN"),
   priority: z.enum(["LOW", "NORMAL", "HIGH", "URGENT"]).default("NORMAL"),
   category: z

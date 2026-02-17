@@ -139,7 +139,7 @@ const companyMap: Record<
   },
   Elmar: { name: "Elmar Services", shortName: "Elmar", hourlyRate: 80 },
   HZB: { name: "Het Zorg Bureau", shortName: "HZB", hourlyRate: 75 },
-  Hoenderloo: { name: "Hoenderloo", shortName: "Hoenderloo", hourlyRate: 75 },
+  FellowZorg: { name: "Fellow Zorg", shortName: "FellowZorg", hourlyRate: 75 },
   ITFin: { name: "ITFin", shortName: "ITFin", hourlyRate: 0 },
   IFS: {
     name: "Interim Finance Specialisten",
@@ -177,7 +177,6 @@ const companyMap: Record<
   },
   Nijkerk: { name: "Nijkerk", shortName: "Nijkerk", hourlyRate: 75 },
   Qwic: { name: "Qwic", shortName: "Qwic", hourlyRate: 85 },
-  Qwick: { name: "Qwick", shortName: "Qwick", hourlyRate: 85 },
   RajaThuisZorg: {
     name: "Raja Thuiszorg",
     shortName: "RajaThuisZorg",
@@ -196,7 +195,7 @@ const companyMap: Record<
     hourlyRate: 75,
   },
   ZVOS: {
-    name: "Zorg Voor Ons Samen / Fellow Zorg",
+    name: "Zorg Voor Ons Samen",
     shortName: "ZVOS",
     hourlyRate: 75,
   },
@@ -213,7 +212,7 @@ const companyMap: Record<
   // New companies from CSV
   Webmolen: { name: "Webmolen", shortName: "Webmolen", hourlyRate: 75 },
   Samen100Care: {
-    name: "Samen 100% Care",
+    name: "Samen100Care",
     shortName: "Samen100Care",
     hourlyRate: 75,
   },
@@ -236,7 +235,8 @@ const csvToCompanyKey: Record<string, string> = {
   DIRECTWERK: "DirectWerk",
   ELMAR: "Elmar",
   HZB: "HZB",
-  HOENDERLOO: "Hoenderloo",
+  HOENDERLOO: "ZVOS",
+  FELLOWZORG: "FellowZorg",
   ITFIN: "ITFin",
   INTERIMFINANCE: "IFS",
   JMZ: "JMZ",
@@ -250,7 +250,7 @@ const csvToCompanyKey: Record<string, string> = {
   NLE_AUTOMOTIVE: "NLEAutomotive",
   NIJKERK: "Nijkerk",
   QWIC: "Qwic",
-  QWICK: "Qwick",
+  QWICK: "Qwic",
   RAJATHUISZORG: "RajaThuisZorg",
   TRC: "TRC",
   THEFUTURECOMPANY: "TFC",
@@ -418,20 +418,40 @@ async function main() {
     }
 
     // Create contacts
+    const portalPassword = await hash("portal123", 10);
     const contactIds = new Map<string, string>(); // "companyId:name" -> contactId
+    let portalContactCount = 0;
     for (const [cId, names] of contactsMap) {
+      let first = true;
       for (const name of names) {
+        // Generate a simple email for the first contact per company (portal-enabled)
+        const company = await prisma.company.findUnique({
+          where: { id: cId },
+          select: { shortName: true },
+        });
+        const email =
+          first && company
+            ? `${name.toLowerCase().replace(/\s+/g, ".")}@${company.shortName.toLowerCase()}.nl`
+            : null;
+
         const contact = await prisma.contact.create({
           data: {
             companyId: cId,
             name,
-            isPrimary: false,
+            email,
+            isPrimary: first,
+            password: email ? portalPassword : null,
+            portalEnabled: !!email,
           },
         });
         contactIds.set(`${cId}:${name}`, contact.id);
+        if (email) portalContactCount++;
+        first = false;
       }
     }
-    console.log(`Created ${contactIds.size} contacts`);
+    console.log(
+      `Created ${contactIds.size} contacts (${portalContactCount} portal-enabled)`,
+    );
 
     // Import tickets
     for (const row of ticketRows) {

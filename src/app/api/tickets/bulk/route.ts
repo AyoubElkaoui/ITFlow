@@ -41,7 +41,8 @@ export async function PATCH(request: NextRequest) {
           | "IN_PROGRESS"
           | "WAITING"
           | "RESOLVED"
-          | "CLOSED";
+          | "CLOSED"
+          | "BILLABLE";
 
         const data: Record<string, unknown> = { status: statusValue };
         if (statusValue === "RESOLVED") {

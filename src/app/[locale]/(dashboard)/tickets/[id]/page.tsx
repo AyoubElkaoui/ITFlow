@@ -43,7 +43,9 @@ import {
   ShieldCheck,
   MessageSquare,
   Link2,
+  Pencil,
 } from "lucide-react";
+import { EditTicketDialog } from "@/components/tickets/edit-ticket-dialog";
 import { TicketNotes } from "@/components/tickets/ticket-notes";
 import { TicketAssets } from "@/components/tickets/ticket-assets";
 import { SlaIndicator } from "@/components/tickets/sla-indicator";
@@ -106,6 +108,7 @@ export default function TicketDetailPage({
   const [timeHours, setTimeHours] = useState("");
   const [timeDescription, setTimeDescription] = useState("");
   const [isLoggingTime, setIsLoggingTime] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -150,7 +153,8 @@ export default function TicketDetailPage({
           | "IN_PROGRESS"
           | "WAITING"
           | "RESOLVED"
-          | "CLOSED",
+          | "CLOSED"
+          | "BILLABLE",
       });
       toast.success(
         ttoast("statusUpdated", {
@@ -160,7 +164,8 @@ export default function TicketDetailPage({
               | "IN_PROGRESS"
               | "WAITING"
               | "RESOLVED"
-              | "CLOSED",
+              | "CLOSED"
+              | "BILLABLE",
           ),
         }),
       );
@@ -249,14 +254,28 @@ export default function TicketDetailPage({
               <SelectItem value="IN_PROGRESS">{ts("IN_PROGRESS")}</SelectItem>
               <SelectItem value="WAITING">{ts("WAITING")}</SelectItem>
               <SelectItem value="RESOLVED">{ts("RESOLVED")}</SelectItem>
+              <SelectItem value="BILLABLE">{ts("BILLABLE")}</SelectItem>
               <SelectItem value="CLOSED">{ts("CLOSED")}</SelectItem>
             </SelectContent>
           </Select>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setEditOpen(true)}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
           <Button variant="destructive" size="icon" onClick={handleDelete}>
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
       </div>
+
+      <EditTicketDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        ticket={tk}
+      />
 
       {/* Info Cards */}
       <div className="grid gap-4 md:grid-cols-4">

@@ -27,6 +27,7 @@ const COLUMNS = [
   { status: "IN_PROGRESS", title: "In Progress", color: "yellow" },
   { status: "WAITING", title: "Waiting", color: "orange" },
   { status: "RESOLVED", title: "Resolved", color: "green" },
+  { status: "BILLABLE", title: "Te factureren", color: "purple" },
   { status: "CLOSED", title: "Closed", color: "gray" },
 ] as const;
 
@@ -35,6 +36,7 @@ const EMPTY_COLUMNS: KanbanColumns = {
   IN_PROGRESS: [],
   WAITING: [],
   RESOLVED: [],
+  BILLABLE: [],
   CLOSED: [],
 };
 
@@ -49,7 +51,7 @@ export function KanbanBoard() {
       activationConstraint: {
         distance: 8,
       },
-    })
+    }),
   );
 
   // Use local state during drag, otherwise use server data
@@ -67,7 +69,7 @@ export function KanbanBoard() {
       }
       return null;
     },
-    [columns]
+    [columns],
   );
 
   const handleDragStart = useCallback(
@@ -78,11 +80,11 @@ export function KanbanBoard() {
         setActiveTicket(ticket);
         // Clone the columns to local state for in-flight drag updates
         setLocalColumns(
-          JSON.parse(JSON.stringify(data?.columns ?? EMPTY_COLUMNS))
+          JSON.parse(JSON.stringify(data?.columns ?? EMPTY_COLUMNS)),
         );
       }
     },
-    [data]
+    [data],
   );
 
   const handleDragOver = useCallback(
@@ -133,7 +135,7 @@ export function KanbanBoard() {
         };
       });
     },
-    [localColumns, findColumnByTicketId]
+    [localColumns, findColumnByTicketId],
   );
 
   const handleDragEnd = useCallback(
@@ -171,7 +173,11 @@ export function KanbanBoard() {
         const activeIndex = columnTickets.findIndex((t) => t.id === activeId);
         const overIndex = columnTickets.findIndex((t) => t.id === overId);
 
-        if (activeIndex !== -1 && overIndex !== -1 && activeIndex !== overIndex) {
+        if (
+          activeIndex !== -1 &&
+          overIndex !== -1 &&
+          activeIndex !== overIndex
+        ) {
           updatedColumns = {
             ...updatedColumns,
             [activeColumn]: arrayMove(columnTickets, activeIndex, overIndex),
@@ -181,10 +187,9 @@ export function KanbanBoard() {
 
       // Calculate new kanbanOrder for all tickets in the target column
       const targetColumn = updatedColumns[overColumn] || [];
-      const movedTicketIndex = targetColumn.findIndex(
-        (t) => t.id === activeId
-      );
-      const newOrder = movedTicketIndex >= 0 ? movedTicketIndex : targetColumn.length;
+      const movedTicketIndex = targetColumn.findIndex((t) => t.id === activeId);
+      const newOrder =
+        movedTicketIndex >= 0 ? movedTicketIndex : targetColumn.length;
 
       // Build affected tickets (all other tickets in the target column that need reordering)
       const affectedTickets: { id: string; kanbanOrder: number }[] = [];
@@ -213,7 +218,7 @@ export function KanbanBoard() {
         affectedTickets,
       });
     },
-    [localColumns, findColumnByTicketId, reorderMutation]
+    [localColumns, findColumnByTicketId, reorderMutation],
   );
 
   const handleDragCancel = useCallback(() => {

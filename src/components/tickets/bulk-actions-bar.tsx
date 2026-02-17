@@ -37,6 +37,7 @@ const STATUS_VALUES = [
   "WAITING",
   "RESOLVED",
   "CLOSED",
+  "BILLABLE",
 ] as const;
 const PRIORITY_VALUES = ["LOW", "NORMAL", "HIGH", "URGENT"] as const;
 

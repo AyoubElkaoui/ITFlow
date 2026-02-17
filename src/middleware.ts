@@ -68,6 +68,26 @@ export async function middleware(request: NextRequest) {
   const localeMatch = pathname.match(/^\/(nl|en)(\/|$)/);
   const locale = localeMatch ? localeMatch[1] : routing.defaultLocale;
 
+  // --- Portal routes ---
+  const isPortalLogin = pathname.match(/^\/(nl|en)\/portal\/login(\/|$)/);
+  const isPortalRoute = pathname.match(/^\/(nl|en)\/portal(\/|$)/);
+
+  if (isPortalLogin) {
+    return intlResponse;
+  }
+
+  if (isPortalRoute) {
+    const portalToken = request.cookies.get("portal-token")?.value;
+    if (!portalToken) {
+      return NextResponse.redirect(
+        new URL(`/${locale}/portal/login`, request.url),
+      );
+    }
+    // Token validity is checked in the API/pages themselves
+    return intlResponse;
+  }
+
+  // --- Dashboard routes ---
   // Check if this is a login page
   const isLoginPage =
     pathname.match(/^\/(nl|en)\/login(\/|$)/) || pathname === "/login";

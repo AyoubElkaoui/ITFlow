@@ -83,7 +83,8 @@
     "IN_PROGRESS": "In behandeling",
     "WAITING": "Wachtend",
     "RESOLVED": "Opgelost",
-    "CLOSED": "Gesloten"
+    "CLOSED": "Gesloten",
+    "BILLABLE": "Te factureren"
   },
   "priority": {
     "LOW": "Laag",
@@ -200,7 +201,8 @@
     "hours": "Uren",
     "selected": "geselecteerd",
     "deleteConfirm": "Weet u zeker dat u {count} ticket(s) wilt verwijderen? Dit kan niet ongedaan worden gemaakt.",
-    "ticketDeleteConfirm": "Weet u zeker dat u ticket #{number} \"{subject}\" wilt verwijderen? Dit kan niet ongedaan worden gemaakt."
+    "ticketDeleteConfirm": "Weet u zeker dat u ticket #{number} \"{subject}\" wilt verwijderen? Dit kan niet ongedaan worden gemaakt.",
+    "editTicket": "Ticket bewerken"
   },
   "newTicket": {
     "title": "Nieuw ticket",
@@ -356,7 +358,8 @@
     "addRow": "Regel toevoegen",
     "saveAll": "Alles opslaan",
     "fillAtLeastOneRow": "Vul minimaal één regel in met een bedrijf en uren",
-    "entriesLogged": "{count} uurregistraties opgeslagen"
+    "entriesLogged": "{count} uurregistraties opgeslagen",
+    "editEntry": "Uurregistratie bewerken"
   },
   "reports": {
     "title": "Rapportages",
@@ -591,5 +594,48 @@
     "disable2fa": "2FA uitschakelen",
     "enabled": "Ingeschakeld",
     "disabled": "Uitgeschakeld"
+  },
+  "portal": {
+    "title": "Klantenportaal",
+    "loginTitle": "Inloggen klantenportaal",
+    "loginDescription": "Log in met uw e-mailadres en wachtwoord",
+    "email": "E-mail",
+    "emailPlaceholder": "u@voorbeeld.nl",
+    "password": "Wachtwoord",
+    "passwordPlaceholder": "Voer uw wachtwoord in",
+    "signIn": "Inloggen",
+    "signingIn": "Inloggen...",
+    "loginError": "Ongeldige e-mail of wachtwoord",
+    "logout": "Uitloggen",
+    "tickets": "Tickets",
+    "yourTickets": "Uw tickets",
+    "newTicket": "Nieuw ticket",
+    "noTickets": "Geen tickets gevonden",
+    "allStatuses": "Alle statussen",
+    "subject": "Onderwerp",
+    "subjectPlaceholder": "Korte beschrijving van het probleem",
+    "description": "Beschrijving",
+    "descriptionPlaceholder": "Beschrijf het probleem zo duidelijk mogelijk...",
+    "priority": "Prioriteit",
+    "category": "Categorie",
+    "selectCategory": "Selecteer categorie",
+    "status": "Status",
+    "date": "Datum",
+    "ticketDetails": "Ticket gegevens",
+    "createTicket": "Ticket aanmaken",
+    "creating": "Aanmaken...",
+    "cancel": "Annuleren",
+    "createError": "Er ging iets mis bij het aanmaken van het ticket",
+    "ticketNotFound": "Ticket niet gevonden",
+    "backToTickets": "Terug naar tickets",
+    "messages": "Berichten",
+    "noMessages": "Nog geen berichten",
+    "writeMessage": "Schrijf een bericht...",
+    "created": "Aangemaakt",
+    "assignedTo": "Behandelaar",
+    "loading": "Laden...",
+    "showing": "{from}-{to} van {total}",
+    "previous": "Vorige",
+    "next": "Volgende"
   }
 }

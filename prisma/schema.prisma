@@ -18,6 +18,7 @@ enum TicketStatus {
   WAITING
   RESOLVED
   CLOSED
+  BILLABLE
 }
 
 enum Priority {
@@ -123,21 +124,24 @@ model Company {
 }
 
 model Contact {
-  id        String   @id @default(cuid())
-  companyId String
-  name      String
-  email     String?
-  phone     String?
-  function  String?
-  isPrimary Boolean  @default(false)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(cuid())
+  companyId     String
+  name          String
+  email         String?
+  phone         String?
+  function      String?
+  isPrimary     Boolean  @default(false)
+  isActive      Boolean  @default(true)
+  password      String?
+  portalEnabled Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   company Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   tickets Ticket[]
 
   @@index([companyId])
+  @@index([email])
 }
 
 model Ticket {

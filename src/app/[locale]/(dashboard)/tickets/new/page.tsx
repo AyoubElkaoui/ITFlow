@@ -272,6 +272,7 @@ export default function NewTicketPage() {
                     </SelectItem>
                     <SelectItem value="WAITING">{ts("WAITING")}</SelectItem>
                     <SelectItem value="RESOLVED">{ts("RESOLVED")}</SelectItem>
+                    <SelectItem value="BILLABLE">{ts("BILLABLE")}</SelectItem>
                     <SelectItem value="CLOSED">{ts("CLOSED")}</SelectItem>
                   </SelectContent>
                 </Select>

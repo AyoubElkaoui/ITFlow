@@ -111,6 +111,8 @@ export default function ReportsPage() {
   const ticketFilters = {
     companyId: companyId !== "all" ? companyId : undefined,
     assignedToId: userId !== "all" ? userId : undefined,
+    from: fromDate,
+    to: toDate,
     pageSize: 1000,
   };
 

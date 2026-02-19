@@ -18,6 +18,8 @@ export async function GET(request: NextRequest) {
   const priority = searchParams.get("priority");
   const companyId = searchParams.get("companyId");
   const assignedToId = searchParams.get("assignedToId");
+  const from = searchParams.get("from");
+  const to = searchParams.get("to");
   const page = parseInt(searchParams.get("page") || "1");
   const pageSize = Math.min(Number(searchParams.get("pageSize")) || 20, 100);
 
@@ -43,6 +45,14 @@ export async function GET(request: NextRequest) {
     }),
     ...(companyId && { companyId }),
     ...(assignedToId && { assignedToId }),
+    ...(from || to
+      ? {
+          createdAt: {
+            ...(from && { gte: new Date(from) }),
+            ...(to && { lte: new Date(`${to}T23:59:59.999Z`) }),
+          },
+        }
+      : {}),
   };
 
   const [tickets, total] = await Promise.all([

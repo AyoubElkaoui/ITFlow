@@ -16,12 +16,12 @@ export function PortalHeader() {
   async function handleLogout() {
     try {
       await fetch("/api/portal/auth/logout", { method: "POST" });
-      // Use window.location met locale voor betrouwbare redirect na logout
-      window.location.href = `/${locale}/portal/login`;
+      // Router.push gebruiken voor correcte client-side navigatie
+      router.push("/portal/login");
     } catch (error) {
       console.error("Logout error:", error);
       // Redirect toch naar login bij fout
-      window.location.href = `/${locale}/portal/login`;
+      router.push("/portal/login");
     }
   }
 

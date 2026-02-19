@@ -58,7 +58,7 @@ export const ticketUpdateSchema = ticketCreateSchema.partial();
 
 // TimeEntry schemas
 export const timeEntryCreateSchema = z.object({
-  ticketId: z.string().optional(),
+  ticketId: z.string().nullable().optional(),
   companyId: z.string().min(1, "Company is required"),
   date: z.coerce.date(),
   hours: z.coerce

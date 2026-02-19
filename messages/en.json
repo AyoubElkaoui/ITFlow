@@ -55,6 +55,8 @@
     "selectCategory": "Select category",
     "selectPriority": "Select priority",
     "selectStatus": "Select status",
+    "selectTicket": "Select ticket",
+    "noTicket": "No ticket",
     "from": "From",
     "to": "To",
     "primary": "Primary"

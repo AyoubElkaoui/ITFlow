@@ -12,6 +12,8 @@ import { useCreateTimeEntry } from "@/hooks/use-time-entries";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { StatusBadge, PriorityBadge } from "@/components/shared/status-badge";
 import {
   Select,
@@ -107,6 +109,8 @@ export default function TicketDetailPage({
 
   const [timeHours, setTimeHours] = useState("");
   const [timeDescription, setTimeDescription] = useState("");
+  const [timeDate, setTimeDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [timeBillable, setTimeBillable] = useState(true);
   const [isLoggingTime, setIsLoggingTime] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
 
@@ -201,10 +205,10 @@ export default function TicketDetailPage({
       await createTimeEntry.mutateAsync({
         ticketId: tk.id,
         companyId: tk.company.id,
-        date: new Date(),
+        date: new Date(timeDate),
         hours: Number(timeHours),
         description: timeDescription || undefined,
-        billable: true,
+        billable: timeBillable,
       });
       toast.success(ttoast("created", { entity: "Time entry" }));
       setTimeHours("");
@@ -446,32 +450,50 @@ export default function TicketDetailPage({
               {/* Quick Log Time form */}
               <form
                 onSubmit={handleLogTime}
-                className="flex items-center gap-2 mt-4 pt-4 border-t border-border"
+                className="mt-4 pt-4 border-t border-border space-y-3"
               >
-                <Input
-                  type="number"
-                  step="0.25"
-                  min="0.25"
-                  placeholder={t("hours")}
-                  value={timeHours}
-                  onChange={(e) => setTimeHours(e.target.value)}
-                  className="w-24"
-                />
-                <Input
-                  type="text"
-                  placeholder={t("description")}
-                  value={timeDescription}
-                  onChange={(e) => setTimeDescription(e.target.value)}
-                  className="flex-1"
-                />
-                <Button
-                  type="submit"
-                  size="sm"
-                  disabled={isLoggingTime || !timeHours}
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  {t("logTime")}
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="date"
+                    value={timeDate}
+                    onChange={(e) => setTimeDate(e.target.value)}
+                    className="w-[150px]"
+                  />
+                  <Input
+                    type="number"
+                    step="0.25"
+                    min="0.25"
+                    placeholder={t("hours")}
+                    value={timeHours}
+                    onChange={(e) => setTimeHours(e.target.value)}
+                    className="w-24"
+                  />
+                  <Input
+                    type="text"
+                    placeholder={t("description")}
+                    value={timeDescription}
+                    onChange={(e) => setTimeDescription(e.target.value)}
+                    className="flex-1"
+                  />
+                  <div className="flex items-center gap-1.5">
+                    <Checkbox
+                      id="time-billable"
+                      checked={timeBillable}
+                      onCheckedChange={(v) => setTimeBillable(v === true)}
+                    />
+                    <Label htmlFor="time-billable" className="text-sm whitespace-nowrap">
+                      {tc("billable")}
+                    </Label>
+                  </div>
+                  <Button
+                    type="submit"
+                    size="sm"
+                    disabled={isLoggingTime || !timeHours}
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    {t("logTime")}
+                  </Button>
+                </div>
               </form>
             </CardContent>
           </Card>

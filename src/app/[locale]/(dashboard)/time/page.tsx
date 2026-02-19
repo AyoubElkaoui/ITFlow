@@ -37,6 +37,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { CompanySelect } from "@/components/shared/company-select";
+import { TicketSelect } from "@/components/shared/ticket-select";
 import { UserSelect } from "@/components/shared/user-select";
 import { EditTimeEntryDialog } from "@/components/time/edit-time-entry-dialog";
 
@@ -110,6 +111,7 @@ export default function TimePage() {
   // Multi-row log hours state
   interface LogRow {
     companyId: string;
+    ticketId: string;
     hours: number;
     description: string;
     billable: boolean;
@@ -117,6 +119,7 @@ export default function TimePage() {
 
   const emptyRow = (): LogRow => ({
     companyId: "",
+    ticketId: "",
     hours: 0,
     description: "",
     billable: true,
@@ -154,6 +157,7 @@ export default function TimePage() {
       for (const row of validRows) {
         await createTimeEntry.mutateAsync({
           companyId: row.companyId,
+          ticketId: row.ticketId || undefined,
           date: new Date(logDate),
           hours: row.hours,
           description: row.description || undefined,
@@ -459,55 +463,67 @@ export default function TimePage() {
               {logRows.map((row, i) => (
                 <div
                   key={i}
-                  className="grid grid-cols-[1fr_80px_1fr_auto_auto] items-center gap-2 rounded-lg border p-3"
+                  className="rounded-lg border p-3 space-y-2"
                 >
-                  {/* Company */}
-                  <CompanySelect
-                    value={row.companyId}
-                    onValueChange={(v) => updateRow(i, { companyId: v })}
-                    placeholder={tc("selectCompany")}
-                  />
-
-                  {/* Hours */}
-                  <Input
-                    type="number"
-                    step={0.25}
-                    min={0}
-                    max={24}
-                    value={row.hours || ""}
-                    onChange={(e) =>
-                      updateRow(i, { hours: parseFloat(e.target.value) || 0 })
-                    }
-                    placeholder={tc("hours")}
-                  />
-
-                  {/* Description */}
-                  <Input
-                    value={row.description}
-                    onChange={(e) =>
-                      updateRow(i, { description: e.target.value })
-                    }
-                    placeholder={t("whatDidYouWorkOn")}
-                  />
-
-                  {/* Billable */}
-                  <Checkbox
-                    checked={row.billable}
-                    onCheckedChange={(v) =>
-                      updateRow(i, { billable: v === true })
-                    }
-                  />
-
-                  {/* Remove */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => removeRow(i)}
-                    disabled={logRows.length <= 1}
-                  >
-                    <Trash2 className="h-4 w-4 text-muted-foreground" />
-                  </Button>
+                  <div className="grid grid-cols-[1fr_1fr] gap-2">
+                    {/* Company */}
+                    <CompanySelect
+                      value={row.companyId}
+                      onValueChange={(v) =>
+                        updateRow(i, { companyId: v, ticketId: "" })
+                      }
+                      placeholder={tc("selectCompany")}
+                    />
+                    {/* Ticket */}
+                    <TicketSelect
+                      value={row.ticketId}
+                      onValueChange={(v) =>
+                        updateRow(i, { ticketId: v === "none" ? "" : v })
+                      }
+                      companyId={row.companyId || undefined}
+                    />
+                  </div>
+                  <div className="grid grid-cols-[80px_1fr_auto_auto] items-center gap-2">
+                    {/* Hours */}
+                    <Input
+                      type="number"
+                      step={0.25}
+                      min={0}
+                      max={24}
+                      value={row.hours || ""}
+                      onChange={(e) =>
+                        updateRow(i, {
+                          hours: parseFloat(e.target.value) || 0,
+                        })
+                      }
+                      placeholder={tc("hours")}
+                    />
+                    {/* Description */}
+                    <Input
+                      value={row.description}
+                      onChange={(e) =>
+                        updateRow(i, { description: e.target.value })
+                      }
+                      placeholder={t("whatDidYouWorkOn")}
+                    />
+                    {/* Billable */}
+                    <Checkbox
+                      checked={row.billable}
+                      onCheckedChange={(v) =>
+                        updateRow(i, { billable: v === true })
+                      }
+                    />
+                    {/* Remove */}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => removeRow(i)}
+                      disabled={logRows.length <= 1}
+                    >
+                      <Trash2 className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>

@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CompanySelect } from "@/components/shared/company-select";
+import { TicketSelect } from "@/components/shared/ticket-select";
 import { toast } from "sonner";
 
 interface TimeEntryData {
@@ -43,6 +44,7 @@ export function EditTimeEntryDialog({ open, onOpenChange, entry }: Props) {
 
   const [date, setDate] = useState("");
   const [companyId, setCompanyId] = useState("");
+  const [ticketId, setTicketId] = useState("");
   const [hours, setHours] = useState("");
   const [description, setDescription] = useState("");
   const [billable, setBillable] = useState(true);
@@ -50,6 +52,7 @@ export function EditTimeEntryDialog({ open, onOpenChange, entry }: Props) {
   useEffect(() => {
     setDate(format(new Date(entry.date), "yyyy-MM-dd"));
     setCompanyId(entry.company.id);
+    setTicketId(entry.ticket?.id ?? "");
     setHours(String(Number(entry.hours)));
     setDescription(entry.description ?? "");
     setBillable(entry.billable);
@@ -62,6 +65,7 @@ export function EditTimeEntryDialog({ open, onOpenChange, entry }: Props) {
     try {
       await updateEntry.mutateAsync({
         companyId,
+        ticketId: ticketId || null,
         date: new Date(date),
         hours: Number(hours),
         description: description || undefined,
@@ -134,11 +138,14 @@ export function EditTimeEntryDialog({ open, onOpenChange, entry }: Props) {
             />
           </div>
 
-          {entry.ticket && (
-            <div className="text-sm text-muted-foreground">
-              {t("ticket")}: #{String(entry.ticket.ticketNumber).padStart(3, "0")} — {entry.ticket.subject}
-            </div>
-          )}
+          <div className="space-y-2">
+            <Label>{t("ticket")}</Label>
+            <TicketSelect
+              value={ticketId}
+              onValueChange={(v) => setTicketId(v === "none" ? "" : v)}
+              companyId={companyId || undefined}
+            />
+          </div>
 
           <div className="flex justify-end gap-2 pt-2">
             <Button

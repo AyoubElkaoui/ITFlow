@@ -55,6 +55,8 @@
     "selectCategory": "Selecteer categorie",
     "selectPriority": "Selecteer prioriteit",
     "selectStatus": "Selecteer status",
+    "selectTicket": "Selecteer ticket",
+    "noTicket": "Geen ticket",
     "from": "Van",
     "to": "Tot",
     "primary": "Primair"

@@ -79,11 +79,13 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
+        console.error("SignIn error:", result.error, "Status:", result.status, "URL:", result.url);
         setError(t("invalidCredentials"));
       } else {
         router.push("/");
       }
-    } catch {
+    } catch (err) {
+      console.error("Login catch error:", err);
       setError(t("errorOccurred"));
     }
   }

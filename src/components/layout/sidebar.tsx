@@ -101,10 +101,20 @@ export function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 space-y-1 p-2">
         {navigation.map((item) => {
+          // Use exact match when a more specific sibling route exists
+          const hasMoreSpecificMatch = navigation.some(
+            (other) =>
+              other.href !== item.href &&
+              other.href.startsWith(item.href + "/") &&
+              strippedPath.startsWith(other.href),
+          );
           const isActive =
             item.href === "/"
               ? strippedPath === "/"
-              : strippedPath.startsWith(item.href);
+              : hasMoreSpecificMatch
+                ? strippedPath === item.href
+                : strippedPath === item.href ||
+                  strippedPath.startsWith(item.href + "/");
           return (
             <Link
               key={item.href}

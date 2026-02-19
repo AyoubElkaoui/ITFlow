@@ -1,19 +1,28 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
+import { useRouter, usePathname } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { LogOut, Ticket } from "lucide-react";
 import { usePortalSession } from "@/hooks/use-portal";
+import { useLocale } from "next-intl";
 
 export function PortalHeader() {
   const t = useTranslations("portal");
   const router = useRouter();
+  const locale = useLocale();
   const { data: session } = usePortalSession();
 
   async function handleLogout() {
-    await fetch("/api/portal/auth/logout", { method: "POST" });
-    router.push("/portal/login");
+    try {
+      await fetch("/api/portal/auth/logout", { method: "POST" });
+      // Use window.location met locale voor betrouwbare redirect na logout
+      window.location.href = `/${locale}/portal/login`;
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Redirect toch naar login bij fout
+      window.location.href = `/${locale}/portal/login`;
+    }
   }
 
   return (

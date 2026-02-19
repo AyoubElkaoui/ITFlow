@@ -369,7 +369,7 @@ export function Header() {
             </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={() => signOut({ callbackUrl: "/login" })}
+              onClick={() => signOut({ redirectTo: "/login" })}
               className="text-destructive focus:text-destructive"
             >
               <LogOut className="mr-2 h-4 w-4" />

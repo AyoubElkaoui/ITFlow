@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
-import { clearPortalCookie } from "@/lib/portal-auth";
+import { cookies } from "next/headers";
 
 export async function POST() {
-  await clearPortalCookie();
+  const cookieStore = await cookies();
+  cookieStore.delete("portal-token");
+
   return NextResponse.json({ ok: true });
 }

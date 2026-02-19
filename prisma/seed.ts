@@ -283,6 +283,27 @@ function resolveCompanyKey(csvName: string): string | null {
 async function main() {
   console.log("Seeding database with CSV data...");
 
+  // ── Cleanup existing data ──
+  console.log("Cleaning existing data...");
+  await prisma.activeTimer.deleteMany();
+  await prisma.ticketNote.deleteMany();
+  await prisma.assetTicket.deleteMany();
+  await prisma.timeEntry.deleteMany();
+  await prisma.ticket.deleteMany();
+  await prisma.contact.deleteMany();
+  await prisma.asset.deleteMany();
+  await prisma.recurringTicket.deleteMany();
+  await prisma.customFieldValue.deleteMany();
+  await prisma.customFieldDefinition.deleteMany();
+  await prisma.kbArticle.deleteMany();
+  await prisma.kbCategory.deleteMany();
+  await prisma.slaPolicy.deleteMany();
+  await prisma.notification.deleteMany();
+  await prisma.auditLog.deleteMany();
+  await prisma.company.deleteMany();
+  await prisma.user.deleteMany();
+  console.log("Cleaned all existing data");
+
   // ── Users ──
   const hashedPassword = await hash("admin123", 12);
   const admin = await prisma.user.upsert({

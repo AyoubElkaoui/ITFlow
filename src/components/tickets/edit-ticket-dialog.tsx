@@ -12,11 +12,11 @@ import { useUpdateTicket } from "@/hooks/use-tickets";
 import { useCompanies } from "@/hooks/use-companies";
 import { useUsers } from "@/hooks/use-users";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -122,15 +122,15 @@ export function EditTicketDialog({ open, onOpenChange, ticket }: Props) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{t("editTicket")}</DialogTitle>
-        </DialogHeader>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle>{t("editTicket")}</SheetTitle>
+        </SheetHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* Basic Info */}
           <div className="space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground">{tn("basicInfo")}</h3>
+            <h3 className="text-sm font-medium text-muted-foreground pb-2 border-b">{tn("basicInfo")}</h3>
 
             <div className="space-y-2">
               <Label htmlFor="subject">{tc("subject")} *</Label>
@@ -146,7 +146,7 @@ export function EditTicketDialog({ open, onOpenChange, ticket }: Props) {
               <Label htmlFor="description">{tc("description")}</Label>
               <Textarea
                 id="description"
-                rows={4}
+                rows={6}
                 {...form.register("description")}
               />
             </div>
@@ -197,7 +197,7 @@ export function EditTicketDialog({ open, onOpenChange, ticket }: Props) {
 
           {/* Classification */}
           <div className="space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground">{tn("classification")}</h3>
+            <h3 className="text-sm font-medium text-muted-foreground pb-2 border-b">{tn("classification")}</h3>
 
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
@@ -273,7 +273,7 @@ export function EditTicketDialog({ open, onOpenChange, ticket }: Props) {
 
           {/* IT Snippet */}
           <div className="space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground">{tn("itSnippet")}</h3>
+            <h3 className="text-sm font-medium text-muted-foreground pb-2 border-b">{tn("itSnippet")}</h3>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -307,7 +307,7 @@ export function EditTicketDialog({ open, onOpenChange, ticket }: Props) {
               <Label htmlFor="tasksPerformed">{t("tasksPerformed")}</Label>
               <Textarea
                 id="tasksPerformed"
-                rows={3}
+                rows={5}
                 placeholder={tn("tasksPlaceholder")}
                 {...form.register("tasksPerformed")}
               />
@@ -317,7 +317,7 @@ export function EditTicketDialog({ open, onOpenChange, ticket }: Props) {
               <Label htmlFor="pendingTasks">{t("pendingTasks")}</Label>
               <Textarea
                 id="pendingTasks"
-                rows={2}
+                rows={4}
                 placeholder={tn("pendingPlaceholder")}
                 {...form.register("pendingTasks")}
               />
@@ -327,7 +327,7 @@ export function EditTicketDialog({ open, onOpenChange, ticket }: Props) {
               <Label htmlFor="equipmentTaken">{t("equipmentTaken")}</Label>
               <Textarea
                 id="equipmentTaken"
-                rows={2}
+                rows={3}
                 placeholder={tn("equipmentPlaceholder")}
                 {...form.register("equipmentTaken")}
               />
@@ -347,7 +347,7 @@ export function EditTicketDialog({ open, onOpenChange, ticket }: Props) {
             </Button>
           </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }

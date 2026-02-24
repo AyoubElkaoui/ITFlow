@@ -234,3 +234,29 @@ export type RecurringTicketCreateInput = z.infer<
 export type RecurringTicketUpdateInput = z.infer<
   typeof recurringTicketUpdateSchema
 >;
+
+// Project schemas
+export const projectCreateSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  status: z.enum(["PLANNING", "ACTIVE", "ON_HOLD", "COMPLETED", "CANCELLED"]).default("PLANNING"),
+  priority: z.enum(["LOW", "NORMAL", "HIGH", "URGENT"]).default("NORMAL"),
+  companyId: z.string().optional(),
+  startDate: z.coerce.date().optional(),
+  dueDate: z.coerce.date().optional(),
+  notes: z.string().optional(),
+});
+
+export const projectUpdateSchema = projectCreateSchema.partial();
+
+export const projectTaskCreateSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  completed: z.boolean().default(false),
+});
+
+export const projectTaskUpdateSchema = projectTaskCreateSchema.partial();
+
+export type ProjectCreateInput = z.infer<typeof projectCreateSchema>;
+export type ProjectUpdateInput = z.infer<typeof projectUpdateSchema>;
+export type ProjectTaskCreateInput = z.infer<typeof projectTaskCreateSchema>;
+export type ProjectTaskUpdateInput = z.infer<typeof projectTaskUpdateSchema>;

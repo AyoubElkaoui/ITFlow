@@ -77,6 +77,7 @@
     "sla": "SLA Beleid",
     "customFields": "Aangepaste velden",
     "recurring": "Terugkerend",
+    "projects": "Projecten",
     "audit": "Audittrail",
     "settings": "Instellingen"
   },
@@ -221,7 +222,9 @@
     "pendingPlaceholder": "Nog openstaande taken...",
     "equipmentPlaceholder": "Meegenomen apparatuur voor reparatie of vervanging",
     "createTicket": "Ticket aanmaken",
-    "applyTemplate": "Template toepassen"
+    "applyTemplate": "Template toepassen",
+    "quickAddCompany": "Snel bedrijf toevoegen",
+    "quickAddContact": "Snel contact toevoegen"
   },
   "companies": {
     "title": "Bedrijven",
@@ -261,7 +264,8 @@
     "companyName": "Bedrijfsnaam",
     "shortNamePlaceholder": "bijv. ZVOS",
     "createCompany": "Bedrijf aanmaken",
-    "editCompany": "Bedrijf bewerken"
+    "editCompany": "Bedrijf bewerken",
+    "quickCreate": "Snel bedrijf aanmaken"
   },
   "contacts": {
     "title": "Contacten",
@@ -280,7 +284,8 @@
     "functionPlaceholder": "bijv. IT Manager",
     "company": "Bedrijf",
     "createContact": "Contact aanmaken",
-    "editContact": "Contact bewerken"
+    "editContact": "Contact bewerken",
+    "quickCreate": "Snel contact aanmaken"
   },
   "assets": {
     "title": "Assets",
@@ -385,7 +390,9 @@
     "avgResponse": "Gem. respons",
     "employee": "Medewerker",
     "allEmployees": "Alle medewerkers",
-    "employeeBreakdown": "Overzicht per medewerker"
+    "employeeBreakdown": "Overzicht per medewerker",
+    "exportExcel": "Excel",
+    "exportPdf": "PDF"
   },
   "kb": {
     "title": "Kennisbank",
@@ -596,6 +603,26 @@
     "disable2fa": "2FA uitschakelen",
     "enabled": "Ingeschakeld",
     "disabled": "Uitgeschakeld"
+  },
+  "projects": {
+    "title": "Projecten",
+    "project": "Project",
+    "newProject": "Nieuw Project",
+    "newProjectDescription": "Maak een nieuw project aan om langlopende werkzaamheden bij te houden.",
+    "titlePlaceholder": "Projectnaam",
+    "descriptionPlaceholder": "Waar gaat dit project over?",
+    "dueDate": "Deadline",
+    "tasks": "Taken",
+    "addTaskPlaceholder": "Taak toevoegen...",
+    "noProjects": "Geen projecten",
+    "noNotes": "Nog geen notities",
+    "notesPlaceholder": "Notities over dit project...",
+    "deleteProject": "Project verwijderen",
+    "PLANNING": "Planning",
+    "ACTIVE": "Actief",
+    "ON_HOLD": "In de wacht",
+    "COMPLETED": "Afgerond",
+    "CANCELLED": "Geannuleerd"
   },
   "portal": {
     "title": "Klantenportaal",

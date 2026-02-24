@@ -18,7 +18,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { BarChart3, Clock, Ticket } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { BarChart3, Clock, Download, FileText, Ticket } from "lucide-react";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 import { format, startOfMonth, endOfMonth } from "date-fns";
 import {
   BarChart,
@@ -290,6 +294,134 @@ export default function ReportsPage() {
     return Array.from(map.values()).sort((a, b) => b.hours - a.hours);
   }, [timeEntries, tickets]);
 
+  const handleExportExcel = () => {
+    const wb = XLSX.utils.book_new();
+
+    // Sheet 1: Overzicht (Summary)
+    const summaryData = [
+      [t("title"), `${fromDate} - ${toDate}`],
+      [],
+      [t("totalTickets"), totalTickets],
+      [t("totalHours"), Math.round(totalHours * 100) / 100],
+      [t("avgHoursPerDay"), Math.round(avgHoursPerDay * 100) / 100],
+    ];
+    const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(wb, summarySheet, "Overzicht");
+
+    // Sheet 2: Per bedrijf (Company breakdown)
+    const companyHeader = [
+      t("company"),
+      t("tickets"),
+      t("hours"),
+      t("billableHours"),
+      t("avgResponse"),
+    ];
+    const companyRows = companyBreakdown.map((row) => [
+      row.shortName,
+      row.tickets,
+      Math.round(row.hours * 100) / 100,
+      Math.round(row.billableHours * 100) / 100,
+      row.avgResponse,
+    ]);
+    const companySheet = XLSX.utils.aoa_to_sheet([
+      companyHeader,
+      ...companyRows,
+    ]);
+    XLSX.utils.book_append_sheet(wb, companySheet, "Per bedrijf");
+
+    // Sheet 3: Per medewerker (Employee breakdown)
+    const employeeHeader = [
+      t("employee"),
+      t("tickets"),
+      t("hours"),
+      t("billableHours"),
+    ];
+    const employeeRows = employeeBreakdown.map((row) => [
+      row.name,
+      row.tickets,
+      Math.round(row.hours * 100) / 100,
+      Math.round(row.billableHours * 100) / 100,
+    ]);
+    const employeeSheet = XLSX.utils.aoa_to_sheet([
+      employeeHeader,
+      ...employeeRows,
+    ]);
+    XLSX.utils.book_append_sheet(wb, employeeSheet, "Per medewerker");
+
+    XLSX.writeFile(wb, `rapport_${fromDate}_${toDate}.xlsx`);
+  };
+
+  const handleExportPdf = () => {
+    const doc = new jsPDF();
+
+    // Title
+    doc.setFontSize(16);
+    doc.text(`Rapportage ${fromDate} - ${toDate}`, 14, 20);
+
+    // Summary section
+    doc.setFontSize(11);
+    doc.text(`${t("totalTickets")}: ${totalTickets}`, 14, 35);
+    doc.text(
+      `${t("totalHours")}: ${(Math.round(totalHours * 100) / 100).toFixed(1)}`,
+      14,
+      42,
+    );
+    doc.text(
+      `${t("avgHoursPerDay")}: ${(Math.round(avgHoursPerDay * 100) / 100).toFixed(1)}`,
+      14,
+      49,
+    );
+
+    // Company breakdown table
+    doc.setFontSize(13);
+    doc.text(t("companyBreakdown"), 14, 62);
+
+    (doc as unknown as { autoTable: (options: Record<string, unknown>) => void }).autoTable({
+      startY: 66,
+      head: [
+        [
+          t("company"),
+          t("tickets"),
+          t("hours"),
+          t("billableHours"),
+          t("avgResponse"),
+        ],
+      ],
+      body: companyBreakdown.map((row) => [
+        row.shortName,
+        row.tickets,
+        row.hours.toFixed(1),
+        row.billableHours.toFixed(1),
+        row.avgResponse,
+      ]),
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [41, 128, 185] },
+    });
+
+    // Employee breakdown table
+    const finalY =
+      (
+        doc as unknown as { lastAutoTable: { finalY: number } }
+      ).lastAutoTable.finalY + 12;
+    doc.setFontSize(13);
+    doc.text(t("employeeBreakdown"), 14, finalY);
+
+    (doc as unknown as { autoTable: (options: Record<string, unknown>) => void }).autoTable({
+      startY: finalY + 4,
+      head: [[t("employee"), t("tickets"), t("hours"), t("billableHours")]],
+      body: employeeBreakdown.map((row) => [
+        row.name,
+        row.tickets,
+        row.hours.toFixed(1),
+        row.billableHours.toFixed(1),
+      ]),
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [41, 128, 185] },
+    });
+
+    doc.save(`rapport_${fromDate}_${toDate}.pdf`);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -332,6 +464,16 @@ export default function ReportsPage() {
             <div className="w-[200px]">
               <UserSelect value={userId} onValueChange={setUserId} allowAll />
             </div>
+          </div>
+          <div className="flex items-end gap-2">
+            <Button variant="outline" size="sm" onClick={handleExportExcel}>
+              <Download className="h-4 w-4 mr-1" />
+              {t("exportExcel")}
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleExportPdf}>
+              <FileText className="h-4 w-4 mr-1" />
+              {t("exportPdf")}
+            </Button>
           </div>
         </div>
       </div>

@@ -11,6 +11,7 @@ import {
   Building2,
   Monitor,
   BarChart3,
+  FolderKanban,
   Menu,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ const navigation: NavItem[] = [
   { nameKey: "time", href: "/time", icon: Clock },
   { nameKey: "companies", href: "/companies", icon: Building2 },
   { nameKey: "assets", href: "/assets", icon: Monitor },
+  { nameKey: "projects", href: "/projects", icon: FolderKanban },
   { nameKey: "reports", href: "/reports", icon: BarChart3 },
 ];
 

@@ -23,6 +23,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Settings,
+  FolderKanban,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -44,6 +45,7 @@ const navigation: NavItem[] = [
   { nameKey: "companies", href: "/companies", icon: Building2 },
   { nameKey: "contacts", href: "/contacts", icon: Users },
   { nameKey: "assets", href: "/assets", icon: Monitor },
+  { nameKey: "projects", href: "/projects", icon: FolderKanban },
   { nameKey: "reports", href: "/reports", icon: BarChart3 },
   { nameKey: "kb", href: "/kb", icon: BookOpen },
 ];

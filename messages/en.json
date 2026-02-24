@@ -77,6 +77,7 @@
     "sla": "SLA Policies",
     "customFields": "Custom Fields",
     "recurring": "Recurring",
+    "projects": "Projects",
     "audit": "Audit Trail",
     "settings": "Settings"
   },
@@ -221,7 +222,9 @@
     "pendingPlaceholder": "Tasks still pending...",
     "equipmentPlaceholder": "Equipment taken for repair or replacement",
     "createTicket": "Create Ticket",
-    "applyTemplate": "Apply template"
+    "applyTemplate": "Apply template",
+    "quickAddCompany": "Quickly add company",
+    "quickAddContact": "Quickly add contact"
   },
   "companies": {
     "title": "Companies",
@@ -261,7 +264,8 @@
     "companyName": "Company Name",
     "shortNamePlaceholder": "e.g. ZVOS",
     "createCompany": "Create Company",
-    "editCompany": "Edit Company"
+    "editCompany": "Edit Company",
+    "quickCreate": "Quick Create Company"
   },
   "contacts": {
     "title": "Contacts",
@@ -280,7 +284,8 @@
     "functionPlaceholder": "e.g. IT Manager",
     "company": "Company",
     "createContact": "Create Contact",
-    "editContact": "Edit Contact"
+    "editContact": "Edit Contact",
+    "quickCreate": "Quick Create Contact"
   },
   "assets": {
     "title": "Assets",
@@ -385,7 +390,9 @@
     "avgResponse": "Avg Response",
     "employee": "Employee",
     "allEmployees": "All employees",
-    "employeeBreakdown": "Employee Breakdown"
+    "employeeBreakdown": "Employee Breakdown",
+    "exportExcel": "Excel",
+    "exportPdf": "PDF"
   },
   "kb": {
     "title": "Knowledge Base",
@@ -596,6 +603,26 @@
     "disable2fa": "Disable 2FA",
     "enabled": "Enabled",
     "disabled": "Disabled"
+  },
+  "projects": {
+    "title": "Projects",
+    "project": "Project",
+    "newProject": "New Project",
+    "newProjectDescription": "Create a new project to track longer-running work.",
+    "titlePlaceholder": "Project name",
+    "descriptionPlaceholder": "What is this project about?",
+    "dueDate": "Due Date",
+    "tasks": "Tasks",
+    "addTaskPlaceholder": "Add a task...",
+    "noProjects": "No projects",
+    "noNotes": "No notes yet",
+    "notesPlaceholder": "Add notes about this project...",
+    "deleteProject": "Delete Project",
+    "PLANNING": "Planning",
+    "ACTIVE": "Active",
+    "ON_HOLD": "On Hold",
+    "COMPLETED": "Completed",
+    "CANCELLED": "Cancelled"
   },
   "portal": {
     "title": "Client Portal",

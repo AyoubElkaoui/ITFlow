@@ -26,6 +26,8 @@ import {
   TemplateSelect,
   type TemplateData,
 } from "@/components/tickets/template-select";
+import { QuickCreateCompanyDialog } from "@/components/tickets/quick-create-company-dialog";
+import { QuickCreateContactDialog } from "@/components/tickets/quick-create-contact-dialog";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
@@ -135,13 +137,25 @@ export default function NewTicketPage() {
                 <Label htmlFor="companyId">
                   {tc("company")} <span className="text-destructive">*</span>
                 </Label>
-                <CompanySelect
-                  value={selectedCompanyId}
-                  onValueChange={(value) => {
-                    setValue("companyId", value, { shouldValidate: true });
-                    setValue("contactId", undefined);
-                  }}
-                />
+                <div className="flex items-center gap-2">
+                  <div className="flex-1">
+                    <CompanySelect
+                      value={selectedCompanyId}
+                      onValueChange={(value) => {
+                        setValue("companyId", value, { shouldValidate: true });
+                        setValue("contactId", undefined);
+                      }}
+                    />
+                  </div>
+                  <QuickCreateCompanyDialog
+                    onCreated={(company) => {
+                      setValue("companyId", company.id, {
+                        shouldValidate: true,
+                      });
+                      setValue("contactId", undefined);
+                    }}
+                  />
+                </div>
                 {errors.companyId && (
                   <p className="text-sm text-destructive">
                     {errors.companyId.message}
@@ -152,24 +166,34 @@ export default function NewTicketPage() {
               {/* Contact */}
               <div className="space-y-2">
                 <Label htmlFor="contactId">{tt("contact")}</Label>
-                <Select
-                  value={watch("contactId") || ""}
-                  onValueChange={(value) =>
-                    setValue("contactId", value || undefined)
-                  }
-                  disabled={!selectedCompanyId}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("selectContact")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {contactList.map((contact) => (
-                      <SelectItem key={contact.id} value={contact.id}>
-                        {contact.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1">
+                    <Select
+                      value={watch("contactId") || ""}
+                      onValueChange={(value) =>
+                        setValue("contactId", value || undefined)
+                      }
+                      disabled={!selectedCompanyId}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={t("selectContact")} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {contactList.map((contact) => (
+                          <SelectItem key={contact.id} value={contact.id}>
+                            {contact.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <QuickCreateContactDialog
+                    companyId={selectedCompanyId || ""}
+                    onCreated={(contact) => {
+                      setValue("contactId", contact.id);
+                    }}
+                  />
+                </div>
               </div>
             </div>
 

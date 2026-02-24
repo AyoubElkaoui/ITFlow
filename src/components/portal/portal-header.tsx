@@ -1,16 +1,15 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useRouter, usePathname } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
-import { LogOut, Ticket } from "lucide-react";
+import { LogOut, Ticket, User } from "lucide-react";
 import { usePortalSession } from "@/hooks/use-portal";
-import { useLocale } from "next-intl";
 
 export function PortalHeader() {
   const t = useTranslations("portal");
   const router = useRouter();
-  const locale = useLocale();
   const { data: session } = usePortalSession();
 
   async function handleLogout() {
@@ -41,12 +40,15 @@ export function PortalHeader() {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          {session?.contactName && (
-            <span className="text-sm text-muted-foreground hidden sm:inline">
-              {session.contactName}
-            </span>
-          )}
+        <div className="flex items-center gap-2">
+          <Link href="/portal/profile">
+            <Button variant="ghost" size="sm">
+              <User className="h-4 w-4 mr-1" />
+              <span className="hidden sm:inline">
+                {session?.contactName || t("profile")}
+              </span>
+            </Button>
+          </Link>
           <Button variant="ghost" size="sm" onClick={handleLogout}>
             <LogOut className="h-4 w-4 mr-1" />
             {t("logout")}

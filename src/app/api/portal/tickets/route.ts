@@ -13,10 +13,12 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = request.nextUrl;
   const status = searchParams.get("status");
+  const search = searchParams.get("search");
   const page = parseInt(searchParams.get("page") || "1");
   const pageSize = Math.min(Number(searchParams.get("pageSize")) || 20, 100);
 
-  const where = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const where: any = {
     companyId: session.companyId,
     ...(status && {
       status: status as
@@ -28,6 +30,17 @@ export async function GET(request: NextRequest) {
         | "BILLABLE",
     }),
   };
+
+  if (search) {
+    const searchConditions: Record<string, unknown>[] = [
+      { subject: { contains: search, mode: "insensitive" } },
+      { description: { contains: search, mode: "insensitive" } },
+    ];
+    if (!isNaN(Number(search))) {
+      searchConditions.push({ ticketNumber: Number(search) });
+    }
+    where.OR = searchConditions;
+  }
 
   const [tickets, total] = await Promise.all([
     prisma.ticket.findMany({

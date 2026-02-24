@@ -43,6 +43,7 @@ export function clearPortalSessionData() {
 
 interface PortalTicketFilters {
   status?: string;
+  search?: string;
   page?: number;
   pageSize?: number;
 }
@@ -50,6 +51,7 @@ interface PortalTicketFilters {
 export function usePortalTickets(filters: PortalTicketFilters = {}) {
   const params = new URLSearchParams();
   if (filters.status) params.set("status", filters.status);
+  if (filters.search) params.set("search", filters.search);
   if (filters.page) params.set("page", String(filters.page));
   if (filters.pageSize) params.set("pageSize", String(filters.pageSize));
 
@@ -106,6 +108,43 @@ export function useCreatePortalNote(ticketId: string) {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["portal-ticket-notes", ticketId] });
+    },
+  });
+}
+
+// Profile hooks
+interface PortalProfile {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  function: string | null;
+  company: { name: string };
+}
+
+export function usePortalProfile() {
+  return useQuery({
+    queryKey: ["portal-profile"],
+    queryFn: () => fetchJson<PortalProfile>("/api/portal/profile"),
+  });
+}
+
+export function useUpdatePortalProfile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      name?: string;
+      phone?: string;
+      currentPassword?: string;
+      newPassword?: string;
+    }) =>
+      fetchJson("/api/portal/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["portal-profile"] });
     },
   });
 }

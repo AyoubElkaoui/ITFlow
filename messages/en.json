@@ -716,6 +716,27 @@
     "loading": "Loading...",
     "showing": "{from}-{to} of {total}",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "searchPlaceholder": "Search tickets...",
+    "profile": "Profile"
+  },
+  "portalProfile": {
+    "title": "My Profile",
+    "personalInfo": "Personal Information",
+    "personalInfoDescription": "Update your name and phone number",
+    "emailReadonly": "Email address cannot be changed. Contact your administrator.",
+    "function": "Function",
+    "profileUpdated": "Profile updated",
+    "updateFailed": "Failed to update profile",
+    "changePassword": "Change Password",
+    "changePasswordDescription": "Choose a strong password of at least 6 characters",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "passwordsNoMatch": "Passwords do not match",
+    "passwordTooShort": "Password must be at least 6 characters",
+    "passwordChanged": "Password changed successfully",
+    "passwordFailed": "Failed to change password",
+    "changingPassword": "Changing..."
   }
 }

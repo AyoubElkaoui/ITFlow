@@ -4,11 +4,12 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Link } from "@/i18n/navigation";
 import { usePortalTickets } from "@/hooks/use-portal";
-import { Plus, Ticket } from "lucide-react";
+import { Plus, Ticket, Search } from "lucide-react";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -44,10 +45,12 @@ export default function PortalTicketsPage() {
   const ts = useTranslations("status");
   const tp = useTranslations("priority");
   const [statusFilter, setStatusFilter] = useState<string>("");
+  const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
 
   const { data, isLoading } = usePortalTickets({
     status: statusFilter || undefined,
+    search: search || undefined,
     page,
     pageSize: 20,
   }) as {
@@ -89,28 +92,42 @@ export default function PortalTicketsPage() {
 
       <Card>
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="text-base">{t("yourTickets")}</CardTitle>
-            <Select
-              value={statusFilter}
-              onValueChange={(v) => {
-                setStatusFilter(v === "ALL" ? "" : v);
-                setPage(1);
-              }}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder={t("allStatuses")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">{t("allStatuses")}</SelectItem>
-                <SelectItem value="OPEN">{ts("OPEN")}</SelectItem>
-                <SelectItem value="IN_PROGRESS">{ts("IN_PROGRESS")}</SelectItem>
-                <SelectItem value="WAITING">{ts("WAITING")}</SelectItem>
-                <SelectItem value="RESOLVED">{ts("RESOLVED")}</SelectItem>
-                <SelectItem value="BILLABLE">{ts("BILLABLE")}</SelectItem>
-                <SelectItem value="CLOSED">{ts("CLOSED")}</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder={t("searchPlaceholder")}
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPage(1);
+                  }}
+                  className="pl-8 w-[200px] sm:w-[250px]"
+                />
+              </div>
+              <Select
+                value={statusFilter}
+                onValueChange={(v) => {
+                  setStatusFilter(v === "ALL" ? "" : v);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger className="w-[160px]">
+                  <SelectValue placeholder={t("allStatuses")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">{t("allStatuses")}</SelectItem>
+                  <SelectItem value="OPEN">{ts("OPEN")}</SelectItem>
+                  <SelectItem value="IN_PROGRESS">{ts("IN_PROGRESS")}</SelectItem>
+                  <SelectItem value="WAITING">{ts("WAITING")}</SelectItem>
+                  <SelectItem value="RESOLVED">{ts("RESOLVED")}</SelectItem>
+                  <SelectItem value="BILLABLE">{ts("BILLABLE")}</SelectItem>
+                  <SelectItem value="CLOSED">{ts("CLOSED")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardHeader>
         <CardContent>

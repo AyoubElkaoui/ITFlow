@@ -716,6 +716,27 @@
     "loading": "Laden...",
     "showing": "{from}-{to} van {total}",
     "previous": "Vorige",
-    "next": "Volgende"
+    "next": "Volgende",
+    "searchPlaceholder": "Zoek tickets...",
+    "profile": "Profiel"
+  },
+  "portalProfile": {
+    "title": "Mijn profiel",
+    "personalInfo": "Persoonlijke gegevens",
+    "personalInfoDescription": "Pas uw naam en telefoonnummer aan",
+    "emailReadonly": "E-mailadres kan niet gewijzigd worden. Neem contact op met uw beheerder.",
+    "function": "Functie",
+    "profileUpdated": "Profiel bijgewerkt",
+    "updateFailed": "Kon profiel niet bijwerken",
+    "changePassword": "Wachtwoord wijzigen",
+    "changePasswordDescription": "Kies een sterk wachtwoord van minimaal 6 tekens",
+    "currentPassword": "Huidig wachtwoord",
+    "newPassword": "Nieuw wachtwoord",
+    "confirmPassword": "Bevestig wachtwoord",
+    "passwordsNoMatch": "Wachtwoorden komen niet overeen",
+    "passwordTooShort": "Wachtwoord moet minimaal 6 tekens zijn",
+    "passwordChanged": "Wachtwoord succesvol gewijzigd",
+    "passwordFailed": "Kon wachtwoord niet wijzigen",
+    "changingPassword": "Wijzigen..."
   }
 }

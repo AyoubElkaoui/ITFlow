@@ -10,13 +10,14 @@ import {
 } from "@/lib/validations";
 import { useUpdateTicket } from "@/hooks/use-tickets";
 import { useCompanies } from "@/hooks/use-companies";
+import { useContacts } from "@/hooks/use-contacts";
 import { useUsers } from "@/hooks/use-users";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 
 interface TicketData {
@@ -81,6 +83,7 @@ export function EditTicketDialog({ open, onOpenChange, ticket }: Props) {
       priority: ticket.priority as TicketUpdateInput["priority"],
       category: (ticket.category as TicketUpdateInput["category"]) ?? undefined,
       companyId: ticket.company.id,
+      contactId: ticket.contact?.id ?? undefined,
       assignedToId: ticket.assignedTo?.id ?? undefined,
       tasksPerformed: ticket.tasksPerformed ?? "",
       pcName: ticket.pcName ?? "",
@@ -91,6 +94,11 @@ export function EditTicketDialog({ open, onOpenChange, ticket }: Props) {
     },
   });
 
+  const selectedCompanyId = form.watch("companyId");
+
+  const { data: contacts } = useContacts(selectedCompanyId || undefined);
+  const contactList = (contacts as { id: string; name: string }[]) || [];
+
   useEffect(() => {
     form.reset({
       subject: ticket.subject,
@@ -99,6 +107,7 @@ export function EditTicketDialog({ open, onOpenChange, ticket }: Props) {
       priority: ticket.priority as TicketUpdateInput["priority"],
       category: (ticket.category as TicketUpdateInput["category"]) ?? undefined,
       companyId: ticket.company.id,
+      contactId: ticket.contact?.id ?? undefined,
       assignedToId: ticket.assignedTo?.id ?? undefined,
       tasksPerformed: ticket.tasksPerformed ?? "",
       pcName: ticket.pcName ?? "",
@@ -122,64 +131,79 @@ export function EditTicketDialog({ open, onOpenChange, ticket }: Props) {
   }
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle>{t("editTicket")}</SheetTitle>
-        </SheetHeader>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-5xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-2xl">{t("editTicket")}</DialogTitle>
+        </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* Basic Info */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground pb-2 border-b">{tn("basicInfo")}</h3>
+          <Card>
+            <CardHeader>
+              <CardTitle>{tn("basicInfo")}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {/* Company */}
+                <div className="space-y-2">
+                  <Label className="text-base">
+                    {tc("company")} <span className="text-destructive">*</span>
+                  </Label>
+                  <Select
+                    value={selectedCompanyId || ""}
+                    onValueChange={(v) => {
+                      form.setValue("companyId", v);
+                      form.setValue("contactId", undefined);
+                    }}
+                  >
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder={tc("selectCompany")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {companies?.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.shortName} — {c.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="subject">{tc("subject")} *</Label>
-              <Input id="subject" {...form.register("subject")} />
-              {form.formState.errors.subject && (
-                <p className="text-xs text-destructive">
-                  {form.formState.errors.subject.message}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">{tc("description")}</Label>
-              <Textarea
-                id="description"
-                rows={6}
-                {...form.register("description")}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{tc("company")} *</Label>
-                <Select
-                  value={form.watch("companyId") || ""}
-                  onValueChange={(v) => form.setValue("companyId", v)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={tc("selectCompany")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {companies?.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.shortName} — {c.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {/* Contact */}
+                <div className="space-y-2">
+                  <Label className="text-base">{t("contact")}</Label>
+                  <Select
+                    value={form.watch("contactId") || "none"}
+                    onValueChange={(v) =>
+                      form.setValue("contactId", v === "none" ? undefined : v)
+                    }
+                    disabled={!selectedCompanyId}
+                  >
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder={tn("selectContact")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">{tc("none")}</SelectItem>
+                      {contactList.map((contact) => (
+                        <SelectItem key={contact.id} value={contact.id}>
+                          {contact.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
+              {/* Assigned To */}
               <div className="space-y-2">
-                <Label>{t("assignedTo")}</Label>
+                <Label className="text-base">{t("assignedTo")}</Label>
                 <Select
                   value={form.watch("assignedToId") || "none"}
                   onValueChange={(v) =>
                     form.setValue("assignedToId", v === "none" ? undefined : v)
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-11">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -192,162 +216,214 @@ export function EditTicketDialog({ open, onOpenChange, ticket }: Props) {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-          </div>
+
+              {/* Subject */}
+              <div className="space-y-2">
+                <Label htmlFor="edit-subject" className="text-base">
+                  {tc("subject")} <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="edit-subject"
+                  className="h-12 text-base"
+                  {...form.register("subject")}
+                />
+                {form.formState.errors.subject && (
+                  <p className="text-sm text-destructive">
+                    {form.formState.errors.subject.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2">
+                <Label htmlFor="edit-description" className="text-base">{tc("description")}</Label>
+                <Textarea
+                  id="edit-description"
+                  className="text-base min-h-[120px]"
+                  rows={6}
+                  {...form.register("description")}
+                />
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Classification */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground pb-2 border-b">{tn("classification")}</h3>
+          <Card>
+            <CardHeader>
+              <CardTitle>{tn("classification")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                {/* Status */}
+                <div className="space-y-2">
+                  <Label className="text-base">{tc("status")}</Label>
+                  <Select
+                    value={form.watch("status") || "OPEN"}
+                    onValueChange={(v) =>
+                      form.setValue("status", v as TicketUpdateInput["status"])
+                    }
+                  >
+                    <SelectTrigger className="h-11">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="OPEN">{ts("OPEN")}</SelectItem>
+                      <SelectItem value="IN_PROGRESS">{ts("IN_PROGRESS")}</SelectItem>
+                      <SelectItem value="WAITING">{ts("WAITING")}</SelectItem>
+                      <SelectItem value="RESOLVED">{ts("RESOLVED")}</SelectItem>
+                      <SelectItem value="BILLABLE">{ts("BILLABLE")}</SelectItem>
+                      <SelectItem value="CLOSED">{ts("CLOSED")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label>{tc("status")}</Label>
-                <Select
-                  value={form.watch("status") || "OPEN"}
-                  onValueChange={(v) =>
-                    form.setValue("status", v as TicketUpdateInput["status"])
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="OPEN">{ts("OPEN")}</SelectItem>
-                    <SelectItem value="IN_PROGRESS">{ts("IN_PROGRESS")}</SelectItem>
-                    <SelectItem value="WAITING">{ts("WAITING")}</SelectItem>
-                    <SelectItem value="RESOLVED">{ts("RESOLVED")}</SelectItem>
-                    <SelectItem value="BILLABLE">{ts("BILLABLE")}</SelectItem>
-                    <SelectItem value="CLOSED">{ts("CLOSED")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                {/* Priority */}
+                <div className="space-y-2">
+                  <Label className="text-base">{tc("priority")}</Label>
+                  <Select
+                    value={form.watch("priority") || "NORMAL"}
+                    onValueChange={(v) =>
+                      form.setValue("priority", v as TicketUpdateInput["priority"])
+                    }
+                  >
+                    <SelectTrigger className="h-11">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="LOW">{tp("LOW")}</SelectItem>
+                      <SelectItem value="NORMAL">{tp("NORMAL")}</SelectItem>
+                      <SelectItem value="HIGH">{tp("HIGH")}</SelectItem>
+                      <SelectItem value="URGENT">{tp("URGENT")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div className="space-y-2">
-                <Label>{tc("priority")}</Label>
-                <Select
-                  value={form.watch("priority") || "NORMAL"}
-                  onValueChange={(v) =>
-                    form.setValue("priority", v as TicketUpdateInput["priority"])
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="LOW">{tp("LOW")}</SelectItem>
-                    <SelectItem value="NORMAL">{tp("NORMAL")}</SelectItem>
-                    <SelectItem value="HIGH">{tp("HIGH")}</SelectItem>
-                    <SelectItem value="URGENT">{tp("URGENT")}</SelectItem>
-                  </SelectContent>
-                </Select>
+                {/* Category */}
+                <div className="space-y-2">
+                  <Label className="text-base">{tc("category")}</Label>
+                  <Select
+                    value={form.watch("category") || "none"}
+                    onValueChange={(v) =>
+                      form.setValue(
+                        "category",
+                        v === "none"
+                          ? undefined
+                          : (v as TicketUpdateInput["category"]),
+                      )
+                    }
+                  >
+                    <SelectTrigger className="h-11">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">{tc("none")}</SelectItem>
+                      <SelectItem value="HARDWARE">{tcat("HARDWARE")}</SelectItem>
+                      <SelectItem value="SOFTWARE">{tcat("SOFTWARE")}</SelectItem>
+                      <SelectItem value="NETWORK">{tcat("NETWORK")}</SelectItem>
+                      <SelectItem value="ACCOUNT">{tcat("ACCOUNT")}</SelectItem>
+                      <SelectItem value="OTHER">{tcat("OTHER")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-
-              <div className="space-y-2">
-                <Label>{tc("category")}</Label>
-                <Select
-                  value={form.watch("category") || "none"}
-                  onValueChange={(v) =>
-                    form.setValue(
-                      "category",
-                      v === "none"
-                        ? undefined
-                        : (v as TicketUpdateInput["category"]),
-                    )
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">{tc("none")}</SelectItem>
-                    <SelectItem value="HARDWARE">{tcat("HARDWARE")}</SelectItem>
-                    <SelectItem value="SOFTWARE">{tcat("SOFTWARE")}</SelectItem>
-                    <SelectItem value="NETWORK">{tcat("NETWORK")}</SelectItem>
-                    <SelectItem value="ACCOUNT">{tcat("ACCOUNT")}</SelectItem>
-                    <SelectItem value="OTHER">{tcat("OTHER")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           {/* IT Snippet */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground pb-2 border-b">{tn("itSnippet")}</h3>
-
-            <div className="grid grid-cols-2 gap-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>{tn("itSnippet")}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              {/* Tasks Performed */}
               <div className="space-y-2">
-                <Label htmlFor="pcName">{t("pcName")}</Label>
-                <Input
-                  id="pcName"
-                  placeholder={tn("pcNamePlaceholder")}
-                  {...form.register("pcName")}
+                <Label htmlFor="edit-tasksPerformed" className="text-base">{t("tasksPerformed")}</Label>
+                <Textarea
+                  id="edit-tasksPerformed"
+                  className="text-base min-h-[100px]"
+                  placeholder={tn("tasksPlaceholder")}
+                  rows={4}
+                  {...form.register("tasksPerformed")}
                 />
               </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                {/* PC Name */}
+                <div className="space-y-2">
+                  <Label htmlFor="edit-pcName" className="text-base">{t("pcName")}</Label>
+                  <Input
+                    id="edit-pcName"
+                    className="h-11 text-base"
+                    placeholder={tn("pcNamePlaceholder")}
+                    {...form.register("pcName")}
+                  />
+                </div>
+
+                {/* Serial Number */}
+                <div className="space-y-2">
+                  <Label htmlFor="edit-serialNumber" className="text-base">{t("serialNumber")}</Label>
+                  <Input
+                    id="edit-serialNumber"
+                    className="h-11 text-base"
+                    placeholder={tn("serialPlaceholder")}
+                    {...form.register("serialNumber")}
+                  />
+                </div>
+
+                {/* Office License */}
+                <div className="space-y-2">
+                  <Label htmlFor="edit-officeLicense" className="text-base">{t("officeLicense")}</Label>
+                  <Input
+                    id="edit-officeLicense"
+                    className="h-11 text-base"
+                    placeholder={tn("licensePlaceholder")}
+                    {...form.register("officeLicense")}
+                  />
+                </div>
+              </div>
+
+              {/* Pending Tasks */}
               <div className="space-y-2">
-                <Label htmlFor="serialNumber">{t("serialNumber")}</Label>
-                <Input
-                  id="serialNumber"
-                  placeholder={tn("serialPlaceholder")}
-                  {...form.register("serialNumber")}
+                <Label htmlFor="edit-pendingTasks" className="text-base">{t("pendingTasks")}</Label>
+                <Textarea
+                  id="edit-pendingTasks"
+                  className="text-base min-h-[100px]"
+                  placeholder={tn("pendingPlaceholder")}
+                  rows={4}
+                  {...form.register("pendingTasks")}
                 />
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="officeLicense">{t("officeLicense")}</Label>
-              <Input
-                id="officeLicense"
-                placeholder={tn("licensePlaceholder")}
-                {...form.register("officeLicense")}
-              />
-            </div>
+              {/* Equipment Taken */}
+              <div className="space-y-2">
+                <Label htmlFor="edit-equipmentTaken" className="text-base">{t("equipmentTaken")}</Label>
+                <Textarea
+                  id="edit-equipmentTaken"
+                  className="text-base min-h-[80px]"
+                  placeholder={tn("equipmentPlaceholder")}
+                  rows={3}
+                  {...form.register("equipmentTaken")}
+                />
+              </div>
+            </CardContent>
+          </Card>
 
-            <div className="space-y-2">
-              <Label htmlFor="tasksPerformed">{t("tasksPerformed")}</Label>
-              <Textarea
-                id="tasksPerformed"
-                rows={5}
-                placeholder={tn("tasksPlaceholder")}
-                {...form.register("tasksPerformed")}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="pendingTasks">{t("pendingTasks")}</Label>
-              <Textarea
-                id="pendingTasks"
-                rows={4}
-                placeholder={tn("pendingPlaceholder")}
-                {...form.register("pendingTasks")}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="equipmentTaken">{t("equipmentTaken")}</Label>
-              <Textarea
-                id="equipmentTaken"
-                rows={3}
-                placeholder={tn("equipmentPlaceholder")}
-                {...form.register("equipmentTaken")}
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-2 pt-2 border-t">
+          {/* Footer */}
+          <div className="flex items-center justify-end gap-4">
             <Button
               type="button"
               variant="outline"
+              size="lg"
               onClick={() => onOpenChange(false)}
             >
               {tc("cancel")}
             </Button>
-            <Button type="submit" disabled={updateTicket.isPending}>
+            <Button type="submit" size="lg" disabled={updateTicket.isPending}>
               {updateTicket.isPending ? tc("saving") : tc("saveChanges")}
             </Button>
           </div>
         </form>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

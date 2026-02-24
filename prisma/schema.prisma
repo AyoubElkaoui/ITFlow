@@ -53,6 +53,22 @@ enum AssetStatus {
   RETIRED
 }
 
+enum StockCategory {
+  CABLE
+  ADAPTER
+  TONER
+  PERIPHERAL
+  COMPONENT
+  TOOL
+  OTHER
+}
+
+enum StockMovementType {
+  IN
+  OUT
+  ADJUSTMENT
+}
+
 model User {
   id               String   @id @default(cuid())
   email            String   @unique
@@ -119,6 +135,7 @@ model Company {
   kbArticles       KbArticle[]
   recurringTickets RecurringTicket[]
   projects         Project[]
+  stockMovements   StockMovement[]
 
   @@index([shortName])
   @@index([isActive])
@@ -188,9 +205,10 @@ model Ticket {
   assignedTo  User?           @relation("AssignedTickets", fields: [assignedToId], references: [id], onDelete: SetNull)
   createdBy   User            @relation("CreatedTickets", fields: [createdById], references: [id])
   template    TicketTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
-  timeEntries TimeEntry[]
-  notes       TicketNote[]
-  assetLinks  AssetTicket[]
+  timeEntries    TimeEntry[]
+  notes          TicketNote[]
+  assetLinks     AssetTicket[]
+  stockMovements StockMovement[]
 
   @@index([companyId])
   @@index([status])
@@ -297,6 +315,48 @@ model AssetTicket {
   @@unique([assetId, ticketId])
   @@index([assetId])
   @@index([ticketId])
+}
+
+model StockItem {
+  id          String        @id @default(cuid())
+  name        String
+  category    StockCategory @default(OTHER)
+  description String?
+  sku         String?       @unique
+  quantity    Int           @default(0)
+  minStock    Int           @default(0)
+  location    String?
+  unitPrice   Decimal?      @db.Decimal(10, 2)
+  notes       String?
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  movements StockMovement[]
+
+  @@index([category])
+  @@index([isActive])
+}
+
+model StockMovement {
+  id          String            @id @default(cuid())
+  stockItemId String
+  type        StockMovementType
+  quantity    Int
+  note        String?
+  companyId   String?
+  ticketId    String?
+  performedBy String
+  createdAt   DateTime          @default(now())
+
+  stockItem StockItem @relation(fields: [stockItemId], references: [id], onDelete: Cascade)
+  company   Company?  @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  ticket    Ticket?   @relation(fields: [ticketId], references: [id], onDelete: SetNull)
+
+  @@index([stockItemId])
+  @@index([companyId])
+  @@index([ticketId])
+  @@index([createdAt])
 }
 
 model Notification {

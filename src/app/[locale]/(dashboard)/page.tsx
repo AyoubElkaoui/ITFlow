@@ -6,9 +6,18 @@ import { useDashboard } from "@/hooks/use-dashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatusBadge, PriorityBadge } from "@/components/shared/status-badge";
-import { Ticket, Clock, AlertCircle, Plus, ArrowRight } from "lucide-react";
+import {
+  Ticket,
+  Clock,
+  AlertCircle,
+  Plus,
+  ArrowRight,
+  DollarSign,
+  Monitor,
+  Receipt,
+} from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
 import {
   BarChart,
   Bar,
@@ -16,12 +25,14 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
+  Legend,
 } from "recharts";
 
 export default function DashboardPage() {
   const { data, isLoading, error } = useDashboard();
   const t = useTranslations("dashboard");
   const tc = useTranslations("common");
+  const ts = useTranslations("status");
 
   if (error) {
     return (
@@ -58,6 +69,15 @@ export default function DashboardPage() {
   const stats = data?.stats;
   const recentTickets = data?.recentTickets || [];
   const hoursBreakdown = data?.hoursBreakdown?.month || [];
+  const ticketsByStatus: Record<string, number> = data?.ticketsByStatus || {};
+  const recentActivity: Array<{
+    id: string;
+    companyShortName: string;
+    hours: number;
+    description: string | null;
+    date: string;
+    billable: boolean;
+  }> = data?.recentActivity || [];
 
   return (
     <div className="space-y-6">
@@ -80,7 +100,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Primary Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -103,8 +123,52 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">
-              {stats?.hoursThisWeek?.toFixed(1) || "0.0"}
+              {stats?.hoursThisWeek?.toFixed(2) || "0.0"}
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              {t("billableHoursMonth")}
+            </CardTitle>
+            <Receipt className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">
+              {stats?.billableHoursThisMonth?.toFixed(2) || "0.0"}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              {t("revenueThisMonth")}
+            </CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">
+              {"\u20AC"}
+              {stats?.revenueThisMonth?.toFixed(2) || "0.00"}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Secondary Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              {t("totalAssets")}
+            </CardTitle>
+            <Monitor className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats?.totalAssets || 0}</div>
           </CardContent>
         </Card>
 
@@ -116,8 +180,8 @@ export default function DashboardPage() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">
-              {stats?.hoursThisMonth?.toFixed(1) || "0.0"}
+            <div className="text-2xl font-bold">
+              {stats?.hoursThisMonth?.toFixed(2) || "0.0"}
             </div>
           </CardContent>
         </Card>
@@ -130,7 +194,7 @@ export default function DashboardPage() {
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{stats?.pendingTasks || 0}</div>
+            <div className="text-2xl font-bold">{stats?.pendingTasks || 0}</div>
           </CardContent>
         </Card>
       </div>
@@ -198,7 +262,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Hours Chart */}
+        {/* Hours & Revenue Chart */}
         <Card>
           <CardHeader>
             <CardTitle>{t("hoursChart")}</CardTitle>
@@ -218,10 +282,19 @@ export default function DashboardPage() {
                     axisLine={false}
                   />
                   <YAxis
+                    yAxisId="hours"
                     fontSize={12}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(v) => `${v}h`}
+                  />
+                  <YAxis
+                    yAxisId="revenue"
+                    orientation="right"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(v) => `\u20AC${v}`}
                   />
                   <Tooltip
                     contentStyle={{
@@ -229,15 +302,112 @@ export default function DashboardPage() {
                       border: "1px solid hsl(var(--border))",
                       borderRadius: "8px",
                     }}
-                    formatter={(value) => [`${value}h`, tc("hours")]}
+                    formatter={(value, name) => {
+                      const v = Number(value);
+                      if (name === "revenue") {
+                        return [`\u20AC${v.toFixed(2)}`, t("revenue")];
+                      }
+                      return [`${v}h`, tc("hours")];
+                    }}
+                  />
+                  <Legend />
+                  <Bar
+                    yAxisId="hours"
+                    dataKey="hours"
+                    name={tc("hours")}
+                    fill="hsl(var(--primary))"
+                    radius={[4, 4, 0, 0]}
                   />
                   <Bar
-                    dataKey="hours"
-                    fill="hsl(var(--primary))"
+                    yAxisId="revenue"
+                    dataKey="revenue"
+                    name={t("revenue")}
+                    fill="hsl(var(--chart-2, 142 71% 45%))"
                     radius={[4, 4, 0, 0]}
                   />
                 </BarChart>
               </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Tickets by Status + Recent Activity */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Tickets by Status */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("ticketsByStatus")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {Object.keys(ticketsByStatus).length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">
+                {t("noTickets")}
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {Object.entries(ticketsByStatus).map(([status, count]) => (
+                  <div
+                    key={status}
+                    className="flex items-center justify-between rounded-lg border border-border p-3"
+                  >
+                    <StatusBadge status={status} />
+                    <span className="text-sm font-medium">{count}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Recent Activity */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>{t("recentActivity")}</CardTitle>
+            <Link href="/time">
+              <Button variant="ghost" size="sm">
+                {t("viewAll")} <ArrowRight className="ml-1 h-4 w-4" />
+              </Button>
+            </Link>
+          </CardHeader>
+          <CardContent>
+            {recentActivity.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">
+                {t("noRecentActivity")}
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {recentActivity.map((entry) => (
+                  <div
+                    key={entry.id}
+                    className="flex items-center gap-3 rounded-lg border border-border p-3"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-muted-foreground">
+                          {entry.companyShortName}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {format(new Date(entry.date), "dd/MM/yyyy")}
+                        </span>
+                      </div>
+                      <p className="text-sm truncate">
+                        {entry.description || "-"}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-sm font-medium">
+                        {entry.hours.toFixed(2)}h
+                      </span>
+                      {entry.billable && (
+                        <span className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 px-1.5 py-0.5 rounded">
+                          {tc("billable")}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </CardContent>
         </Card>

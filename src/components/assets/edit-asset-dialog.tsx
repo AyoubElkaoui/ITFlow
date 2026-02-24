@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod/v4";
 import { typedResolver } from "@/lib/form-utils";
-import { useUpdateAsset } from "@/hooks/use-assets";
+import { useUpdateAsset, useAsset } from "@/hooks/use-assets";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -26,8 +27,9 @@ import {
 import { CompanySelect } from "@/components/shared/company-select";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { Ticket } from "lucide-react";
 
-// ── Constants ──────────────────────────────────────────────────────────────────
+// -- Constants ----------------------------------------------------------------
 
 const ASSET_TYPES = [
   "LAPTOP",
@@ -44,7 +46,7 @@ const ASSET_STATUSES = ["ACTIVE", "IN_REPAIR", "STORED", "RETIRED"] as const;
 type AssetType = (typeof ASSET_TYPES)[number];
 type AssetStatus = (typeof ASSET_STATUSES)[number];
 
-// ── Zod schema ─────────────────────────────────────────────────────────────────
+// -- Zod schema ---------------------------------------------------------------
 
 const assetFormSchema = z.object({
   companyId: z.string().min(1, "Company is required"),
@@ -62,6 +64,7 @@ const assetFormSchema = z.object({
   brand: z.string().optional(),
   model: z.string().optional(),
   name: z.string().optional(),
+  assetTag: z.string().optional(),
   serialNumber: z.string().optional(),
   purchaseDate: z.string().optional(),
   warrantyEnd: z.string().optional(),
@@ -74,14 +77,7 @@ const assetFormSchema = z.object({
 
 type AssetFormData = z.infer<typeof assetFormSchema>;
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
-
-function formatLabel(value: string): string {
-  return value
-    .replace(/_/g, " ")
-    .toLowerCase()
-    .replace(/^\w/, (c) => c.toUpperCase());
-}
+// -- Helpers ------------------------------------------------------------------
 
 function formatDateValue(date: string | null): string {
   if (!date) return "";
@@ -92,7 +88,23 @@ function formatDateValue(date: string | null): string {
   }
 }
 
-// ── Props ──────────────────────────────────────────────────────────────────────
+// -- Types for linked tickets -------------------------------------------------
+
+interface LinkedTicket {
+  ticket: {
+    id: string;
+    ticketNumber: number;
+    subject: string;
+    status: string;
+    createdAt: string;
+  };
+}
+
+interface AssetDetail {
+  ticketLinks?: LinkedTicket[];
+}
+
+// -- Props --------------------------------------------------------------------
 
 interface Props {
   open: boolean;
@@ -104,6 +116,7 @@ interface Props {
     brand: string | null;
     model: string | null;
     name: string | null;
+    assetTag?: string | null;
     serialNumber: string | null;
     purchaseDate: string | null;
     warrantyEnd: string | null;
@@ -114,12 +127,17 @@ interface Props {
   };
 }
 
-// ── Component ──────────────────────────────────────────────────────────────────
+// -- Component ----------------------------------------------------------------
 
 export function EditAssetDialog({ open, onOpenChange, asset }: Props) {
   const t = useTranslations("assets");
   const tc = useTranslations("common");
   const updateAsset = useUpdateAsset(asset.id);
+
+  // Fetch full asset detail including linked tickets
+  const { data: assetDetail } = useAsset(asset.id);
+  const detail = assetDetail as AssetDetail | undefined;
+  const linkedTickets = detail?.ticketLinks || [];
 
   const form = useForm<AssetFormData>({
     resolver: typedResolver(assetFormSchema),
@@ -129,6 +147,7 @@ export function EditAssetDialog({ open, onOpenChange, asset }: Props) {
       brand: asset.brand || "",
       model: asset.model || "",
       name: asset.name || "",
+      assetTag: asset.assetTag || "",
       serialNumber: asset.serialNumber || "",
       purchaseDate: formatDateValue(asset.purchaseDate),
       warrantyEnd: formatDateValue(asset.warrantyEnd),
@@ -146,6 +165,7 @@ export function EditAssetDialog({ open, onOpenChange, asset }: Props) {
       brand: asset.brand || "",
       model: asset.model || "",
       name: asset.name || "",
+      assetTag: asset.assetTag || "",
       serialNumber: asset.serialNumber || "",
       purchaseDate: formatDateValue(asset.purchaseDate),
       warrantyEnd: formatDateValue(asset.warrantyEnd),
@@ -159,6 +179,7 @@ export function EditAssetDialog({ open, onOpenChange, asset }: Props) {
     try {
       const payload = {
         ...data,
+        assetTag: data.assetTag || undefined,
         purchaseDate: data.purchaseDate || undefined,
         warrantyEnd: data.warrantyEnd || undefined,
       };
@@ -193,6 +214,16 @@ export function EditAssetDialog({ open, onOpenChange, asset }: Props) {
             )}
           </div>
 
+          {/* Asset Tag */}
+          <div className="space-y-2">
+            <Label htmlFor="edit-asset-tag">{t("assetTag")}</Label>
+            <Input
+              id="edit-asset-tag"
+              placeholder="bijv. MAZLAP022601"
+              {...form.register("assetTag")}
+            />
+          </div>
+
           {/* Name */}
           <div className="space-y-2">
             <Label htmlFor="edit-asset-name">{tc("name")}</Label>
@@ -213,7 +244,7 @@ export function EditAssetDialog({ open, onOpenChange, asset }: Props) {
                 <SelectContent>
                   {ASSET_TYPES.map((assetType) => (
                     <SelectItem key={assetType} value={assetType}>
-                      {formatLabel(assetType)}
+                      {t(assetType)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -223,7 +254,9 @@ export function EditAssetDialog({ open, onOpenChange, asset }: Props) {
               <Label>{tc("status")}</Label>
               <Select
                 value={form.watch("status")}
-                onValueChange={(v) => form.setValue("status", v as AssetStatus)}
+                onValueChange={(v) =>
+                  form.setValue("status", v as AssetStatus)
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -231,7 +264,7 @@ export function EditAssetDialog({ open, onOpenChange, asset }: Props) {
                 <SelectContent>
                   {ASSET_STATUSES.map((s) => (
                     <SelectItem key={s} value={s}>
-                      {formatLabel(s)}
+                      {t(s)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -298,6 +331,46 @@ export function EditAssetDialog({ open, onOpenChange, asset }: Props) {
               {...form.register("notes")}
             />
           </div>
+
+          {/* Linked Tickets */}
+          {linkedTickets.length > 0 && (
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Ticket className="h-4 w-4" />
+                {t("linkedTickets")}
+              </Label>
+              <div className="rounded-md border divide-y">
+                {linkedTickets.map((link) => (
+                  <div
+                    key={link.ticket.id}
+                    className="flex items-center justify-between px-3 py-2 text-sm"
+                  >
+                    <div>
+                      <span className="font-mono text-muted-foreground">
+                        #{link.ticket.ticketNumber}
+                      </span>{" "}
+                      <span>{link.ticket.subject}</span>
+                    </div>
+                    <Badge variant="outline" className="text-xs">
+                      {link.ticket.status.replace(/_/g, " ")}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {linkedTickets.length === 0 && detail && (
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Ticket className="h-4 w-4" />
+                {t("linkedTickets")}
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                {t("noLinkedTickets")}
+              </p>
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex justify-end gap-2">

@@ -134,11 +134,25 @@ function emptyToNull(val: string | null | undefined): string | null {
 }
 
 async function main() {
-  console.log("Seeding database from seed_data_final.json...");
+  console.log("Seeding database from seed_final_complete.json...");
 
   // ── Load seed data ──
-  const seedPath = join(__dirname, "../seed_data_final.json");
+  const seedPath = join(__dirname, "../seed_final_complete.json");
   const seedData: SeedData = JSON.parse(readFileSync(seedPath, "utf-8"));
+
+  // ── Ensure ITFin company exists (used in tickets/time entries but may not be in companies array) ──
+  const hasITFin = seedData.companies.some((c) => c.shortName === "ITFin");
+  if (!hasITFin) {
+    seedData.companies.push({
+      name: "ITFin",
+      shortName: "ITFin",
+      hourlyRate: 0,
+      email: "",
+      phone: "",
+      website: "",
+      isActive: true,
+    });
+  }
 
   console.log(`Loaded: ${seedData.companies.length} companies, ${seedData.contacts.length} contacts, ${seedData.tickets.length} tickets, ${seedData.timeEntries.length} time entries, ${seedData.assets.length} assets, ${seedData.assetTicketLinks.length} asset-ticket links`);
 
@@ -289,18 +303,26 @@ async function main() {
 
   // ── Assets ──
   const assetIds = new Map<string, string>(); // "companyShortName:assetName" -> assetId
+  const seenAssetTags = new Set<string>();
   for (const a of seedData.assets) {
     const cId = companyIds[a.company];
     if (!cId) {
       console.warn(`  Skipping asset "${a.name}" - unknown company: ${a.company}`);
       continue;
     }
+    const tag = emptyToNull(a.name);
+    if (tag && seenAssetTags.has(tag)) {
+      console.warn(`  Skipping duplicate asset tag: ${tag}`);
+      continue;
+    }
+    if (tag) seenAssetTags.add(tag);
 
     const asset = await prisma.asset.create({
       data: {
         companyId: cId,
         type: a.type as "LAPTOP" | "DESKTOP" | "PRINTER" | "MONITOR" | "PHONE" | "NETWORK" | "OTHER",
         name: emptyToNull(a.name),
+        assetTag: emptyToNull(a.name),
         brand: emptyToNull(a.brand),
         model: emptyToNull(a.model),
         serialNumber: emptyToNull(a.serialNumber),
@@ -335,11 +357,14 @@ async function main() {
         : "OPEN"
     ) as "OPEN" | "CLOSED" | "WAITING" | "IN_PROGRESS" | "RESOLVED" | "BILLABLE";
 
-    const priority = (
-      ["LOW", "NORMAL", "HIGH", "URGENT"].includes(t.priority)
-        ? t.priority
-        : "NORMAL"
-    ) as "LOW" | "NORMAL" | "HIGH" | "URGENT";
+    const priorityMap: Record<string, string> = {
+      LOW: "LOW", low: "LOW", Low: "LOW",
+      NORMAL: "NORMAL", normal: "NORMAL", Normal: "NORMAL",
+      MEDIUM: "NORMAL", medium: "NORMAL", Medium: "NORMAL",
+      HIGH: "HIGH", high: "HIGH", High: "HIGH",
+      URGENT: "URGENT", urgent: "URGENT", Urgent: "URGENT",
+    };
+    const priority = (priorityMap[t.priority] || "NORMAL") as "LOW" | "NORMAL" | "HIGH" | "URGENT";
 
     const category = (
       ["HARDWARE", "SOFTWARE", "NETWORK", "ACCOUNT", "OTHER"].includes(t.category || "")

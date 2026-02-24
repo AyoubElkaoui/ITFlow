@@ -326,7 +326,7 @@ export default function TicketDetailPage({
               {t("timeLogged")}
             </div>
             <div className="text-lg font-semibold">
-              {totalHours.toFixed(1)}h
+              {totalHours.toFixed(2)}h
             </div>
           </CardContent>
         </Card>
@@ -435,7 +435,7 @@ export default function TicketDetailPage({
                           {entry.description || "\u2014"}
                         </TableCell>
                         <TableCell className="text-right font-mono">
-                          {Number(entry.hours).toFixed(1)}h
+                          {Number(entry.hours).toFixed(2)}h
                         </TableCell>
                       </TableRow>
                     ))}

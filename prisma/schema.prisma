@@ -230,6 +230,7 @@ model Asset {
   brand        String?
   model        String?
   name         String?
+  assetTag     String?     @unique
   serialNumber String?
   purchaseDate DateTime?   @db.Date
   warrantyEnd  DateTime?   @db.Date

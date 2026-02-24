@@ -28,7 +28,6 @@ const COLUMNS = [
   { status: "WAITING", title: "Waiting", color: "orange" },
   { status: "RESOLVED", title: "Resolved", color: "green" },
   { status: "BILLABLE", title: "Te factureren", color: "purple" },
-  { status: "CLOSED", title: "Closed", color: "gray" },
 ] as const;
 
 const EMPTY_COLUMNS: KanbanColumns = {
@@ -37,7 +36,6 @@ const EMPTY_COLUMNS: KanbanColumns = {
   WAITING: [],
   RESOLVED: [],
   BILLABLE: [],
-  CLOSED: [],
 };
 
 export function KanbanBoard() {

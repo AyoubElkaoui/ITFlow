@@ -55,6 +55,7 @@ interface TimeEntry {
   date: string;
   hours: string;
   billable: boolean;
+  description?: string | null;
   company: {
     id: string;
     shortName: string;
@@ -64,15 +65,25 @@ interface TimeEntry {
     id: string;
     name: string;
   };
+  ticket?: {
+    id: string;
+    ticketNumber: number;
+    subject: string;
+  } | null;
 }
 
 interface TicketRow {
   id: string;
+  ticketNumber: number;
+  subject: string;
   status: string;
   priority: string;
+  category: string | null;
   companyId: string;
   assignedToId: string | null;
   createdAt: string;
+  resolvedAt: string | null;
+  closedAt: string | null;
   firstResponseAt: string | null;
   company: {
     id: string;
@@ -90,6 +101,7 @@ interface CompanyBreakdown {
   tickets: number;
   hours: number;
   billableHours: number;
+  revenue: number;
   avgResponse: string;
 }
 
@@ -150,7 +162,34 @@ export default function ReportsPage() {
   const totalTickets = tickets.length;
 
   const totalHours = useMemo(
-    () => timeEntries.reduce((sum, e) => sum + parseFloat(e.hours || "0"), 0),
+    () =>
+      Math.round(
+        timeEntries.reduce((sum, e) => sum + parseFloat(e.hours || "0"), 0) * 4,
+      ) / 4,
+    [timeEntries],
+  );
+
+  const totalBillableHours = useMemo(
+    () =>
+      Math.round(
+        timeEntries
+          .filter((e) => e.billable)
+          .reduce((sum, e) => sum + parseFloat(e.hours || "0"), 0) * 4,
+      ) / 4,
+    [timeEntries],
+  );
+
+  const totalRevenue = useMemo(
+    () =>
+      timeEntries
+        .filter((e) => e.billable)
+        .reduce((sum, e) => {
+          const hours = parseFloat(e.hours || "0");
+          const rate = e.company?.hourlyRate
+            ? parseFloat(e.company.hourlyRate)
+            : 0;
+          return sum + hours * rate;
+        }, 0),
     [timeEntries],
   );
 
@@ -200,6 +239,7 @@ export default function ReportsPage() {
         tickets: 0,
         hours: 0,
         billableHours: 0,
+        revenue: 0,
         avgResponse: "-",
         _responseTimes: [],
       };
@@ -207,6 +247,10 @@ export default function ReportsPage() {
       existing.hours += hours;
       if (e.billable) {
         existing.billableHours += hours;
+        const rate = e.company?.hourlyRate
+          ? parseFloat(e.company.hourlyRate)
+          : 0;
+        existing.revenue += hours * rate;
       }
       map.set(cId, existing);
     });
@@ -219,6 +263,7 @@ export default function ReportsPage() {
         tickets: 0,
         hours: 0,
         billableHours: 0,
+        revenue: 0,
         avgResponse: "-",
         _responseTimes: [],
       };
@@ -241,7 +286,7 @@ export default function ReportsPage() {
           row.avgResponse =
             avgHours < 1
               ? `${Math.round(avgHours * 60)}m`
-              : `${avgHours.toFixed(1)}h`;
+              : `${avgHours.toFixed(2)}h`;
         }
         return row;
       })
@@ -297,39 +342,200 @@ export default function ReportsPage() {
   const handleExportExcel = () => {
     const wb = XLSX.utils.book_new();
 
-    // Sheet 1: Overzicht (Summary)
-    const summaryData = [
+    const r2 = (v: number) => Math.round(v * 100) / 100;
+    const fmtCurrency = (v: number) =>
+      `€ ${v.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
+    const fmtDate = (d: string | null | undefined) => {
+      if (!d) return "-";
+      try {
+        return format(new Date(d), "dd-MM-yyyy");
+      } catch {
+        return "-";
+      }
+    };
+    const fmtDateTime = (d: string | null | undefined) => {
+      if (!d) return "-";
+      try {
+        return format(new Date(d), "dd-MM-yyyy HH:mm");
+      } catch {
+        return "-";
+      }
+    };
+
+    // --- Sheet 1: Samenvatting (Summary) ---
+    const companyLabel =
+      companyId !== "all"
+        ? companyBreakdown.find((c) => c.companyId === companyId)?.shortName ||
+          companyId
+        : "Alle bedrijven";
+    const employeeLabel =
+      userId !== "all"
+        ? employeeBreakdown.find((e) => e.userId === userId)?.name || userId
+        : "Alle medewerkers";
+
+    const summaryData: (string | number)[][] = [
       [t("title"), `${fromDate} - ${toDate}`],
       [],
+      [t("period"), `${fromDate} - ${toDate}`],
+      [t("company"), companyLabel],
+      [t("employee"), employeeLabel],
+      [],
       [t("totalTickets"), totalTickets],
-      [t("totalHours"), Math.round(totalHours * 100) / 100],
-      [t("avgHoursPerDay"), Math.round(avgHoursPerDay * 100) / 100],
+      [t("totalHours"), r2(totalHours)],
+      [t("billableHours"), r2(totalBillableHours)],
+      [t("revenue"), fmtCurrency(totalRevenue)],
+      [t("avgHoursPerDay"), r2(avgHoursPerDay)],
+      [],
+      [t("statusDistribution"), ""],
     ];
+    ticketStatusData.forEach((s) => {
+      summaryData.push([s.name, s.value]);
+    });
     const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
-    XLSX.utils.book_append_sheet(wb, summarySheet, "Overzicht");
+    summarySheet["!cols"] = [{ wch: 25 }, { wch: 30 }];
+    XLSX.utils.book_append_sheet(wb, summarySheet, t("summary"));
 
-    // Sheet 2: Per bedrijf (Company breakdown)
+    // --- Sheet 2: Tickets ---
+    const ticketHeader = [
+      "Ticket #",
+      tc("subject"),
+      t("company"),
+      tc("status"),
+      tc("priority"),
+      tc("category"),
+      t("created"),
+      t("resolved"),
+      t("closed"),
+    ];
+    const ticketRows = tickets.map((tk) => [
+      tk.ticketNumber || "-",
+      tk.subject || "-",
+      tk.company?.shortName || "-",
+      tk.status || "-",
+      tk.priority || "-",
+      tk.category || "-",
+      fmtDateTime(tk.createdAt),
+      fmtDateTime(tk.resolvedAt),
+      fmtDateTime(tk.closedAt),
+    ]);
+    const ticketSheet = XLSX.utils.aoa_to_sheet([ticketHeader, ...ticketRows]);
+    // Auto-width columns
+    const ticketColWidths = ticketHeader.map((h, i) => {
+      const maxLen = Math.max(
+        h.length,
+        ...ticketRows.map((r) => String(r[i] || "").length),
+      );
+      return { wch: Math.min(maxLen + 2, 50) };
+    });
+    ticketSheet["!cols"] = ticketColWidths;
+    XLSX.utils.book_append_sheet(wb, ticketSheet, t("ticketList"));
+
+    // --- Sheet 3: Uurregistraties (Time Entries) ---
+    const timeHeader = [
+      tc("date"),
+      t("company"),
+      t("employee"),
+      "Ticket #",
+      t("description"),
+      t("hours"),
+      tc("billable"),
+      t("rate"),
+      t("amount"),
+    ];
+    const timeRows = timeEntries.map((e) => {
+      const hours = parseFloat(e.hours || "0");
+      const rate = e.company?.hourlyRate
+        ? parseFloat(e.company.hourlyRate)
+        : 0;
+      const amount = e.billable ? hours * rate : 0;
+      return [
+        fmtDate(e.date),
+        e.company?.shortName || "-",
+        e.user?.name || "-",
+        e.ticket?.ticketNumber ? `#${e.ticket.ticketNumber}` : "-",
+        e.description || "-",
+        r2(hours),
+        e.billable ? tc("yes") : tc("no"),
+        e.billable ? fmtCurrency(rate) : "-",
+        e.billable ? fmtCurrency(amount) : "-",
+      ];
+    });
+    // Totals row
+    const timeTotalHours = timeEntries.reduce(
+      (s, e) => s + parseFloat(e.hours || "0"),
+      0,
+    );
+    const timeTotalAmount = timeEntries
+      .filter((e) => e.billable)
+      .reduce((s, e) => {
+        const h = parseFloat(e.hours || "0");
+        const rate = e.company?.hourlyRate
+          ? parseFloat(e.company.hourlyRate)
+          : 0;
+        return s + h * rate;
+      }, 0);
+    timeRows.push([
+      tc("total"),
+      "",
+      "",
+      "",
+      "",
+      r2(timeTotalHours),
+      "",
+      "",
+      fmtCurrency(timeTotalAmount),
+    ]);
+    const timeSheet = XLSX.utils.aoa_to_sheet([timeHeader, ...timeRows]);
+    const timeColWidths = timeHeader.map((h, i) => {
+      const maxLen = Math.max(
+        h.length,
+        ...timeRows.map((r) => String(r[i] || "").length),
+      );
+      return { wch: Math.min(maxLen + 2, 50) };
+    });
+    timeSheet["!cols"] = timeColWidths;
+    XLSX.utils.book_append_sheet(wb, timeSheet, t("timeEntryList"));
+
+    // --- Sheet 4: Per bedrijf (Company breakdown) ---
     const companyHeader = [
       t("company"),
       t("tickets"),
       t("hours"),
       t("billableHours"),
+      t("revenue"),
       t("avgResponse"),
     ];
     const companyRows = companyBreakdown.map((row) => [
       row.shortName,
       row.tickets,
-      Math.round(row.hours * 100) / 100,
-      Math.round(row.billableHours * 100) / 100,
+      r2(row.hours),
+      r2(row.billableHours),
+      fmtCurrency(row.revenue),
       row.avgResponse,
+    ]);
+    companyRows.push([
+      tc("total"),
+      companyBreakdown.reduce((s, r) => s + r.tickets, 0),
+      r2(companyBreakdown.reduce((s, r) => s + r.hours, 0)),
+      r2(companyBreakdown.reduce((s, r) => s + r.billableHours, 0)),
+      fmtCurrency(companyBreakdown.reduce((s, r) => s + r.revenue, 0)),
+      "-",
     ]);
     const companySheet = XLSX.utils.aoa_to_sheet([
       companyHeader,
       ...companyRows,
     ]);
-    XLSX.utils.book_append_sheet(wb, companySheet, "Per bedrijf");
+    companySheet["!cols"] = [
+      { wch: 20 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 16 },
+      { wch: 14 },
+      { wch: 14 },
+    ];
+    XLSX.utils.book_append_sheet(wb, companySheet, t("companyBreakdown"));
 
-    // Sheet 3: Per medewerker (Employee breakdown)
+    // --- Sheet 5: Per medewerker (Employee breakdown) ---
     const employeeHeader = [
       t("employee"),
       t("tickets"),
@@ -339,85 +545,283 @@ export default function ReportsPage() {
     const employeeRows = employeeBreakdown.map((row) => [
       row.name,
       row.tickets,
-      Math.round(row.hours * 100) / 100,
-      Math.round(row.billableHours * 100) / 100,
+      r2(row.hours),
+      r2(row.billableHours),
+    ]);
+    employeeRows.push([
+      tc("total"),
+      employeeBreakdown.reduce((s, r) => s + r.tickets, 0),
+      r2(employeeBreakdown.reduce((s, r) => s + r.hours, 0)),
+      r2(employeeBreakdown.reduce((s, r) => s + r.billableHours, 0)),
     ]);
     const employeeSheet = XLSX.utils.aoa_to_sheet([
       employeeHeader,
       ...employeeRows,
     ]);
-    XLSX.utils.book_append_sheet(wb, employeeSheet, "Per medewerker");
+    employeeSheet["!cols"] = [
+      { wch: 25 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 16 },
+    ];
+    XLSX.utils.book_append_sheet(wb, employeeSheet, t("employeeBreakdown"));
 
     XLSX.writeFile(wb, `rapport_${fromDate}_${toDate}.xlsx`);
   };
 
   const handleExportPdf = () => {
     const doc = new jsPDF();
+    const autoTable = (opts: Record<string, unknown>) =>
+      (
+        doc as unknown as {
+          autoTable: (options: Record<string, unknown>) => void;
+        }
+      ).autoTable(opts);
+    const getFinalY = () =>
+      (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable
+        .finalY;
 
-    // Title
-    doc.setFontSize(16);
-    doc.text(`Rapportage ${fromDate} - ${toDate}`, 14, 20);
+    const r2 = (v: number) => Math.round(v * 100) / 100;
+    const fmtCurrency = (v: number) =>
+      `€ ${v.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
+    const fmtDate = (d: string | null | undefined) => {
+      if (!d) return "-";
+      try {
+        return format(new Date(d), "dd-MM-yyyy");
+      } catch {
+        return "-";
+      }
+    };
+    const truncate = (s: string | null | undefined, max: number) => {
+      if (!s) return "-";
+      return s.length > max ? s.slice(0, max) + "..." : s;
+    };
 
-    // Summary section
-    doc.setFontSize(11);
-    doc.text(`${t("totalTickets")}: ${totalTickets}`, 14, 35);
-    doc.text(
-      `${t("totalHours")}: ${(Math.round(totalHours * 100) / 100).toFixed(1)}`,
-      14,
-      42,
-    );
-    doc.text(
-      `${t("avgHoursPerDay")}: ${(Math.round(avgHoursPerDay * 100) / 100).toFixed(1)}`,
-      14,
-      49,
-    );
+    const companyLabel =
+      companyId !== "all"
+        ? companyBreakdown.find((c) => c.companyId === companyId)?.shortName ||
+          ""
+        : "";
 
-    // Company breakdown table
+    // --- Page 1: Cover / Summary ---
+    doc.setFontSize(18);
+    doc.text(`Rapportage ${fromDate} - ${toDate}`, 14, 22);
+
+    if (companyLabel) {
+      doc.setFontSize(12);
+      doc.text(`${t("company")}: ${companyLabel}`, 14, 32);
+    }
+
+    // Summary stats table
     doc.setFontSize(13);
-    doc.text(t("companyBreakdown"), 14, 62);
+    doc.text(t("summary"), 14, companyLabel ? 44 : 36);
 
-    (doc as unknown as { autoTable: (options: Record<string, unknown>) => void }).autoTable({
-      startY: 66,
+    autoTable({
+      startY: companyLabel ? 48 : 40,
+      head: [[t("totalTickets"), t("totalHours"), t("billableHours"), t("revenue")]],
+      body: [
+        [
+          totalTickets,
+          r2(totalHours).toFixed(2),
+          r2(totalBillableHours).toFixed(2),
+          fmtCurrency(totalRevenue),
+        ],
+      ],
+      styles: { fontSize: 10, halign: "center" },
+      headStyles: { fillColor: [41, 128, 185], halign: "center" },
+      columnStyles: {
+        0: { halign: "center" },
+        1: { halign: "center" },
+        2: { halign: "center" },
+        3: { halign: "center" },
+      },
+    });
+
+    // Status distribution table
+    if (ticketStatusData.length > 0) {
+      const statusY = getFinalY() + 10;
+      doc.setFontSize(13);
+      doc.text(t("statusDistribution"), 14, statusY);
+
+      autoTable({
+        startY: statusY + 4,
+        head: [[tc("status"), t("tickets")]],
+        body: ticketStatusData.map((s) => [s.name, s.value]),
+        styles: { fontSize: 9 },
+        headStyles: { fillColor: [41, 128, 185] },
+      });
+    }
+
+    // --- Company Breakdown Table ---
+    doc.addPage();
+    doc.setFontSize(14);
+    doc.text(t("companyBreakdown"), 14, 20);
+
+    const companyBody = companyBreakdown.map((row) => [
+      row.shortName,
+      row.tickets,
+      row.hours.toFixed(2),
+      row.billableHours.toFixed(2),
+      fmtCurrency(row.revenue),
+      row.avgResponse,
+    ]);
+    companyBody.push([
+      tc("total"),
+      companyBreakdown.reduce((s, r) => s + r.tickets, 0),
+      companyBreakdown.reduce((s, r) => s + r.hours, 0).toFixed(2),
+      companyBreakdown.reduce((s, r) => s + r.billableHours, 0).toFixed(2),
+      fmtCurrency(companyBreakdown.reduce((s, r) => s + r.revenue, 0)),
+      "-",
+    ]);
+
+    autoTable({
+      startY: 24,
       head: [
         [
           t("company"),
           t("tickets"),
           t("hours"),
           t("billableHours"),
+          t("revenue"),
           t("avgResponse"),
         ],
       ],
-      body: companyBreakdown.map((row) => [
-        row.shortName,
-        row.tickets,
-        row.hours.toFixed(1),
-        row.billableHours.toFixed(1),
-        row.avgResponse,
-      ]),
-      styles: { fontSize: 9 },
+      body: companyBody,
+      styles: { fontSize: 8 },
       headStyles: { fillColor: [41, 128, 185] },
+      didParseCell: (data: { row: { index: number }; cell: { styles: { fontStyle: string } } }) => {
+        if (data.row.index === companyBody.length - 1) {
+          data.cell.styles.fontStyle = "bold";
+        }
+      },
     });
 
-    // Employee breakdown table
-    const finalY =
-      (
-        doc as unknown as { lastAutoTable: { finalY: number } }
-      ).lastAutoTable.finalY + 12;
-    doc.setFontSize(13);
-    doc.text(t("employeeBreakdown"), 14, finalY);
+    // --- Employee Breakdown Table ---
+    const empY = getFinalY() + 12;
+    doc.setFontSize(14);
+    doc.text(t("employeeBreakdown"), 14, empY);
 
-    (doc as unknown as { autoTable: (options: Record<string, unknown>) => void }).autoTable({
-      startY: finalY + 4,
+    const empBody = employeeBreakdown.map((row) => [
+      row.name,
+      row.tickets,
+      row.hours.toFixed(2),
+      row.billableHours.toFixed(2),
+    ]);
+    empBody.push([
+      tc("total"),
+      employeeBreakdown.reduce((s, r) => s + r.tickets, 0),
+      employeeBreakdown.reduce((s, r) => s + r.hours, 0).toFixed(2),
+      employeeBreakdown.reduce((s, r) => s + r.billableHours, 0).toFixed(2),
+    ]);
+
+    autoTable({
+      startY: empY + 4,
       head: [[t("employee"), t("tickets"), t("hours"), t("billableHours")]],
-      body: employeeBreakdown.map((row) => [
-        row.name,
-        row.tickets,
-        row.hours.toFixed(1),
-        row.billableHours.toFixed(1),
-      ]),
-      styles: { fontSize: 9 },
+      body: empBody,
+      styles: { fontSize: 8 },
       headStyles: { fillColor: [41, 128, 185] },
+      didParseCell: (data: { row: { index: number }; cell: { styles: { fontStyle: string } } }) => {
+        if (data.row.index === empBody.length - 1) {
+          data.cell.styles.fontStyle = "bold";
+        }
+      },
     });
+
+    // --- Ticket List Table ---
+    if (tickets.length > 0) {
+      doc.addPage();
+      doc.setFontSize(14);
+      doc.text(t("ticketList"), 14, 20);
+
+      autoTable({
+        startY: 24,
+        head: [
+          [
+            "#",
+            tc("subject"),
+            t("company"),
+            tc("status"),
+            tc("priority"),
+            tc("date"),
+          ],
+        ],
+        body: tickets.map((tk) => [
+          tk.ticketNumber || "-",
+          truncate(tk.subject, 40),
+          tk.company?.shortName || "-",
+          tk.status || "-",
+          tk.priority || "-",
+          fmtDate(tk.createdAt),
+        ]),
+        styles: { fontSize: 7, cellPadding: 2 },
+        headStyles: { fillColor: [41, 128, 185] },
+        columnStyles: {
+          0: { cellWidth: 12 },
+          1: { cellWidth: 55 },
+          2: { cellWidth: 28 },
+          3: { cellWidth: 22 },
+          4: { cellWidth: 18 },
+          5: { cellWidth: 24 },
+        },
+      });
+    }
+
+    // --- Time Entries Table ---
+    if (timeEntries.length > 0) {
+      doc.addPage();
+      doc.setFontSize(14);
+      doc.text(t("timeEntryList"), 14, 20);
+
+      const teBody = timeEntries.map((e) => {
+        const hours = parseFloat(e.hours || "0");
+        const rate = e.company?.hourlyRate
+          ? parseFloat(e.company.hourlyRate)
+          : 0;
+        const amount = e.billable ? hours * rate : 0;
+        return [
+          fmtDate(e.date),
+          e.company?.shortName || "-",
+          e.ticket?.ticketNumber ? `#${e.ticket.ticketNumber}` : "-",
+          truncate(e.description, 35),
+          r2(hours).toFixed(2),
+          e.billable ? tc("yes") : tc("no"),
+          e.billable ? fmtCurrency(amount) : "-",
+        ];
+      });
+      // Totals row
+      teBody.push([
+        tc("total"),
+        "",
+        "",
+        "",
+        r2(totalHours).toFixed(2),
+        "",
+        fmtCurrency(totalRevenue),
+      ]);
+
+      autoTable({
+        startY: 24,
+        head: [
+          [
+            tc("date"),
+            t("company"),
+            "Ticket",
+            t("description"),
+            t("hours"),
+            tc("billable"),
+            t("amount"),
+          ],
+        ],
+        body: teBody,
+        styles: { fontSize: 7, cellPadding: 2 },
+        headStyles: { fillColor: [41, 128, 185] },
+        didParseCell: (data: { row: { index: number }; cell: { styles: { fontStyle: string } } }) => {
+          if (data.row.index === teBody.length - 1) {
+            data.cell.styles.fontStyle = "bold";
+          }
+        },
+      });
+    }
 
     doc.save(`rapport_${fromDate}_${toDate}.pdf`);
   };
@@ -507,7 +911,7 @@ export default function ReportsPage() {
             {isLoading ? (
               <div className="h-9 w-16 bg-muted rounded animate-pulse" />
             ) : (
-              <div className="text-3xl font-bold">{totalHours.toFixed(1)}</div>
+              <div className="text-3xl font-bold">{totalHours.toFixed(2)}</div>
             )}
           </CardContent>
         </Card>
@@ -524,7 +928,7 @@ export default function ReportsPage() {
               <div className="h-9 w-16 bg-muted rounded animate-pulse" />
             ) : (
               <div className="text-3xl font-bold">
-                {avgHoursPerDay.toFixed(1)}
+                {avgHoursPerDay.toFixed(2)}
               </div>
             )}
           </CardContent>
@@ -659,10 +1063,10 @@ export default function ReportsPage() {
                     </TableCell>
                     <TableCell className="text-right">{row.tickets}</TableCell>
                     <TableCell className="text-right">
-                      {row.hours.toFixed(1)}
+                      {row.hours.toFixed(2)}
                     </TableCell>
                     <TableCell className="text-right">
-                      {row.billableHours.toFixed(1)}
+                      {row.billableHours.toFixed(2)}
                     </TableCell>
                     <TableCell className="text-right text-muted-foreground">
                       {row.avgResponse}
@@ -678,12 +1082,12 @@ export default function ReportsPage() {
                   <TableCell className="text-right">
                     {companyBreakdown
                       .reduce((s, r) => s + r.hours, 0)
-                      .toFixed(1)}
+                      .toFixed(2)}
                   </TableCell>
                   <TableCell className="text-right">
                     {companyBreakdown
                       .reduce((s, r) => s + r.billableHours, 0)
-                      .toFixed(1)}
+                      .toFixed(2)}
                   </TableCell>
                   <TableCell className="text-right text-muted-foreground">
                     -
@@ -729,10 +1133,10 @@ export default function ReportsPage() {
                     <TableCell className="font-medium">{row.name}</TableCell>
                     <TableCell className="text-right">{row.tickets}</TableCell>
                     <TableCell className="text-right">
-                      {row.hours.toFixed(1)}
+                      {row.hours.toFixed(2)}
                     </TableCell>
                     <TableCell className="text-right">
-                      {row.billableHours.toFixed(1)}
+                      {row.billableHours.toFixed(2)}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -745,12 +1149,12 @@ export default function ReportsPage() {
                   <TableCell className="text-right">
                     {employeeBreakdown
                       .reduce((s, r) => s + r.hours, 0)
-                      .toFixed(1)}
+                      .toFixed(2)}
                   </TableCell>
                   <TableCell className="text-right">
                     {employeeBreakdown
                       .reduce((s, r) => s + r.billableHours, 0)
-                      .toFixed(1)}
+                      .toFixed(2)}
                   </TableCell>
                 </TableRow>
               </TableBody>

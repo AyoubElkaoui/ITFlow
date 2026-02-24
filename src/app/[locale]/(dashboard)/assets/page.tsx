@@ -35,12 +35,20 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CompanySelect } from "@/components/shared/company-select";
-import { Plus, Search, Monitor, Trash2, Pencil } from "lucide-react";
-import { format } from "date-fns";
+import {
+  Plus,
+  Search,
+  Monitor,
+  Trash2,
+  Pencil,
+  Package,
+  PackageCheck,
+  Archive,
+} from "lucide-react";
 import { toast } from "sonner";
 import { EditAssetDialog } from "@/components/assets/edit-asset-dialog";
 
-// ── Types ──────────────────────────────────────────────────────────────────────
+// -- Types --------------------------------------------------------------------
 
 const ASSET_TYPES = [
   "LAPTOP",
@@ -64,6 +72,7 @@ interface AssetRow {
   brand: string | null;
   model: string | null;
   name: string | null;
+  assetTag: string | null;
   serialNumber: string | null;
   purchaseDate: string | null;
   warrantyEnd: string | null;
@@ -72,9 +81,10 @@ interface AssetRow {
   notes: string | null;
   createdAt: string;
   company: { id: string; name: string; shortName: string };
+  _count?: { ticketLinks: number };
 }
 
-// ── Zod schema for create form ─────────────────────────────────────────────────
+// -- Zod schema for create form -----------------------------------------------
 
 const assetFormSchema = z.object({
   companyId: z.string().min(1, "Company is required"),
@@ -92,19 +102,20 @@ const assetFormSchema = z.object({
   brand: z.string().optional(),
   model: z.string().optional(),
   name: z.string().optional(),
+  assetTag: z.string().optional(),
   serialNumber: z.string().optional(),
   purchaseDate: z.string().optional(),
   warrantyEnd: z.string().optional(),
   assignedTo: z.string().optional(),
   status: z
     .enum(["ACTIVE", "IN_REPAIR", "STORED", "RETIRED"])
-    .default("ACTIVE"),
+    .default("STORED"),
   notes: z.string().optional(),
 });
 
 type AssetFormData = z.infer<typeof assetFormSchema>;
 
-// ── Badge helpers ──────────────────────────────────────────────────────────────
+// -- Badge helpers ------------------------------------------------------------
 
 function typeBadgeVariant(
   type: AssetType,
@@ -138,14 +149,7 @@ function statusClassName(status: AssetStatus): string {
   }
 }
 
-function formatLabel(value: string): string {
-  return value
-    .replace(/_/g, " ")
-    .toLowerCase()
-    .replace(/^\w/, (c) => c.toUpperCase());
-}
-
-// ── Page component ─────────────────────────────────────────────────────────────
+// -- Page component -----------------------------------------------------------
 
 export default function AssetsPage() {
   const t = useTranslations("assets");
@@ -167,6 +171,11 @@ export default function AssetsPage() {
   const deleteAsset = useDeleteAsset();
   const assets = (data as AssetRow[] | undefined) || [];
 
+  // Compute summary counts
+  const totalCount = assets.length;
+  const storedCount = assets.filter((a) => a.status === "STORED").length;
+  const activeCount = assets.filter((a) => a.status === "ACTIVE").length;
+
   function handleDelete(id: string) {
     if (!window.confirm(t("deleteConfirm"))) return;
     deleteAsset.mutate(id, {
@@ -182,11 +191,58 @@ export default function AssetsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t("title")}</h1>
+        <div>
+          <h1 className="text-2xl font-bold">{t("title")}</h1>
+        </div>
         <Button onClick={() => setShowCreate(true)}>
           <Plus className="mr-2 h-4 w-4" />
           {t("addAsset")}
         </Button>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-muted p-2">
+                <Package className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">{t("total")}</p>
+                <p className="text-2xl font-bold">{totalCount}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-blue-100 dark:bg-blue-900 p-2">
+                <Archive className="h-5 w-5 text-blue-600 dark:text-blue-300" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">{t("inStock")}</p>
+                <p className="text-2xl font-bold">{storedCount}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-green-100 dark:bg-green-900 p-2">
+                <PackageCheck className="h-5 w-5 text-green-600 dark:text-green-300" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">
+                  {t("deployed")}
+                </p>
+                <p className="text-2xl font-bold">{activeCount}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Filters & Table */}
@@ -220,7 +276,7 @@ export default function AssetsPage() {
                 <SelectItem value="all">{t("allTypes")}</SelectItem>
                 {ASSET_TYPES.map((assetType) => (
                   <SelectItem key={assetType} value={assetType}>
-                    {formatLabel(assetType)}
+                    {t(assetType)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -234,7 +290,7 @@ export default function AssetsPage() {
                 <SelectItem value="all">{t("allStatuses")}</SelectItem>
                 {ASSET_STATUSES.map((s) => (
                   <SelectItem key={s} value={s}>
-                    {formatLabel(s)}
+                    {t(s)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -262,87 +318,85 @@ export default function AssetsPage() {
               </p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("nameOrBrandModel")}</TableHead>
-                  <TableHead>{t("type")}</TableHead>
-                  <TableHead>{t("company")}</TableHead>
-                  <TableHead>{t("serialNumber")}</TableHead>
-                  <TableHead>{t("assignedTo")}</TableHead>
-                  <TableHead>{t("status")}</TableHead>
-                  <TableHead>{t("purchaseDate")}</TableHead>
-                  <TableHead>{t("warrantyEnd")}</TableHead>
-                  <TableHead className="w-[80px]" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {assets.map((asset) => (
-                  <TableRow key={asset.id}>
-                    <TableCell>
-                      <div className="font-medium">
-                        {asset.name || t("unnamed")}
-                      </div>
-                      {(asset.brand || asset.model) && (
-                        <div className="text-sm text-muted-foreground">
-                          {[asset.brand, asset.model].filter(Boolean).join(" ")}
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={typeBadgeVariant(asset.type)}>
-                        {formatLabel(asset.type)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {asset.company.shortName}
-                    </TableCell>
-                    <TableCell className="text-sm font-mono text-muted-foreground">
-                      {asset.serialNumber || "\u2014"}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {asset.assignedTo || "\u2014"}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={statusClassName(asset.status)}
-                      >
-                        {formatLabel(asset.status)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {asset.purchaseDate
-                        ? format(new Date(asset.purchaseDate), "dd MMM yyyy")
-                        : "\u2014"}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {asset.warrantyEnd
-                        ? format(new Date(asset.warrantyEnd), "dd MMM yyyy")
-                        : "\u2014"}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setEditingAsset(asset)}
-                        >
-                          <Pencil className="h-4 w-4 text-muted-foreground" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(asset.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-muted-foreground" />
-                        </Button>
-                      </div>
-                    </TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("assetTag")}</TableHead>
+                    <TableHead>{t("name")}</TableHead>
+                    <TableHead>{t("type")}</TableHead>
+                    <TableHead>{t("company")}</TableHead>
+                    <TableHead>{t("serialNumber")}</TableHead>
+                    <TableHead>{t("assignedTo")}</TableHead>
+                    <TableHead>{t("status")}</TableHead>
+                    <TableHead className="w-[80px]">{t("actions")}</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {assets.map((asset) => (
+                    <TableRow key={asset.id}>
+                      <TableCell>
+                        <span className="font-mono text-sm font-medium">
+                          {asset.assetTag || "\u2014"}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-medium">
+                          {asset.name || t("unnamed")}
+                        </div>
+                        {(asset.brand || asset.model) && (
+                          <div className="text-sm text-muted-foreground">
+                            {[asset.brand, asset.model]
+                              .filter(Boolean)
+                              .join(" ")}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={typeBadgeVariant(asset.type)}>
+                          {t(asset.type)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {asset.company.shortName}
+                      </TableCell>
+                      <TableCell className="text-sm font-mono text-muted-foreground">
+                        {asset.serialNumber || "\u2014"}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {asset.assignedTo || "\u2014"}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={statusClassName(asset.status)}
+                        >
+                          {t(asset.status)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setEditingAsset(asset)}
+                          >
+                            <Pencil className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDelete(asset.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -364,7 +418,7 @@ export default function AssetsPage() {
   );
 }
 
-// ── Create Asset Dialog ────────────────────────────────────────────────────────
+// -- Create Asset Dialog ------------------------------------------------------
 
 function CreateAssetDialog({
   open,
@@ -385,11 +439,12 @@ function CreateAssetDialog({
       brand: "",
       model: "",
       name: "",
+      assetTag: "",
       serialNumber: "",
       purchaseDate: "",
       warrantyEnd: "",
       assignedTo: "",
-      status: "ACTIVE",
+      status: "STORED",
       notes: "",
     },
   });
@@ -398,6 +453,7 @@ function CreateAssetDialog({
     try {
       const payload = {
         ...data,
+        assetTag: data.assetTag || undefined,
         purchaseDate: data.purchaseDate || undefined,
         warrantyEnd: data.warrantyEnd || undefined,
       };
@@ -433,6 +489,16 @@ function CreateAssetDialog({
             )}
           </div>
 
+          {/* Asset Tag */}
+          <div className="space-y-2">
+            <Label htmlFor="asset-tag">{t("assetTag")}</Label>
+            <Input
+              id="asset-tag"
+              placeholder="bijv. MAZLAP022601"
+              {...form.register("assetTag")}
+            />
+          </div>
+
           {/* Name */}
           <div className="space-y-2">
             <Label htmlFor="asset-name">{tc("name")}</Label>
@@ -453,7 +519,7 @@ function CreateAssetDialog({
                 <SelectContent>
                   {ASSET_TYPES.map((assetType) => (
                     <SelectItem key={assetType} value={assetType}>
-                      {formatLabel(assetType)}
+                      {t(assetType)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -471,7 +537,7 @@ function CreateAssetDialog({
                 <SelectContent>
                   {ASSET_STATUSES.map((s) => (
                     <SelectItem key={s} value={s}>
-                      {formatLabel(s)}
+                      {t(s)}
                     </SelectItem>
                   ))}
                 </SelectContent>

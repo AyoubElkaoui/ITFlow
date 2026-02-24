@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   const from = searchParams.get("from");
   const to = searchParams.get("to");
   const page = parseInt(searchParams.get("page") || "1");
-  const pageSize = Math.min(Number(searchParams.get("pageSize")) || 50, 100);
+  const pageSize = Math.min(Number(searchParams.get("pageSize")) || 50, 5000);
 
   const where = {
     ...(companyId && { companyId }),
@@ -71,6 +71,11 @@ export async function GET(request: NextRequest) {
       totalAmount += hours * rate;
     }
   }
+
+  // Round to quarter-hour precision to avoid floating point drift
+  totalHours = Math.round(totalHours * 4) / 4;
+  billableHours = Math.round(billableHours * 4) / 4;
+  totalAmount = Math.round(totalAmount * 100) / 100;
 
   return NextResponse.json({
     data: entries,

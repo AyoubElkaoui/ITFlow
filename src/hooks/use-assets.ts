@@ -24,6 +24,7 @@ interface AssetCreateInput {
   brand?: string;
   model?: string;
   name?: string;
+  assetTag?: string;
   serialNumber?: string;
   purchaseDate?: Date | string;
   warrantyEnd?: Date | string;
@@ -38,6 +39,7 @@ interface AssetUpdateInput {
   brand?: string;
   model?: string;
   name?: string;
+  assetTag?: string;
   serialNumber?: string;
   purchaseDate?: Date | string;
   warrantyEnd?: Date | string;

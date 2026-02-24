@@ -20,6 +20,7 @@ const assetCreateSchema = z.object({
   brand: z.string().optional(),
   model: z.string().optional(),
   name: z.string().optional(),
+  assetTag: z.string().optional(),
   serialNumber: z.string().optional(),
   purchaseDate: z.coerce.date().optional(),
   warrantyEnd: z.coerce.date().optional(),
@@ -47,9 +48,11 @@ export async function GET(request: NextRequest) {
     ...(search && {
       OR: [
         { name: { contains: search, mode: "insensitive" as const } },
+        { assetTag: { contains: search, mode: "insensitive" as const } },
         { brand: { contains: search, mode: "insensitive" as const } },
         { model: { contains: search, mode: "insensitive" as const } },
         { serialNumber: { contains: search, mode: "insensitive" as const } },
+        { assignedTo: { contains: search, mode: "insensitive" as const } },
       ],
     }),
     ...(companyId && { companyId }),
@@ -72,6 +75,7 @@ export async function GET(request: NextRequest) {
     where,
     include: {
       company: { select: { id: true, name: true, shortName: true } },
+      _count: { select: { ticketLinks: true } },
     },
     orderBy: { createdAt: "desc" },
   });

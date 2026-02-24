@@ -20,10 +20,14 @@ export async function GET() {
     openTickets,
     weekEntries,
     monthEntries,
+    billableMonthEntries,
     pendingTasks,
     recentTickets,
     hoursBreakdownWeek,
     hoursBreakdownMonth,
+    totalAssets,
+    ticketsByStatus,
+    recentActivity,
   ] = await Promise.all([
     // Open tickets count
     prisma.ticket.count({
@@ -38,6 +42,14 @@ export async function GET() {
     prisma.timeEntry.aggregate({
       _sum: { hours: true },
       where: { date: { gte: monthStart, lte: monthEnd } },
+    }),
+    // Billable hours this month
+    prisma.timeEntry.aggregate({
+      _sum: { hours: true },
+      where: {
+        date: { gte: monthStart, lte: monthEnd },
+        billable: true,
+      },
     }),
     // Pending tasks (tickets with pendingTasks filled)
     prisma.ticket.count({
@@ -67,7 +79,49 @@ export async function GET() {
       _sum: { hours: true },
       where: { date: { gte: monthStart, lte: monthEnd } },
     }),
+    // Total active assets
+    prisma.asset.count({
+      where: { status: "ACTIVE" },
+    }),
+    // Tickets grouped by status
+    prisma.ticket.groupBy({
+      by: ["status"],
+      _count: { _all: true },
+    }),
+    // Recent activity: last 5 time entries
+    prisma.timeEntry.findMany({
+      take: 5,
+      orderBy: { createdAt: "desc" },
+      include: {
+        company: { select: { shortName: true } },
+      },
+    }),
   ]);
+
+  // Calculate revenue this month: sum of (hours * company.hourlyRate) for billable entries
+  const billableEntriesThisMonth = await prisma.timeEntry.findMany({
+    where: {
+      date: { gte: monthStart, lte: monthEnd },
+      billable: true,
+    },
+    include: {
+      company: { select: { hourlyRate: true } },
+    },
+  });
+
+  const revenueThisMonth = billableEntriesThisMonth.reduce((sum, entry) => {
+    const rate = entry.company.hourlyRate ? Number(entry.company.hourlyRate) : 0;
+    return sum + Number(entry.hours) * rate;
+  }, 0);
+
+  // Revenue per company this month (for chart)
+  const revenueByCompanyMap = new Map<string, number>();
+  for (const entry of billableEntriesThisMonth) {
+    const rate = entry.company.hourlyRate ? Number(entry.company.hourlyRate) : 0;
+    const amount = Number(entry.hours) * rate;
+    const existing = revenueByCompanyMap.get(entry.companyId) || 0;
+    revenueByCompanyMap.set(entry.companyId, existing + amount);
+  }
 
   // Fetch company names for breakdowns
   const companyIds = [
@@ -84,14 +138,35 @@ export async function GET() {
 
   const companyMap = new Map(companies.map((c) => [c.id, c]));
 
+  // Format tickets by status
+  const ticketsByStatusMap: Record<string, number> = {};
+  for (const group of ticketsByStatus) {
+    ticketsByStatusMap[group.status] = group._count._all;
+  }
+
+  // Format recent activity
+  const formattedRecentActivity = recentActivity.map((entry) => ({
+    id: entry.id,
+    companyShortName: entry.company.shortName,
+    hours: Number(entry.hours),
+    description: entry.description,
+    date: entry.date,
+    billable: entry.billable,
+  }));
+
   return NextResponse.json({
     stats: {
       openTickets,
       hoursThisWeek: Number(weekEntries._sum.hours || 0),
       hoursThisMonth: Number(monthEntries._sum.hours || 0),
+      billableHoursThisMonth: Number(billableMonthEntries._sum.hours || 0),
+      revenueThisMonth,
+      totalAssets,
       pendingTasks,
     },
+    ticketsByStatus: ticketsByStatusMap,
     recentTickets,
+    recentActivity: formattedRecentActivity,
     hoursBreakdown: {
       week: hoursBreakdownWeek.map((h) => ({
         companyName: companyMap.get(h.companyId)?.name || "Unknown",
@@ -102,6 +177,7 @@ export async function GET() {
         companyName: companyMap.get(h.companyId)?.name || "Unknown",
         companyShortName: companyMap.get(h.companyId)?.shortName || "?",
         hours: Number(h._sum.hours || 0),
+        revenue: revenueByCompanyMap.get(h.companyId) || 0,
       })),
     },
   });

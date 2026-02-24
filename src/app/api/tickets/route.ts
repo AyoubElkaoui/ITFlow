@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
   const from = searchParams.get("from");
   const to = searchParams.get("to");
   const page = parseInt(searchParams.get("page") || "1");
-  const pageSize = Math.min(Number(searchParams.get("pageSize")) || 20, 100);
+  const pageSize = Math.min(Number(searchParams.get("pageSize")) || 20, 5000);
 
   const where = {
     ...(search && {

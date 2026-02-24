@@ -8,7 +8,6 @@ const KANBAN_STATUSES: TicketStatus[] = [
   "IN_PROGRESS",
   "WAITING",
   "RESOLVED",
-  "CLOSED",
   "BILLABLE",
 ];
 
@@ -16,20 +15,11 @@ export async function GET() {
   try {
     await getSessionUser();
 
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-
     const tickets = await prisma.ticket.findMany({
       where: {
-        OR: [
-          {
-            status: {
-              in: ["OPEN", "IN_PROGRESS", "WAITING", "RESOLVED", "BILLABLE"],
-            },
-          },
-          { status: "CLOSED", closedAt: { gte: oneWeekAgo } },
-          { status: "CLOSED", closedAt: null, updatedAt: { gte: oneWeekAgo } },
-        ],
+        status: {
+          in: ["OPEN", "IN_PROGRESS", "WAITING", "RESOLVED", "BILLABLE"],
+        },
       },
       include: {
         company: { select: { id: true, name: true, shortName: true } },

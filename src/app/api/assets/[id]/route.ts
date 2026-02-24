@@ -19,6 +19,7 @@ const assetUpdateSchema = z
     brand: z.string().optional(),
     model: z.string().optional(),
     name: z.string().optional(),
+    assetTag: z.string().optional(),
     serialNumber: z.string().optional(),
     purchaseDate: z.coerce.date().optional(),
     warrantyEnd: z.coerce.date().optional(),
@@ -43,6 +44,20 @@ export async function GET(
     where: { id },
     include: {
       company: true,
+      ticketLinks: {
+        include: {
+          ticket: {
+            select: {
+              id: true,
+              ticketNumber: true,
+              subject: true,
+              status: true,
+              createdAt: true,
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      },
     },
   });
 

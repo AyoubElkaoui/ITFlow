@@ -64,7 +64,10 @@ export const timeEntryCreateSchema = z.object({
   hours: z.coerce
     .number()
     .positive("Hours must be positive")
-    .max(24, "Cannot exceed 24 hours"),
+    .max(24, "Cannot exceed 24 hours")
+    .check(
+      z.refine((v) => Math.round(v * 4) === v * 4, "Hours must be in quarter-hour increments (0.25)"),
+    ),
   description: z.string().optional(),
   billable: z.boolean().default(true),
 });

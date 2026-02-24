@@ -75,3 +75,34 @@ export function useDeleteContact() {
     },
   });
 }
+
+export function useEnablePortalAccess(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { sendEmail?: boolean; password?: string }) =>
+      fetchJson<{ success: boolean; password: string; emailSent: boolean; emailError?: string }>(
+        `/api/contacts/${id}/portal-access`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        },
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["contacts"] });
+      qc.invalidateQueries({ queryKey: ["contact", id] });
+    },
+  });
+}
+
+export function useDisablePortalAccess(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      fetchJson(`/api/contacts/${id}/portal-access`, { method: "DELETE" }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["contacts"] });
+      qc.invalidateQueries({ queryKey: ["contact", id] });
+    },
+  });
+}

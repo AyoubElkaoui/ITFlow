@@ -13,6 +13,8 @@ import {
   useContacts,
   useCreateContact,
   useDeleteContact,
+  useEnablePortalAccess,
+  useDisablePortalAccess,
 } from "@/hooks/use-contacts";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,8 +37,9 @@ import {
 } from "@/components/ui/dialog";
 import { CompanySelect } from "@/components/shared/company-select";
 import { toast } from "sonner";
-import { Plus, Search, Users, Trash2, Mail, Phone, Pencil } from "lucide-react";
+import { Plus, Search, Users, Trash2, Mail, Phone, Pencil, Globe, ShieldCheck, ShieldOff, Copy, Eye, EyeOff } from "lucide-react";
 import { EditContactDialog } from "@/components/contacts/edit-contact-dialog";
+import { PortalAccessDialog } from "@/components/contacts/portal-access-dialog";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -51,6 +54,7 @@ interface ContactRow {
   function: string | null;
   isPrimary: boolean;
   isActive: boolean;
+  portalEnabled: boolean;
   company: {
     id: string;
     shortName: string;
@@ -200,6 +204,7 @@ export default function ContactsPage() {
   const [companyFilter, setCompanyFilter] = useState("all");
   const [showCreate, setShowCreate] = useState(false);
   const [editingContact, setEditingContact] = useState<ContactRow | null>(null);
+  const [portalContact, setPortalContact] = useState<ContactRow | null>(null);
 
   const { data: contacts, isLoading } = useContacts(
     companyFilter !== "all" ? companyFilter : undefined,
@@ -283,7 +288,8 @@ export default function ContactsPage() {
                   <TableHead className="text-center">
                     {t("primaryContact")}
                   </TableHead>
-                  <TableHead className="w-[80px]" />
+                  <TableHead className="text-center">Portal</TableHead>
+                  <TableHead className="w-[120px]" />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -334,8 +340,27 @@ export default function ContactsPage() {
                         </Badge>
                       )}
                     </TableCell>
+                    <TableCell className="text-center">
+                      {contact.portalEnabled ? (
+                        <Badge variant="default" className="bg-green-600 text-xs">
+                          <Globe className="mr-1 h-3 w-3" />
+                          {tc("active")}
+                        </Badge>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">&mdash;</span>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground"
+                          title="Portal access"
+                          onClick={() => setPortalContact(contact)}
+                        >
+                          <Globe className="h-4 w-4" />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -371,6 +396,16 @@ export default function ContactsPage() {
             if (!open) setEditingContact(null);
           }}
           contact={editingContact}
+        />
+      )}
+
+      {portalContact && (
+        <PortalAccessDialog
+          open={!!portalContact}
+          onOpenChange={(open) => {
+            if (!open) setPortalContact(null);
+          }}
+          contact={portalContact}
         />
       )}
     </div>

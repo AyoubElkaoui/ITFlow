@@ -140,6 +140,28 @@ async function main() {
   const seedPath = join(__dirname, "../seed_final_complete.json");
   const seedData: SeedData = JSON.parse(readFileSync(seedPath, "utf-8"));
 
+  // ── Merge jan2026 data if available ──
+  const jan2026Path = join(__dirname, "../jan2026_data (1).json");
+  try {
+    const jan2026Raw = readFileSync(jan2026Path, "utf-8");
+    const jan2026: { tickets?: SeedTicket[]; timeEntries?: SeedTimeEntry[] } = JSON.parse(jan2026Raw);
+    if (jan2026.tickets) {
+      // Filter to only Jan 2026+ tickets that aren't already in seed data
+      const existingSubjects = new Set(seedData.tickets.map((t) => `${t.company}:${t.subject}`));
+      const newTickets = jan2026.tickets.filter((t) => !existingSubjects.has(`${t.company}:${t.subject}`));
+      seedData.tickets.push(...newTickets);
+      console.log(`Merged ${newTickets.length} new tickets from jan2026_data`);
+    }
+    if (jan2026.timeEntries) {
+      // Filter to only Jan 2026 time entries (seed_final_complete already has Feb+)
+      const newEntries = jan2026.timeEntries.filter((te) => te.date && te.date.startsWith("2026-01"));
+      seedData.timeEntries.push(...newEntries);
+      console.log(`Merged ${newEntries.length} January time entries from jan2026_data`);
+    }
+  } catch {
+    console.log("No jan2026_data file found, skipping merge");
+  }
+
   // ── Ensure ITFin company exists (used in tickets/time entries but may not be in companies array) ──
   const hasITFin = seedData.companies.some((c) => c.shortName === "ITFin");
   if (!hasITFin) {
@@ -147,6 +169,20 @@ async function main() {
       name: "ITFin",
       shortName: "ITFin",
       hourlyRate: 0,
+      email: "",
+      phone: "",
+      website: "",
+      isActive: true,
+    });
+  }
+
+  // ── Ensure MoskeeTawhid company exists ──
+  const hasMoskeeTawhid = seedData.companies.some((c) => c.shortName === "MoskeeTawhid");
+  if (!hasMoskeeTawhid) {
+    seedData.companies.push({
+      name: "Moskee Tawhid",
+      shortName: "MoskeeTawhid",
+      hourlyRate: 75,
       email: "",
       phone: "",
       website: "",
@@ -351,11 +387,12 @@ async function main() {
     const createdAt = parseDate(t.createdAt) || new Date();
     const resolvedAtDate = parseDate(t.resolvedAt);
 
-    const status = (
-      ["OPEN", "CLOSED", "WAITING", "IN_PROGRESS", "RESOLVED", "BILLABLE"].includes(t.status)
-        ? t.status
-        : "OPEN"
-    ) as "OPEN" | "CLOSED" | "WAITING" | "IN_PROGRESS" | "RESOLVED" | "BILLABLE";
+    const statusMap: Record<string, string> = {
+      OPEN: "OPEN", CLOSED: "CLOSED", WAITING: "WAITING",
+      IN_PROGRESS: "IN_PROGRESS", RESOLVED: "RESOLVED", BILLABLE: "BILLABLE",
+      TE_FACTUREREN: "BILLABLE",
+    };
+    const status = (statusMap[t.status] || "OPEN") as "OPEN" | "CLOSED" | "WAITING" | "IN_PROGRESS" | "RESOLVED" | "BILLABLE";
 
     const priorityMap: Record<string, string> = {
       LOW: "LOW", low: "LOW", Low: "LOW",

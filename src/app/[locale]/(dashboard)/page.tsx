@@ -12,9 +12,7 @@ import {
   AlertCircle,
   Plus,
   ArrowRight,
-  DollarSign,
   Monitor,
-  Receipt,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { formatDistanceToNow, format } from "date-fns";
@@ -25,14 +23,12 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from "recharts";
 
 export default function DashboardPage() {
   const { data, isLoading, error } = useDashboard();
   const t = useTranslations("dashboard");
   const tc = useTranslations("common");
-  const ts = useTranslations("status");
 
   if (error) {
     return (
@@ -100,7 +96,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Primary Stats Cards */}
+      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -123,52 +119,8 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">
-              {stats?.hoursThisWeek?.toFixed(2) || "0.0"}
+              {stats?.hoursThisWeek?.toFixed(2) || "0.00"}
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t("billableHoursMonth")}
-            </CardTitle>
-            <Receipt className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {stats?.billableHoursThisMonth?.toFixed(2) || "0.0"}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t("revenueThisMonth")}
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {"\u20AC"}
-              {stats?.revenueThisMonth?.toFixed(2) || "0.00"}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Secondary Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t("totalAssets")}
-            </CardTitle>
-            <Monitor className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.totalAssets || 0}</div>
           </CardContent>
         </Card>
 
@@ -180,8 +132,8 @@ export default function DashboardPage() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {stats?.hoursThisMonth?.toFixed(2) || "0.0"}
+            <div className="text-3xl font-bold">
+              {stats?.hoursThisMonth?.toFixed(2) || "0.00"}
             </div>
           </CardContent>
         </Card>
@@ -189,12 +141,12 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t("pendingTasks")}
+              {t("totalAssets")}
             </CardTitle>
-            <AlertCircle className="h-4 w-4 text-muted-foreground" />
+            <Monitor className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.pendingTasks || 0}</div>
+            <div className="text-3xl font-bold">{stats?.totalAssets || 0}</div>
           </CardContent>
         </Card>
       </div>
@@ -262,7 +214,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Hours & Revenue Chart */}
+        {/* Hours per Company Chart */}
         <Card>
           <CardHeader>
             <CardTitle>{t("hoursChart")}</CardTitle>
@@ -282,19 +234,10 @@ export default function DashboardPage() {
                     axisLine={false}
                   />
                   <YAxis
-                    yAxisId="hours"
                     fontSize={12}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(v) => `${v}h`}
-                  />
-                  <YAxis
-                    yAxisId="revenue"
-                    orientation="right"
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(v) => `\u20AC${v}`}
                   />
                   <Tooltip
                     contentStyle={{
@@ -302,27 +245,15 @@ export default function DashboardPage() {
                       border: "1px solid hsl(var(--border))",
                       borderRadius: "8px",
                     }}
-                    formatter={(value, name) => {
+                    formatter={(value) => {
                       const v = Number(value);
-                      if (name === "revenue") {
-                        return [`\u20AC${v.toFixed(2)}`, t("revenue")];
-                      }
                       return [`${v}h`, tc("hours")];
                     }}
                   />
-                  <Legend />
                   <Bar
-                    yAxisId="hours"
                     dataKey="hours"
                     name={tc("hours")}
                     fill="hsl(var(--primary))"
-                    radius={[4, 4, 0, 0]}
-                  />
-                  <Bar
-                    yAxisId="revenue"
-                    dataKey="revenue"
-                    name={t("revenue")}
-                    fill="hsl(var(--chart-2, 142 71% 45%))"
                     radius={[4, 4, 0, 0]}
                   />
                 </BarChart>
@@ -395,16 +326,9 @@ export default function DashboardPage() {
                         {entry.description || "-"}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-sm font-medium">
-                        {entry.hours.toFixed(2)}h
-                      </span>
-                      {entry.billable && (
-                        <span className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 px-1.5 py-0.5 rounded">
-                          {tc("billable")}
-                        </span>
-                      )}
-                    </div>
+                    <span className="text-sm font-medium shrink-0">
+                      {entry.hours.toFixed(2)}h
+                    </span>
                   </div>
                 ))}
               </div>

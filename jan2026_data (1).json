@@ -1,0 +1,760 @@
+{
+  "tickets": [
+    {
+      "company": "ZorgVoorOnsSamen",
+      "subject": "Uitleg scannen",
+      "status": "TE_FACTUREREN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-01-02"
+    },
+    {
+      "company": "Samen100care",
+      "subject": "Trengo setup gedeelde mailboxen",
+      "status": "TE_FACTUREREN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-01-13"
+    },
+    {
+      "company": "BureauVerbindendeZorg",
+      "subject": "1x G9 Laptop klaargemaakt",
+      "status": "TE_FACTUREREN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-01-15",
+      "pcName": "BVZLAP012601"
+    },
+    {
+      "company": "ZorgVoorOnsSamen",
+      "subject": "Camera's binnen verwijderen",
+      "status": "TE_FACTUREREN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-01-26"
+    },
+    {
+      "company": "BureauVerbindendeZorg",
+      "subject": "Nieuwe Telefoons en nieuwe voeding USB-C hub",
+      "status": "TE_FACTUREREN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-01-26"
+    },
+    {
+      "company": "ZorgVoorOnsSamen",
+      "subject": "Nieuwe laptop klaargemaakt",
+      "status": "TE_FACTUREREN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-02",
+      "pcName": "ZVOSLAP022601"
+    },
+    {
+      "company": "ITFin",
+      "subject": "Gek programma op laptop en beeldschermen flikkeren",
+      "status": "TE_FACTUREREN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-04"
+    },
+    {
+      "company": "ITFin",
+      "subject": "Geholpen met instellen werktelefoon en laptop",
+      "status": "TE_FACTUREREN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-05",
+      "pcName": "ZVOSLAP022601",
+      "serialNumber": "5CG4123WLN"
+    },
+    {
+      "company": "TheRyckCoopers",
+      "subject": "2 werkplekken klaargemaakt",
+      "status": "TE_FACTUREREN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-05",
+      "pcName": "TRCWKS022601, TRCWKS032505"
+    },
+    {
+      "company": "ITFin",
+      "subject": "Handtekening mail toevoegen en vraag over nummers werktelefoon",
+      "status": "TE_FACTUREREN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-05"
+    },
+    {
+      "company": "HetZorgBureau",
+      "subject": "Kabel en switch gebracht",
+      "status": "TE_FACTUREREN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-05"
+    },
+    {
+      "company": "MazaZorg",
+      "subject": "3 schermen, toetsenbord en docking",
+      "status": "TE_FACTUREREN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-08"
+    },
+    {
+      "company": "ElmarServices",
+      "subject": "Script aanmaken voor Altum database",
+      "status": "CLOSED",
+      "priority": "High",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-09",
+      "resolvedAt": "2026-02-19"
+    },
+    {
+      "company": "Qwic",
+      "subject": "Switch",
+      "status": "OPEN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-09"
+    },
+    {
+      "company": "ElmarServices",
+      "subject": "Aanpassen GB (hassan)",
+      "status": "OPEN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-09"
+    },
+    {
+      "company": "HetZorgBureau",
+      "subject": "Nieuwe pc installeren en configuren",
+      "status": "OPEN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-09"
+    },
+    {
+      "company": "BureauVerbindendeZorg",
+      "subject": "Website maken voor saskia",
+      "status": "OPEN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-09"
+    },
+    {
+      "company": "Webmolen",
+      "subject": "Verhuizing website naar onze hosting",
+      "status": "OPEN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-10"
+    },
+    {
+      "company": "TheRyckCoopers",
+      "subject": "Telefoon",
+      "status": "OPEN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-10"
+    },
+    {
+      "company": "BureauVerbindendeZorg",
+      "subject": "Dockingstation",
+      "status": "TE_FACTUREREN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-10"
+    },
+    {
+      "company": "ElmarServices",
+      "subject": "Laatste wijzingen app clockwise",
+      "status": "CLOSED",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-10",
+      "resolvedAt": "2026-02-11"
+    },
+    {
+      "company": "ZorgVoorOnsSamen",
+      "subject": "Tv monteren en 4 camera's verwijderen heideveld",
+      "status": "TE_FACTUREREN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-10"
+    },
+    {
+      "company": "BureauVerbindendeZorg",
+      "subject": "PC's heideveld nog op windows 10",
+      "status": "OPEN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-10"
+    },
+    {
+      "company": "ITFin",
+      "subject": "Uitdraai kaatst ingelogd systeem roger",
+      "status": "OPEN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-11"
+    },
+    {
+      "company": "ITFin",
+      "subject": "Problemen met pdf in adobe reader",
+      "status": "TE_FACTUREREN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-11"
+    },
+    {
+      "company": "MazaZorg",
+      "subject": "1 scherm werkt niet en beeldscherm volgorde klopt niet",
+      "status": "TE_FACTUREREN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-11"
+    },
+    {
+      "company": "ElmarServices",
+      "subject": "Hosting voor elmar maintenance",
+      "status": "TE_FACTUREREN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-11"
+    },
+    {
+      "company": "ITFin",
+      "subject": "Mazazorg",
+      "status": "OPEN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-11"
+    },
+    {
+      "company": "ZonneSchijnZorg",
+      "subject": "Internet problemen",
+      "status": "TE_FACTUREREN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-11"
+    },
+    {
+      "company": "ZorgVoorOnsSamen",
+      "subject": "Kantoor apeldoorn stad",
+      "status": "OPEN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-13"
+    },
+    {
+      "company": "HetZorgkompas",
+      "subject": "Sloten vervangen en deurbel speaker ingesteld Tilburg",
+      "status": "TE_FACTUREREN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-15"
+    },
+    {
+      "company": "MoskeeTawhid",
+      "subject": "Laptop klaarmaken ismail",
+      "status": "TE_FACTUREREN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-16",
+      "pcName": "SAMLAP022601",
+      "serialNumber": "elkoppeling, 5CG1414L2P"
+    },
+    {
+      "company": "ZorgVoorOnsSamen",
+      "subject": "w.wielinga@zorgvooronssamen.nl ww vergeten verzoek tot reset",
+      "status": "CLOSED",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-17",
+      "resolvedAt": "2026-02-17"
+    },
+    {
+      "company": "ZorgVoorOnsSamen",
+      "subject": "Volgende punten wou thijs verwerken wanneer ayoub en youssef langskomen",
+      "status": "OPEN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-17"
+    },
+    {
+      "company": "ElmarServices",
+      "subject": "Laptops klaamaken",
+      "status": "CLOSED",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-17",
+      "resolvedAt": "2026-02-17",
+      "serialNumber": "5CG30105H7, 5CG3454QV1, 5CG327106X"
+    },
+    {
+      "company": "MoskeeTawhid",
+      "subject": "Toegang nodig tot mappen en mail ismail en office activeren",
+      "status": "TE_FACTUREREN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-19",
+      "pcName": "SAMLAP022601",
+      "serialNumber": "5CG1414L2P"
+    },
+    {
+      "company": "ITFin",
+      "subject": "Laptop Klaarmaken",
+      "status": "TE_FACTUREREN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-19",
+      "pcName": "DRWLAP022601",
+      "serialNumber": "5CG30105H7"
+    },
+    {
+      "company": "ZorgVoorOnsSamen",
+      "subject": "Kantoor Apeldoorn",
+      "status": "OPEN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-19"
+    },
+    {
+      "company": "ITFin",
+      "subject": "4/6 laptops gewist",
+      "status": "OPEN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-19"
+    },
+    {
+      "company": "BureauVerbindendeZorg",
+      "subject": "2 pc's klaargemaakt",
+      "status": "TE_FACTUREREN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-19",
+      "pcName": "ZVOSWKS02260, ZVOSWKS022601",
+      "serialNumber": "3Q4RX53"
+    },
+    {
+      "company": "TheRyckCoopers",
+      "subject": "Engelbert",
+      "status": "OPEN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-20"
+    },
+    {
+      "company": "ZonneSchijnZorg",
+      "subject": "Printerinkt vervangen Curiestraat 11",
+      "status": "TE_FACTUREREN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-23"
+    },
+    {
+      "company": "MazaZorg",
+      "subject": "Laptop klaargemaakt MAZLAP022601",
+      "status": "TE_FACTUREREN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-23",
+      "pcName": "MAZLAP022601",
+      "serialNumber": "J62Y433"
+    },
+    {
+      "company": "HetZorgkompas",
+      "subject": "LLZ",
+      "status": "OPEN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-23"
+    },
+    {
+      "company": "RajaThuiszorg",
+      "subject": "Account en hardware",
+      "status": "OPEN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-23"
+    },
+    {
+      "company": "TheRyckCoopers",
+      "subject": "Laptop",
+      "status": "OPEN",
+      "priority": "Normal",
+      "category": "OTHER",
+      "assignedTo": "Ayoub",
+      "createdAt": "2026-02-24"
+    }
+  ],
+  "timeEntries": [
+    {
+      "company": "ElmarServices",
+      "date": "2026-01-02",
+      "startTime": "10:00",
+      "endTime": "15:00",
+      "hours": 5.0,
+      "description": "Elmar: geholpen met migratie naar cloud",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "HetZorgBureau",
+      "date": "2026-01-02",
+      "startTime": "15:00",
+      "endTime": "17:00",
+      "hours": 2.0,
+      "description": "HZB: Laptop klaargemaakt voor nieuwe medewerker Nada",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "ElmarServices",
+      "date": "2026-01-03",
+      "startTime": "14:30",
+      "endTime": "18:00",
+      "hours": 3.5,
+      "description": "Elmar: geholpen met migratie naar cloud",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "JMZorgpartners",
+      "date": "2026-01-03",
+      "startTime": "19:30",
+      "endTime": "21:30",
+      "hours": 2.0,
+      "description": "JMZ: SSL instellen voor nieuwe website domein",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "ElmarServices",
+      "date": "2026-01-05",
+      "startTime": "09:45",
+      "endTime": "14:15",
+      "hours": 4.5,
+      "description": "Elmar: Collega's geholpen met de nieuwe cloud omgeving",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "HetZorgBureau",
+      "date": "2026-01-05",
+      "startTime": "14:15",
+      "endTime": "16:15",
+      "hours": 2.0,
+      "description": "HZB: USB-c dockingstation ingesteld pc met corrupte scijf meegenomen en vervangen",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "ElmarServices",
+      "date": "2026-01-05",
+      "startTime": "16:15",
+      "endTime": "17:15",
+      "hours": 1.0,
+      "description": "Elmar: Collega's geholpen met de nieuwe cloud omgeving",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "ElmarServices",
+      "date": "2026-01-06",
+      "startTime": "11:00",
+      "endTime": "16:15",
+      "hours": 5.25,
+      "description": "Elmar: Collega's geholpen met de nieuwe cloud omgeving",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "HetZorgBureau",
+      "date": "2026-01-06",
+      "startTime": "16:15",
+      "endTime": "17:45",
+      "hours": 1.5,
+      "description": "HZB: Schijf vervangen PC. PC opnieuw ingesteld en werkplek klaargemaakt voor pc",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "TheRyckCoopers",
+      "date": "2026-01-06",
+      "startTime": "17:45",
+      "endTime": "18:15",
+      "hours": 0.5,
+      "description": "TRC: kabels en scherm gebracht",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "JMZorgpartners",
+      "date": "2026-01-06",
+      "startTime": "23:30",
+      "endTime": "24:00",
+      "hours": 0.5,
+      "description": "JMZ: Website live zetten",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "JMZorgpartners",
+      "date": "2026-01-07",
+      "startTime": "00:00",
+      "endTime": "02:00",
+      "hours": 2.0,
+      "description": "JMZ: Website live zetten",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "AltumTS",
+      "date": "2026-01-07",
+      "startTime": "10:45",
+      "endTime": "11:30",
+      "hours": 0.75,
+      "description": "Altum: Clockwise omgeving besproken",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "ElmarServices",
+      "date": "2026-01-07",
+      "startTime": "11:30",
+      "endTime": "17:45",
+      "hours": 6.25,
+      "description": "Elmar: Macros voor falah uren gefixt / geholpen op kantoor",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "ElmarServices",
+      "date": "2026-01-08",
+      "startTime": "10:15",
+      "endTime": "17:45",
+      "hours": 7.5,
+      "description": "Elmar Werkzaamheden",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "ElmarServices",
+      "date": "2026-01-12",
+      "startTime": "10:15",
+      "endTime": "17:15",
+      "hours": 7.0,
+      "description": "Elmar script jaarovergang",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "ElmarServices",
+      "date": "2026-01-13",
+      "startTime": "10:15",
+      "endTime": "17:15",
+      "hours": 7.0,
+      "description": "Elmar Werkzaamheden",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "ElmarServices",
+      "date": "2026-01-14",
+      "startTime": "10:15",
+      "endTime": "17:15",
+      "hours": 7.0,
+      "description": "Elmar Werkzaamheden",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "ElmarServices",
+      "date": "2026-01-15",
+      "startTime": "10:15",
+      "endTime": "12:45",
+      "hours": 2.5,
+      "description": "Elmar Werkzaamheden",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "BureauVerbindendeZorg",
+      "date": "2026-01-15",
+      "startTime": "12:45",
+      "endTime": "13:45",
+      "hours": 1.0,
+      "description": "BVZ Laptop gebracht said ww gereset en printer gekoppeld",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "BureauVerbindendeZorg",
+      "date": "2026-01-15",
+      "startTime": "13:45",
+      "endTime": "21:00",
+      "hours": 7.25,
+      "description": "BVZ Busje opgehaald bij diks, naar ikea spullen opeghaald, spullen gebracht naar tilburg",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "BureauVerbindendeZorg",
+      "date": "2026-01-19",
+      "startTime": "10:00",
+      "endTime": "17:30",
+      "hours": 7.5,
+      "description": "BVZ Langs Tilburg kasten in elkaar gezet en mediamarkt geweest voor wasmachine en droger",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "BureauVerbindendeZorg",
+      "date": "2026-01-20",
+      "startTime": "10:00",
+      "endTime": "21:00",
+      "hours": 11.0,
+      "description": "BVZ locatie tilburg alle kasten in elkaar gezet",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "BureauVerbindendeZorg",
+      "date": "2026-01-21",
+      "startTime": "10:00",
+      "endTime": "24:00",
+      "hours": 14.0,
+      "description": "BVZ Locatie tilburg alle andere spullen in elkaar gezet en bedden naar boven gebracht",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "BureauVerbindendeZorg",
+      "date": "2026-01-22",
+      "startTime": "00:00",
+      "endTime": "02:30",
+      "hours": 2.5,
+      "description": "BVZ Locatie tilburg alle andere spullen in elkaar gezet en bedden naar boven gebracht",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "BureauVerbindendeZorg",
+      "date": "2026-01-22",
+      "startTime": "15:00",
+      "endTime": "18:00",
+      "hours": 3.0,
+      "description": "BVZ langs locatie amersfoort alles opmeten",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "ElmarServices",
+      "date": "2026-01-22",
+      "startTime": "22:00",
+      "endTime": "23:00",
+      "hours": 1.0,
+      "description": "Elmar Langs vleuten unify switchen opgehaald",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "BureauVerbindendeZorg",
+      "date": "2026-01-23",
+      "startTime": "12:00",
+      "endTime": "19:00",
+      "hours": 7.0,
+      "description": "BVZ langs ikea utrecht spullen opgehaald, langs almere bank opgehaald spullen gebracht bij locatie amersfoort",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "ElmarServices",
+      "date": "2026-01-26",
+      "startTime": "10:00",
+      "endTime": "17:00",
+      "hours": 7.0,
+      "description": "Elmar Werkzaamheden",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "Qwic",
+      "date": "2026-01-26",
+      "startTime": "17:00",
+      "endTime": "19:30",
+      "hours": 2.5,
+      "description": "Qwick amsterdam geweest testen netwerk systeem",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "ElmarServices",
+      "date": "2026-01-29",
+      "startTime": "10:00",
+      "endTime": "11:30",
+      "hours": 1.5,
+      "description": "Elmar Werkzaamheden",
+      "billable": true,
+      "user": "Ayoub"
+    },
+    {
+      "company": "HetZorgkompas",
+      "date": "2026-01-29",
+      "startTime": "11:30",
+      "endTime": "16:30",
+      "hours": 5.0,
+      "description": "HZK tilburg sloten vervangen en opnieuw opmetingen ramen voor gordijnen",
+      "billable": true,
+      "user": "Ayoub"
+    }
+  ]
+}

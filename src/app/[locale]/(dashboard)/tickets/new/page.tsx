@@ -107,7 +107,7 @@ export default function NewTicketPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -130,11 +130,11 @@ export default function NewTicketPage() {
           <CardHeader>
             <CardTitle>{t("basicInfo")}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent className="space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {/* Company */}
               <div className="space-y-2">
-                <Label htmlFor="companyId">
+                <Label htmlFor="companyId" className="text-base">
                   {tc("company")} <span className="text-destructive">*</span>
                 </Label>
                 <div className="flex items-center gap-2">
@@ -165,7 +165,7 @@ export default function NewTicketPage() {
 
               {/* Contact */}
               <div className="space-y-2">
-                <Label htmlFor="contactId">{tt("contact")}</Label>
+                <Label htmlFor="contactId" className="text-base">{tt("contact")}</Label>
                 <div className="flex items-center gap-2">
                   <div className="flex-1">
                     <Select
@@ -175,7 +175,7 @@ export default function NewTicketPage() {
                       }
                       disabled={!selectedCompanyId}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="h-11">
                         <SelectValue placeholder={t("selectContact")} />
                       </SelectTrigger>
                       <SelectContent>
@@ -199,11 +199,12 @@ export default function NewTicketPage() {
 
             {/* Subject */}
             <div className="space-y-2">
-              <Label htmlFor="subject">
+              <Label htmlFor="subject" className="text-base">
                 {tc("subject")} <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="subject"
+                className="h-12 text-base"
                 placeholder={t("subjectPlaceholder")}
                 {...register("subject")}
               />
@@ -216,11 +217,12 @@ export default function NewTicketPage() {
 
             {/* Description */}
             <div className="space-y-2">
-              <Label htmlFor="description">{tc("description")}</Label>
+              <Label htmlFor="description" className="text-base">{tc("description")}</Label>
               <Textarea
                 id="description"
+                className="text-base min-h-[120px]"
                 placeholder={t("descriptionPlaceholder")}
-                rows={4}
+                rows={6}
                 {...register("description")}
               />
             </div>
@@ -233,17 +235,17 @@ export default function NewTicketPage() {
             <CardTitle>{t("classification")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {/* Priority */}
               <div className="space-y-2">
-                <Label htmlFor="priority">{tc("priority")}</Label>
+                <Label htmlFor="priority" className="text-base">{tc("priority")}</Label>
                 <Select
                   value={watch("priority")}
                   onValueChange={(value) =>
                     setValue("priority", value as TicketCreateInput["priority"])
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-11">
                     <SelectValue placeholder={tc("selectPriority")} />
                   </SelectTrigger>
                   <SelectContent>
@@ -257,14 +259,14 @@ export default function NewTicketPage() {
 
               {/* Category */}
               <div className="space-y-2">
-                <Label htmlFor="category">{tc("category")}</Label>
+                <Label htmlFor="category" className="text-base">{tc("category")}</Label>
                 <Select
                   value={watch("category") || ""}
                   onValueChange={(value) =>
                     setValue("category", value as TicketCreateInput["category"])
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-11">
                     <SelectValue placeholder={tc("selectCategory")} />
                   </SelectTrigger>
                   <SelectContent>
@@ -279,14 +281,14 @@ export default function NewTicketPage() {
 
               {/* Status */}
               <div className="space-y-2">
-                <Label htmlFor="status">{tc("status")}</Label>
+                <Label htmlFor="status" className="text-base">{tc("status")}</Label>
                 <Select
                   value={watch("status")}
                   onValueChange={(value) =>
                     setValue("status", value as TicketCreateInput["status"])
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-11">
                     <SelectValue placeholder={tc("selectStatus")} />
                   </SelectTrigger>
                   <SelectContent>
@@ -310,24 +312,26 @@ export default function NewTicketPage() {
           <CardHeader>
             <CardTitle>{t("itSnippet")}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-5">
             {/* Tasks Performed */}
             <div className="space-y-2">
-              <Label htmlFor="tasksPerformed">{tt("tasksPerformed")}</Label>
+              <Label htmlFor="tasksPerformed" className="text-base">{tt("tasksPerformed")}</Label>
               <Textarea
                 id="tasksPerformed"
+                className="text-base min-h-[100px]"
                 placeholder={t("tasksPlaceholder")}
-                rows={3}
+                rows={4}
                 {...register("tasksPerformed")}
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {/* PC Name */}
               <div className="space-y-2">
-                <Label htmlFor="pcName">{tt("pcName")}</Label>
+                <Label htmlFor="pcName" className="text-base">{tt("pcName")}</Label>
                 <Input
                   id="pcName"
+                  className="h-11 text-base"
                   placeholder={t("pcNamePlaceholder")}
                   {...register("pcName")}
                 />
@@ -335,9 +339,10 @@ export default function NewTicketPage() {
 
               {/* Serial Number */}
               <div className="space-y-2">
-                <Label htmlFor="serialNumber">{tt("serialNumber")}</Label>
+                <Label htmlFor="serialNumber" className="text-base">{tt("serialNumber")}</Label>
                 <Input
                   id="serialNumber"
+                  className="h-11 text-base"
                   placeholder={t("serialPlaceholder")}
                   {...register("serialNumber")}
                 />
@@ -345,9 +350,10 @@ export default function NewTicketPage() {
 
               {/* Office License */}
               <div className="space-y-2">
-                <Label htmlFor="officeLicense">{tt("officeLicense")}</Label>
+                <Label htmlFor="officeLicense" className="text-base">{tt("officeLicense")}</Label>
                 <Input
                   id="officeLicense"
+                  className="h-11 text-base"
                   placeholder={t("licensePlaceholder")}
                   {...register("officeLicense")}
                 />
@@ -356,21 +362,24 @@ export default function NewTicketPage() {
 
             {/* Pending Tasks */}
             <div className="space-y-2">
-              <Label htmlFor="pendingTasks">{tt("pendingTasks")}</Label>
+              <Label htmlFor="pendingTasks" className="text-base">{tt("pendingTasks")}</Label>
               <Textarea
                 id="pendingTasks"
+                className="text-base min-h-[100px]"
                 placeholder={t("pendingPlaceholder")}
-                rows={3}
+                rows={4}
                 {...register("pendingTasks")}
               />
             </div>
 
             {/* Equipment Taken */}
             <div className="space-y-2">
-              <Label htmlFor="equipmentTaken">{tt("equipmentTaken")}</Label>
-              <Input
+              <Label htmlFor="equipmentTaken" className="text-base">{tt("equipmentTaken")}</Label>
+              <Textarea
                 id="equipmentTaken"
+                className="text-base min-h-[80px]"
                 placeholder={t("equipmentPlaceholder")}
+                rows={3}
                 {...register("equipmentTaken")}
               />
             </div>
@@ -380,11 +389,11 @@ export default function NewTicketPage() {
         {/* Footer */}
         <div className="flex items-center justify-end gap-4">
           <Link href="/tickets">
-            <Button type="button" variant="outline">
+            <Button type="button" variant="outline" size="lg">
               {tc("cancel")}
             </Button>
           </Link>
-          <Button type="submit" disabled={isSubmitting}>
+          <Button type="submit" size="lg" disabled={isSubmitting}>
             {isSubmitting ? tc("creating") : t("createTicket")}
           </Button>
         </div>

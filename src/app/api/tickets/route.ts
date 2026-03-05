@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
         createdBy: { select: { id: true, name: true } },
         _count: { select: { timeEntries: true } },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { updatedAt: "desc" },
       skip: (page - 1) * pageSize,
       take: pageSize,
     }),

@@ -40,6 +40,7 @@ interface TicketRow {
   priority: string;
   category: string | null;
   createdAt: string;
+  updatedAt: string;
   company: { id: string; name: string; shortName: string };
   contact: { id: string; name: string } | null;
   assignedTo: { id: string; name: string } | null;
@@ -258,7 +259,7 @@ export default function TicketsPage() {
                         {ticket.assignedTo?.name || "\u2014"}
                       </TableCell>
                       <TableCell className="text-right text-sm text-muted-foreground">
-                        {format(new Date(ticket.createdAt), "dd MMM yyyy")}
+                        {format(new Date(ticket.updatedAt), "dd MMM yyyy")}
                       </TableCell>
                     </TableRow>
                   ))}

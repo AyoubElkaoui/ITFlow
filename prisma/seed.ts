@@ -192,8 +192,22 @@ async function main() {
 
   console.log(`Loaded: ${seedData.companies.length} companies, ${seedData.contacts.length} contacts, ${seedData.tickets.length} tickets, ${seedData.timeEntries.length} time entries, ${seedData.assets.length} assets, ${seedData.assetTicketLinks.length} asset-ticket links`);
 
-  // ── Cleanup existing data ──
-  console.log("Cleaning existing data...");
+  // ── Save stock movement company references before cleanup ──
+  console.log("Saving stock data references...");
+  const stockMovements = await prisma.stockMovement.findMany({
+    where: { companyId: { not: null } },
+    include: { company: { select: { shortName: true } } },
+  });
+  const stockCompanyMap = new Map<string, string>(); // movementId -> companyShortName
+  for (const sm of stockMovements) {
+    if (sm.company) {
+      stockCompanyMap.set(sm.id, sm.company.shortName);
+    }
+  }
+  console.log(`Saved ${stockCompanyMap.size} stock movement company references`);
+
+  // ── Cleanup existing data (preserve StockItem + StockMovement) ──
+  console.log("Cleaning existing data (keeping stock/voorraad)...");
   await prisma.projectTask.deleteMany();
   await prisma.project.deleteMany();
   await prisma.activeTimer.deleteMany();
@@ -213,7 +227,7 @@ async function main() {
   await prisma.auditLog.deleteMany();
   await prisma.company.deleteMany();
   await prisma.user.deleteMany();
-  console.log("Cleaned all existing data");
+  console.log("Cleaned all existing data (stock preserved)");
 
   // ── Users ──
   const hashedPassword = await hash("admin123", 12);
@@ -521,6 +535,20 @@ async function main() {
     assetTicketLinkCount++;
   }
   console.log(`Seeded ${assetTicketLinkCount} asset-ticket links`);
+
+  // ── Restore stock movement company references ──
+  let stockRestored = 0;
+  for (const [movementId, shortName] of stockCompanyMap) {
+    const newCompanyId = companyIds[shortName];
+    if (newCompanyId) {
+      await prisma.stockMovement.update({
+        where: { id: movementId },
+        data: { companyId: newCompanyId },
+      });
+      stockRestored++;
+    }
+  }
+  console.log(`Restored ${stockRestored}/${stockCompanyMap.size} stock movement company references`);
 
   // ── Summary ──
   console.log("\n=== Seed Summary ===");

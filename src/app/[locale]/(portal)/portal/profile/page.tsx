@@ -3,7 +3,8 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { usePortalProfile, useUpdatePortalProfile } from "@/hooks/use-portal";
-import { User, Lock, Phone, Briefcase, Building2 } from "lucide-react";
+import { User, Lock, Phone, Briefcase, Building2, ArrowLeft } from "lucide-react";
+import { Link } from "@/i18n/navigation";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -85,7 +86,15 @@ export default function PortalProfilePage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">{t("title")}</h1>
+      <div className="flex items-center gap-3">
+        <Link href="/portal/tickets">
+          <Button variant="ghost" size="sm">
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            {tc("back")}
+          </Button>
+        </Link>
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
+      </div>
 
       {/* Profile info */}
       <Card>

@@ -217,7 +217,7 @@ export default function TicketsPage() {
                 </TableHeader>
                 <TableBody>
                   {tickets.map((ticket) => (
-                    <TableRow key={ticket.id} className="cursor-pointer">
+                    <TableRow key={ticket.id} className={`cursor-pointer ${ticket.company.name.toLowerCase().includes("elmar") ? "border-l-4 border-l-blue-500 bg-blue-50/50 dark:bg-blue-950/20" : ""}`}>
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <Checkbox
                           checked={selectedIds.includes(ticket.id)}

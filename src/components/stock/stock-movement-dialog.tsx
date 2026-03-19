@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CompanySelect } from "@/components/shared/company-select";
+import { AssetSelect } from "@/components/shared/asset-select";
 import { toast } from "sonner";
 
 type MovementType = "IN" | "OUT" | "ADJUSTMENT";
@@ -49,6 +50,7 @@ export function StockMovementDialog({
   const [note, setNote] = useState("");
   const [companyId, setCompanyId] = useState("");
   const [ticketId, setTicketId] = useState("");
+  const [assetId, setAssetId] = useState("");
 
   function resetForm() {
     setType("IN");
@@ -56,6 +58,7 @@ export function StockMovementDialog({
     setNote("");
     setCompanyId("");
     setTicketId("");
+    setAssetId("");
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -70,6 +73,7 @@ export function StockMovementDialog({
         note: note || undefined,
         companyId: companyId || undefined,
         ticketId: ticketId || undefined,
+        assetId: assetId || undefined,
       });
       toast.success(t("movementCreated"));
       resetForm();
@@ -160,6 +164,16 @@ export function StockMovementDialog({
               placeholder="Ticket ID"
               value={ticketId}
               onChange={(e) => setTicketId(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>{t("movementAsset")}</Label>
+            <AssetSelect
+              value={assetId || undefined}
+              onValueChange={(v) => setAssetId(v === "all" ? "" : v)}
+              placeholder={t("movementAsset")}
+              allowAll
             />
           </div>
 

@@ -29,6 +29,12 @@ const STOCK_CATEGORIES = [
   "PERIPHERAL",
   "COMPONENT",
   "TOOL",
+  "LAPTOP",
+  "DESKTOP",
+  "PRINTER",
+  "MONITOR",
+  "PHONE",
+  "NETWORK_EQUIPMENT",
   "OTHER",
 ] as const;
 
@@ -43,7 +49,6 @@ interface StockItemData {
   quantity: number;
   minStock: number;
   location: string | null;
-  unitPrice: string | number | null;
   notes: string | null;
 }
 
@@ -68,9 +73,6 @@ export function EditStockItemDialog({
   const [sku, setSku] = useState(item.sku || "");
   const [minStock, setMinStock] = useState(String(item.minStock));
   const [location, setLocation] = useState(item.location || "");
-  const [unitPrice, setUnitPrice] = useState(
-    item.unitPrice ? String(item.unitPrice) : "",
-  );
   const [notes, setNotes] = useState(item.notes || "");
 
   useEffect(() => {
@@ -80,7 +82,6 @@ export function EditStockItemDialog({
     setSku(item.sku || "");
     setMinStock(String(item.minStock));
     setLocation(item.location || "");
-    setUnitPrice(item.unitPrice ? String(item.unitPrice) : "");
     setNotes(item.notes || "");
   }, [item]);
 
@@ -94,7 +95,6 @@ export function EditStockItemDialog({
         sku: sku || undefined,
         minStock: parseInt(minStock) || 0,
         location: location || undefined,
-        unitPrice: unitPrice ? parseFloat(unitPrice) : undefined,
         notes: notes || undefined,
       });
       toast.success(t("itemUpdated"));
@@ -160,28 +160,15 @@ export function EditStockItemDialog({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-min-stock">{t("minStock")}</Label>
-              <Input
-                id="edit-min-stock"
-                type="number"
-                min={0}
-                value={minStock}
-                onChange={(e) => setMinStock(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-unit-price">{t("unitPrice")}</Label>
-              <Input
-                id="edit-unit-price"
-                type="number"
-                min={0}
-                step="0.01"
-                value={unitPrice}
-                onChange={(e) => setUnitPrice(e.target.value)}
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="edit-min-stock">{t("minStock")}</Label>
+            <Input
+              id="edit-min-stock"
+              type="number"
+              min={0}
+              value={minStock}
+              onChange={(e) => setMinStock(e.target.value)}
+            />
           </div>
 
           <div className="space-y-2">

@@ -14,6 +14,12 @@ const stockItemCreateSchema = z.object({
       "PERIPHERAL",
       "COMPONENT",
       "TOOL",
+      "LAPTOP",
+      "DESKTOP",
+      "PRINTER",
+      "MONITOR",
+      "PHONE",
+      "NETWORK_EQUIPMENT",
       "OTHER",
     ])
     .default("OTHER"),
@@ -22,7 +28,6 @@ const stockItemCreateSchema = z.object({
   quantity: z.number().int().min(0).default(0),
   minStock: z.number().int().min(0).default(0),
   location: z.string().optional(),
-  unitPrice: z.number().min(0).optional(),
   notes: z.string().optional(),
 });
 

@@ -10,6 +10,7 @@ const movementCreateSchema = z.object({
   note: z.string().optional(),
   companyId: z.string().optional(),
   ticketId: z.string().optional(),
+  assetId: z.string().optional(),
 });
 
 export async function GET(
@@ -28,6 +29,7 @@ export async function GET(
     include: {
       company: { select: { id: true, name: true, shortName: true } },
       ticket: { select: { id: true, ticketNumber: true, subject: true } },
+      asset: { select: { id: true, name: true, assetTag: true } },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -57,7 +59,7 @@ export async function POST(
     );
   }
 
-  const { type, quantity, note, companyId, ticketId } = parsed.data;
+  const { type, quantity, note, companyId, ticketId, assetId } = parsed.data;
 
   const current = await prisma.stockItem.findUnique({
     where: { id },
@@ -100,11 +102,13 @@ export async function POST(
         note: note || null,
         companyId: companyId || null,
         ticketId: ticketId || null,
+        assetId: assetId || null,
         performedBy: user.id,
       },
       include: {
         company: { select: { id: true, name: true, shortName: true } },
         ticket: { select: { id: true, ticketNumber: true, subject: true } },
+        asset: { select: { id: true, name: true, assetTag: true } },
       },
     }),
     prisma.stockItem.update({

@@ -59,3 +59,14 @@ export function useUpdateCompany(id: string) {
     },
   });
 }
+
+export function useDeleteCompany() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      fetchJson(`/api/companies/${id}`, { method: "DELETE" }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["companies"] });
+    },
+  });
+}

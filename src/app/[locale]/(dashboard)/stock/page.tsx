@@ -40,7 +40,6 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Plus,
   Search,
-  Package,
   Trash2,
   Pencil,
   ArrowDownUp,
@@ -60,6 +59,12 @@ const STOCK_CATEGORIES = [
   "PERIPHERAL",
   "COMPONENT",
   "TOOL",
+  "LAPTOP",
+  "DESKTOP",
+  "PRINTER",
+  "MONITOR",
+  "PHONE",
+  "NETWORK_EQUIPMENT",
   "OTHER",
 ] as const;
 
@@ -74,7 +79,6 @@ interface StockItemRow {
   quantity: number;
   minStock: number;
   location: string | null;
-  unitPrice: string | number | null;
   notes: string | null;
   isActive: boolean;
   createdAt: string;
@@ -93,6 +97,12 @@ const stockFormSchema = z.object({
       "PERIPHERAL",
       "COMPONENT",
       "TOOL",
+      "LAPTOP",
+      "DESKTOP",
+      "PRINTER",
+      "MONITOR",
+      "PHONE",
+      "NETWORK_EQUIPMENT",
       "OTHER",
     ])
     .default("OTHER"),
@@ -101,7 +111,6 @@ const stockFormSchema = z.object({
   quantity: z.coerce.number().int().min(0).default(0),
   minStock: z.coerce.number().int().min(0).default(0),
   location: z.string().optional(),
-  unitPrice: z.coerce.number().min(0).optional(),
   notes: z.string().optional(),
 });
 
@@ -131,10 +140,6 @@ export default function StockPage() {
   // Summary
   const totalCount = items.length;
   const lowStockCount = items.filter((i) => i.quantity <= i.minStock).length;
-  const totalValue = items.reduce((sum, i) => {
-    const price = typeof i.unitPrice === "string" ? parseFloat(i.unitPrice) : (i.unitPrice || 0);
-    return sum + price * i.quantity;
-  }, 0);
 
   function handleDelete(id: string) {
     if (!window.confirm(t("deleteConfirm"))) return;
@@ -157,7 +162,7 @@ export default function StockPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
@@ -186,23 +191,6 @@ export default function StockPage() {
                   {t("lowStock")}
                 </p>
                 <p className="text-2xl font-bold">{lowStockCount}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-blue-100 dark:bg-blue-900 p-2">
-                <Package className="h-5 w-5 text-blue-600 dark:text-blue-300" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  {t("totalValue")}
-                </p>
-                <p className="text-2xl font-bold">
-                  &euro;{totalValue.toFixed(2)}
-                </p>
               </div>
             </div>
           </CardContent>
@@ -256,7 +244,7 @@ export default function StockPage() {
             </div>
           ) : items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Package className="h-12 w-12 text-muted-foreground mb-4" />
+              <Boxes className="h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium">{t("noItems")}</h3>
               <p className="text-sm text-muted-foreground mt-1">
                 {search || category !== "all" || lowStock
@@ -277,9 +265,6 @@ export default function StockPage() {
                       {t("minStock")}
                     </TableHead>
                     <TableHead>{t("location")}</TableHead>
-                    <TableHead className="text-right">
-                      {t("unitPrice")}
-                    </TableHead>
                     <TableHead className="w-[120px]">{tc("actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -324,11 +309,6 @@ export default function StockPage() {
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
                           {item.location || "\u2014"}
-                        </TableCell>
-                        <TableCell className="text-right text-sm">
-                          {item.unitPrice
-                            ? `\u20AC${typeof item.unitPrice === "string" ? parseFloat(item.unitPrice).toFixed(2) : Number(item.unitPrice).toFixed(2)}`
-                            : "\u2014"}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
@@ -433,7 +413,6 @@ function CreateStockItemDialog({
         description: data.description || undefined,
         sku: data.sku || undefined,
         location: data.location || undefined,
-        unitPrice: data.unitPrice || undefined,
         notes: data.notes || undefined,
       });
       toast.success(t("itemCreated"));
@@ -522,22 +501,10 @@ function CreateStockItemDialog({
             </div>
           </div>
 
-          {/* Location & Unit Price */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="stock-location">{t("location")}</Label>
-              <Input id="stock-location" {...form.register("location")} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="stock-price">{t("unitPrice")}</Label>
-              <Input
-                id="stock-price"
-                type="number"
-                min={0}
-                step="0.01"
-                {...form.register("unitPrice")}
-              />
-            </div>
+          {/* Location */}
+          <div className="space-y-2">
+            <Label htmlFor="stock-location">{t("location")}</Label>
+            <Input id="stock-location" {...form.register("location")} />
           </div>
 
           {/* Notes */}

@@ -60,6 +60,12 @@ enum StockCategory {
   PERIPHERAL
   COMPONENT
   TOOL
+  LAPTOP
+  DESKTOP
+  PRINTER
+  MONITOR
+  PHONE
+  NETWORK_EQUIPMENT
   OTHER
 }
 
@@ -258,8 +264,9 @@ model Asset {
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 
-  company     Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  ticketLinks AssetTicket[]
+  company        Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  ticketLinks    AssetTicket[]
+  stockMovements StockMovement[]
 
   @@index([companyId])
   @@index([status])
@@ -326,7 +333,6 @@ model StockItem {
   quantity    Int           @default(0)
   minStock    Int           @default(0)
   location    String?
-  unitPrice   Decimal?      @db.Decimal(10, 2)
   notes       String?
   isActive    Boolean       @default(true)
   createdAt   DateTime      @default(now())
@@ -346,16 +352,19 @@ model StockMovement {
   note        String?
   companyId   String?
   ticketId    String?
+  assetId     String?
   performedBy String
   createdAt   DateTime          @default(now())
 
   stockItem StockItem @relation(fields: [stockItemId], references: [id], onDelete: Cascade)
   company   Company?  @relation(fields: [companyId], references: [id], onDelete: SetNull)
   ticket    Ticket?   @relation(fields: [ticketId], references: [id], onDelete: SetNull)
+  asset     Asset?    @relation(fields: [assetId], references: [id], onDelete: SetNull)
 
   @@index([stockItemId])
   @@index([companyId])
   @@index([ticketId])
+  @@index([assetId])
   @@index([createdAt])
 }
 

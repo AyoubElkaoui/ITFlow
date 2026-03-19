@@ -3,7 +3,8 @@
 import { useTranslations } from "next-intl";
 
 import { use, useState } from "react";
-import { useCompany, useUpdateCompany } from "@/hooks/use-companies";
+import { useRouter } from "next/navigation";
+import { useCompany, useUpdateCompany, useDeleteCompany } from "@/hooks/use-companies";
 import { useTickets } from "@/hooks/use-tickets";
 import { useTimeEntries } from "@/hooks/use-time-entries";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +28,7 @@ import {
   Globe,
   User,
   Pencil,
+  Trash2,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { format } from "date-fns";
@@ -43,6 +45,8 @@ export default function CompanyDetailPage({
   const { data: ticketsData } = useTickets({ companyId: id });
   const { data: timeData } = useTimeEntries({ companyId: id });
   const updateCompany = useUpdateCompany(id);
+  const deleteCompany = useDeleteCompany();
+  const router = useRouter();
   const [showEdit, setShowEdit] = useState(false);
   const t = useTranslations("companies");
   const tc = useTranslations("common");
@@ -132,6 +136,17 @@ export default function CompanyDetailPage({
     }
   }
 
+  async function handleDelete() {
+    if (!window.confirm(t("deleteConfirm"))) return;
+    try {
+      await deleteCompany.mutateAsync(id);
+      toast.success(ttoast("deleted", { entity: t("title") }));
+      router.push("/companies");
+    } catch {
+      toast.error(ttoast("failed", { action: "delete", entity: "company" }));
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -155,6 +170,14 @@ export default function CompanyDetailPage({
         </Button>
         <Button variant="outline" onClick={toggleActive}>
           {c.isActive ? t("deactivate") : t("activate")}
+        </Button>
+        <Button
+          variant="destructive"
+          size="icon"
+          onClick={handleDelete}
+          disabled={deleteCompany.isPending}
+        >
+          <Trash2 className="h-4 w-4" />
         </Button>
       </div>
 

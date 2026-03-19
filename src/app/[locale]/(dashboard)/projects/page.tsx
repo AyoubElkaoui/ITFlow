@@ -46,8 +46,6 @@ import {
   Trash2,
   Building2,
   Calendar,
-  CheckCircle2,
-  Circle,
   Loader2,
   FolderKanban,
 } from "lucide-react";
@@ -416,20 +414,20 @@ function ProjectDetailSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle className="text-left">{currentProject.title}</SheetTitle>
+      <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+        <SheetHeader className="border-b pb-4">
+          <SheetTitle className="text-left text-lg">{currentProject.title}</SheetTitle>
         </SheetHeader>
 
-        <div className="space-y-6 mt-4">
+        <div className="space-y-6 px-4 pb-6">
           {/* Status selector */}
-          <div className="space-y-2">
-            <Label>{tc("status")}</Label>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground uppercase tracking-wide">{tc("status")}</Label>
             <Select
               value={currentProject.status}
               onValueChange={handleStatusChange}
             >
-              <SelectTrigger>
+              <SelectTrigger className="h-9">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -443,23 +441,23 @@ function ProjectDetailSheet({
           </div>
 
           {/* Info */}
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="text-muted-foreground">{tc("priority")}</span>
-              <Badge className={cn("ml-2", priorityColor(currentProject.priority))}>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted-foreground uppercase tracking-wide">{tc("priority")}</span>
+              <Badge className={cn("text-xs", priorityColor(currentProject.priority))}>
                 {tp(currentProject.priority)}
               </Badge>
             </div>
             {currentProject.company && (
-              <div>
-                <span className="text-muted-foreground">{tc("company")}</span>
-                <span className="ml-2 font-medium">{currentProject.company.shortName}</span>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground uppercase tracking-wide">{tc("company")}</span>
+                <span className="text-sm font-medium">{currentProject.company.shortName}</span>
               </div>
             )}
             {currentProject.dueDate && (
-              <div>
-                <span className="text-muted-foreground">{t("dueDate")}</span>
-                <span className="ml-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground uppercase tracking-wide">{t("dueDate")}</span>
+                <span className="text-sm">
                   {new Date(currentProject.dueDate).toLocaleDateString("nl-NL")}
                 </span>
               </div>
@@ -467,8 +465,8 @@ function ProjectDetailSheet({
           </div>
 
           {currentProject.description && (
-            <div className="space-y-1">
-              <Label className="text-muted-foreground">{tc("description")}</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground uppercase tracking-wide">{tc("description")}</Label>
               <p className="text-sm whitespace-pre-wrap">{currentProject.description}</p>
             </div>
           )}
@@ -476,7 +474,7 @@ function ProjectDetailSheet({
           {/* Tasks */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold">{t("tasks")}</h3>
+              <h3 className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">{t("tasks")}</h3>
               {totalTasks > 0 && (
                 <span className="text-xs text-muted-foreground">
                   {completedTasks}/{totalTasks}
@@ -495,11 +493,11 @@ function ProjectDetailSheet({
               </div>
             )}
 
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               {currentProject.tasks.map((task) => (
                 <div
                   key={task.id}
-                  className="flex items-center gap-2 py-1.5 group"
+                  className="flex items-center gap-2.5 py-1.5 px-2 rounded-md group hover:bg-muted/50"
                 >
                   <Checkbox
                     checked={task.completed}
@@ -533,14 +531,15 @@ function ProjectDetailSheet({
                 value={newTaskTitle}
                 onChange={(e) => setNewTaskTitle(e.target.value)}
                 placeholder={t("addTaskPlaceholder")}
-                className="text-sm"
+                className="text-sm h-9"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleAddTask();
                 }}
               />
               <Button
-                size="sm"
+                size="icon"
                 variant="outline"
+                className="h-9 w-9 shrink-0"
                 onClick={handleAddTask}
                 disabled={!newTaskTitle.trim() || createTask.isPending}
               >
@@ -552,11 +551,12 @@ function ProjectDetailSheet({
           {/* Notes */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label>{tc("notes")}</Label>
+              <span className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">{tc("notes")}</span>
               {!editingNotes && (
                 <Button
                   variant="ghost"
                   size="sm"
+                  className="h-7 text-xs"
                   onClick={() => {
                     setNotes(currentProject.notes || "");
                     setEditingNotes(true);
@@ -575,11 +575,12 @@ function ProjectDetailSheet({
                   placeholder={t("notesPlaceholder")}
                 />
                 <div className="flex gap-2">
-                  <Button size="sm" onClick={handleSaveNotes}>
+                  <Button size="sm" className="h-8" onClick={handleSaveNotes}>
                     {tc("save")}
                   </Button>
                   <Button
                     size="sm"
+                    className="h-8"
                     variant="outline"
                     onClick={() => setEditingNotes(false)}
                   >
@@ -599,6 +600,7 @@ function ProjectDetailSheet({
             <Button
               variant="destructive"
               size="sm"
+              className="w-full"
               onClick={() => onDelete(currentProject.id)}
             >
               <Trash2 className="mr-1.5 h-3.5 w-3.5" />

@@ -84,3 +84,38 @@ export async function PATCH(
 
   return NextResponse.json(company);
 }
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  let user;
+  try {
+    user = await getSessionUser();
+  } catch {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await params;
+
+  const company = await prisma.company.findUnique({
+    where: { id },
+    select: { id: true, name: true },
+  });
+
+  if (!company) {
+    return NextResponse.json({ error: "Company not found" }, { status: 404 });
+  }
+
+  await prisma.company.delete({ where: { id } });
+
+  safeLogAudit({
+    entityType: "Company",
+    entityId: id,
+    action: "DELETE",
+    userId: user.id,
+    metadata: { name: company.name },
+  });
+
+  return NextResponse.json({ success: true });
+}

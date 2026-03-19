@@ -26,13 +26,18 @@ interface StockItemCreateInput {
     | "PERIPHERAL"
     | "COMPONENT"
     | "TOOL"
+    | "LAPTOP"
+    | "DESKTOP"
+    | "PRINTER"
+    | "MONITOR"
+    | "PHONE"
+    | "NETWORK_EQUIPMENT"
     | "OTHER";
   description?: string;
   sku?: string;
   quantity?: number;
   minStock?: number;
   location?: string;
-  unitPrice?: number;
   notes?: string;
 }
 
@@ -43,7 +48,6 @@ interface StockItemUpdateInput {
   sku?: string;
   minStock?: number;
   location?: string;
-  unitPrice?: number;
   notes?: string;
 }
 
@@ -53,6 +57,7 @@ interface StockMovementCreateInput {
   note?: string;
   companyId?: string;
   ticketId?: string;
+  assetId?: string;
 }
 
 export function useStockItems(filters: StockFilters = {}) {

@@ -33,11 +33,8 @@ import { toast } from "sonner";
 interface AssetItem {
   id: string;
   type: string;
-  brand: string | null;
-  model: string | null;
-  name: string | null;
-  serialNumber: string | null;
-  status: string;
+  name: string;
+  assignedTo: string | null;
 }
 
 const assetTypeIcons: Record<
@@ -62,25 +59,6 @@ function AssetTypeIcon({
 }) {
   const Icon = assetTypeIcons[type] || Package;
   return <Icon className={className} />;
-}
-
-function assetDisplayName(asset: AssetItem, unnamed: string): string {
-  if (asset.name) return asset.name;
-  const parts = [asset.brand, asset.model].filter(Boolean);
-  return parts.length > 0 ? parts.join(" ") : unnamed;
-}
-
-function assetSubline(asset: AssetItem): string | null {
-  if (!asset.name) return null;
-  const parts = [asset.brand, asset.model].filter(Boolean);
-  return parts.length > 0 ? parts.join(" ") : null;
-}
-
-function formatLabel(value: string): string {
-  return value
-    .replace(/_/g, " ")
-    .toLowerCase()
-    .replace(/^\w/, (c) => c.toUpperCase());
 }
 
 interface LinkAssetDialogProps {
@@ -126,9 +104,7 @@ export function LinkAssetDialog({
     return filtered.filter(
       (a) =>
         a.name?.toLowerCase().includes(q) ||
-        a.brand?.toLowerCase().includes(q) ||
-        a.model?.toLowerCase().includes(q) ||
-        a.serialNumber?.toLowerCase().includes(q) ||
+        a.assignedTo?.toLowerCase().includes(q) ||
         a.type.toLowerCase().includes(q),
     );
   }, [allAssets, linkedAssets, search]);
@@ -151,7 +127,7 @@ export function LinkAssetDialog({
         assetId: selectedAssetId,
         note: note.trim() || undefined,
       });
-      toast.success(t("assetLinked") as string);
+      toast.success("Asset linked");
       handleOpenChange(false);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to link asset");
@@ -212,27 +188,13 @@ export function LinkAssetDialog({
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-sm font-medium">
-                        {assetDisplayName(asset, t("unnamed"))}
+                        {asset.name}
                       </div>
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <span>{formatLabel(asset.type)}</span>
-                        {assetSubline(asset) && (
-                          <>
-                            <span className="text-border">|</span>
-                            <span className="truncate">
-                              {assetSubline(asset)}
-                            </span>
-                          </>
-                        )}
-                        {asset.serialNumber && (
-                          <>
-                            <span className="text-border">|</span>
-                            <span className="truncate font-mono">
-                              {asset.serialNumber}
-                            </span>
-                          </>
-                        )}
-                      </div>
+                      {asset.assignedTo && (
+                        <div className="text-xs text-muted-foreground truncate">
+                          {asset.assignedTo}
+                        </div>
+                      )}
                     </div>
                     {selectedAssetId === asset.id && (
                       <Check className="size-4 shrink-0 text-primary" />

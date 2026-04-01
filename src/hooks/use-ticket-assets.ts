@@ -20,11 +20,8 @@ interface AssetLink {
   asset: {
     id: string;
     type: string;
-    brand: string | null;
-    model: string | null;
-    name: string | null;
-    serialNumber: string | null;
-    status: string;
+    name: string;
+    assignedTo: string | null;
     company: { shortName: string };
   };
 }

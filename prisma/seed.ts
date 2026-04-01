@@ -371,16 +371,8 @@ async function main() {
       data: {
         companyId: cId,
         type: a.type as "LAPTOP" | "DESKTOP" | "PRINTER" | "MONITOR" | "PHONE" | "NETWORK" | "OTHER",
-        name: emptyToNull(a.name),
-        assetTag: emptyToNull(a.name),
-        brand: emptyToNull(a.brand),
-        model: emptyToNull(a.model),
-        serialNumber: emptyToNull(a.serialNumber),
-        purchaseDate: parseDate(a.purchaseDate),
-        warrantyEnd: parseDate(a.warrantyEnd),
+        name: a.name || "Unnamed",
         assignedTo: emptyToNull(a.assignedTo),
-        status: a.status as "ACTIVE" | "IN_REPAIR" | "STORED" | "RETIRED",
-        notes: emptyToNull(a.notes),
       },
     });
     assetIds.set(`${a.company}:${a.name}`, asset.id);

@@ -36,7 +36,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Plus,
   Search,
@@ -74,15 +73,12 @@ interface StockItemRow {
   id: string;
   name: string;
   category: StockCategory;
-  description: string | null;
-  sku: string | null;
   quantity: number;
   minStock: number;
   location: string | null;
-  notes: string | null;
   isActive: boolean;
   createdAt: string;
-  _count?: { movements: number };
+  _count?: { movements: number; assets: number };
 }
 
 // -- Zod schema for create form -----------------------------------------------
@@ -106,12 +102,9 @@ const stockFormSchema = z.object({
       "OTHER",
     ])
     .default("OTHER"),
-  description: z.string().optional(),
-  sku: z.string().optional(),
   quantity: z.coerce.number().int().min(0).default(0),
   minStock: z.coerce.number().int().min(0).default(0),
   location: z.string().optional(),
-  notes: z.string().optional(),
 });
 
 type StockFormData = z.infer<typeof stockFormSchema>;
@@ -257,15 +250,14 @@ export default function StockPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{t("name")}</TableHead>
-                    <TableHead>{t("category")}</TableHead>
-                    <TableHead>{t("sku")}</TableHead>
-                    <TableHead className="text-right">{t("quantity")}</TableHead>
+                    <TableHead>Naam</TableHead>
+                    <TableHead>Categorie</TableHead>
+                    <TableHead className="text-right">Aantal</TableHead>
                     <TableHead className="text-right">
-                      {t("minStock")}
+                      Min. voorraad
                     </TableHead>
-                    <TableHead>{t("location")}</TableHead>
-                    <TableHead className="w-[120px]">{tc("actions")}</TableHead>
+                    <TableHead>Locatie</TableHead>
+                    <TableHead className="w-[120px]">Acties</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -280,17 +272,9 @@ export default function StockPage() {
                               <AlertTriangle className="h-4 w-4 text-red-500" />
                             )}
                           </div>
-                          {item.description && (
-                            <p className="text-xs text-muted-foreground truncate max-w-[200px]">
-                              {item.description}
-                            </p>
-                          )}
                         </TableCell>
                         <TableCell>
                           <Badge variant="secondary">{t(item.category)}</Badge>
-                        </TableCell>
-                        <TableCell className="font-mono text-sm text-muted-foreground">
-                          {item.sku || "\u2014"}
                         </TableCell>
                         <TableCell className="text-right">
                           <Badge
@@ -397,12 +381,9 @@ function CreateStockItemDialog({
     defaultValues: {
       name: "",
       category: "OTHER",
-      description: "",
-      sku: "",
       quantity: 0,
       minStock: 0,
       location: "",
-      notes: "",
     },
   });
 
@@ -410,10 +391,7 @@ function CreateStockItemDialog({
     try {
       await createItem.mutateAsync({
         ...data,
-        description: data.description || undefined,
-        sku: data.sku || undefined,
         location: data.location || undefined,
-        notes: data.notes || undefined,
       });
       toast.success(t("itemCreated"));
       form.reset();
@@ -441,42 +419,26 @@ function CreateStockItemDialog({
             )}
           </div>
 
-          {/* Category & SKU */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>{t("category")}</Label>
-              <Select
-                value={form.watch("category")}
-                onValueChange={(v) =>
-                  form.setValue("category", v as StockCategory)
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {STOCK_CATEGORIES.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {t(cat)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="stock-sku">{t("sku")}</Label>
-              <Input id="stock-sku" {...form.register("sku")} />
-            </div>
-          </div>
-
-          {/* Description */}
+          {/* Category */}
           <div className="space-y-2">
-            <Label htmlFor="stock-description">{t("description")}</Label>
-            <Textarea
-              id="stock-description"
-              rows={2}
-              {...form.register("description")}
-            />
+            <Label>{t("category")}</Label>
+            <Select
+              value={form.watch("category")}
+              onValueChange={(v) =>
+                form.setValue("category", v as StockCategory)
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {STOCK_CATEGORIES.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {t(cat)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Quantity & Min Stock */}
@@ -505,16 +467,6 @@ function CreateStockItemDialog({
           <div className="space-y-2">
             <Label htmlFor="stock-location">{t("location")}</Label>
             <Input id="stock-location" {...form.register("location")} />
-          </div>
-
-          {/* Notes */}
-          <div className="space-y-2">
-            <Label htmlFor="stock-notes">{tc("notes")}</Label>
-            <Textarea
-              id="stock-notes"
-              rows={2}
-              {...form.register("notes")}
-            />
           </div>
 
           {/* Actions */}

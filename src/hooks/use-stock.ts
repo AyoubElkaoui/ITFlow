@@ -33,31 +33,26 @@ interface StockItemCreateInput {
     | "PHONE"
     | "NETWORK_EQUIPMENT"
     | "OTHER";
-  description?: string;
-  sku?: string;
   quantity?: number;
   minStock?: number;
   location?: string;
-  notes?: string;
 }
 
 interface StockItemUpdateInput {
   name?: string;
   category?: string;
-  description?: string;
-  sku?: string;
   minStock?: number;
   location?: string;
-  notes?: string;
 }
 
 interface StockMovementCreateInput {
-  type: "IN" | "OUT" | "ADJUSTMENT";
+  type: "IN" | "OUT";
   quantity: number;
   note?: string;
   companyId?: string;
-  ticketId?: string;
-  assetId?: string;
+  assetName?: string;
+  assignedTo?: string;
+  returnAssetId?: string;
 }
 
 export function useStockItems(filters: StockFilters = {}) {
@@ -143,6 +138,7 @@ export function useCreateStockMovement(stockItemId: string) {
       qc.invalidateQueries({ queryKey: ["stock-items"] });
       qc.invalidateQueries({ queryKey: ["stock-item", stockItemId] });
       qc.invalidateQueries({ queryKey: ["stock-movements", stockItemId] });
+      qc.invalidateQueries({ queryKey: ["assets"] });
     },
   });
 }

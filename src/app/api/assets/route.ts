@@ -7,28 +7,10 @@ import { getSessionUser } from "@/lib/auth-utils";
 const assetCreateSchema = z.object({
   companyId: z.string().min(1, "Company is required"),
   type: z
-    .enum([
-      "LAPTOP",
-      "DESKTOP",
-      "PRINTER",
-      "MONITOR",
-      "PHONE",
-      "NETWORK",
-      "OTHER",
-    ])
+    .enum(["LAPTOP", "DESKTOP", "PRINTER", "MONITOR", "PHONE", "NETWORK", "OTHER"])
     .default("OTHER"),
-  brand: z.string().optional(),
-  model: z.string().optional(),
-  name: z.string().optional(),
-  assetTag: z.string().optional(),
-  serialNumber: z.string().optional(),
-  purchaseDate: z.coerce.date().optional(),
-  warrantyEnd: z.coerce.date().optional(),
+  name: z.string().min(1, "Name is required"),
   assignedTo: z.string().optional(),
-  status: z
-    .enum(["ACTIVE", "IN_REPAIR", "STORED", "RETIRED"])
-    .default("ACTIVE"),
-  notes: z.string().optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -41,33 +23,18 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const search = searchParams.get("search") || "";
   const companyId = searchParams.get("companyId");
-  const status = searchParams.get("status");
   const type = searchParams.get("type");
 
   const where = {
     ...(search && {
       OR: [
         { name: { contains: search, mode: "insensitive" as const } },
-        { assetTag: { contains: search, mode: "insensitive" as const } },
-        { brand: { contains: search, mode: "insensitive" as const } },
-        { model: { contains: search, mode: "insensitive" as const } },
-        { serialNumber: { contains: search, mode: "insensitive" as const } },
         { assignedTo: { contains: search, mode: "insensitive" as const } },
       ],
     }),
     ...(companyId && { companyId }),
-    ...(status && {
-      status: status as "ACTIVE" | "IN_REPAIR" | "STORED" | "RETIRED",
-    }),
     ...(type && {
-      type: type as
-        | "LAPTOP"
-        | "DESKTOP"
-        | "PRINTER"
-        | "MONITOR"
-        | "PHONE"
-        | "NETWORK"
-        | "OTHER",
+      type: type as "LAPTOP" | "DESKTOP" | "PRINTER" | "MONITOR" | "PHONE" | "NETWORK" | "OTHER",
     }),
   };
 

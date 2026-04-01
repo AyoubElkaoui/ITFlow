@@ -13,7 +13,6 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
 
 interface AssetFilters {
   companyId?: string;
-  status?: string;
   type?: string;
   search?: string;
 }
@@ -21,37 +20,20 @@ interface AssetFilters {
 interface AssetCreateInput {
   companyId: string;
   type?: "LAPTOP" | "DESKTOP" | "PRINTER" | "MONITOR" | "PHONE" | "NETWORK" | "OTHER";
-  brand?: string;
-  model?: string;
-  name?: string;
-  assetTag?: string;
-  serialNumber?: string;
-  purchaseDate?: Date | string;
-  warrantyEnd?: Date | string;
+  name: string;
   assignedTo?: string;
-  status?: "ACTIVE" | "IN_REPAIR" | "STORED" | "RETIRED";
-  notes?: string;
 }
 
 interface AssetUpdateInput {
   companyId?: string;
   type?: "LAPTOP" | "DESKTOP" | "PRINTER" | "MONITOR" | "PHONE" | "NETWORK" | "OTHER";
-  brand?: string;
-  model?: string;
   name?: string;
-  assetTag?: string;
-  serialNumber?: string;
-  purchaseDate?: Date | string;
-  warrantyEnd?: Date | string;
   assignedTo?: string;
-  status?: "ACTIVE" | "IN_REPAIR" | "STORED" | "RETIRED";
-  notes?: string;
 }
 
 export function useAssets(filters: AssetFilters = {}) {
   const params = new URLSearchParams();
   if (filters.search) params.set("search", filters.search);
-  if (filters.status) params.set("status", filters.status);
   if (filters.type) params.set("type", filters.type);
   if (filters.companyId) params.set("companyId", filters.companyId);
 
@@ -80,6 +62,7 @@ export function useCreateAsset() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["assets"] });
+      qc.invalidateQueries({ queryKey: ["stock-items"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
@@ -109,6 +92,7 @@ export function useDeleteAsset() {
       fetchJson(`/api/assets/${id}`, { method: "DELETE" }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["assets"] });
+      qc.invalidateQueries({ queryKey: ["stock-items"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });

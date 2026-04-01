@@ -9,7 +9,6 @@ import {
 } from "@/hooks/use-ticket-assets";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import {
   Laptop,
   Monitor,
@@ -48,28 +47,6 @@ function AssetTypeIcon({
   return <Icon className={className} />;
 }
 
-const assetStatusStyles: Record<string, string> = {
-  ACTIVE: "bg-green-500/15 text-green-400 border-green-500/30",
-  IN_REPAIR: "bg-orange-500/15 text-orange-400 border-orange-500/30",
-  STORED: "bg-blue-500/15 text-blue-400 border-blue-500/30",
-  RETIRED: "bg-muted text-muted-foreground border-border",
-};
-
-function assetDisplayName(
-  asset: AssetLink["asset"],
-  t: (key: string) => string,
-): string {
-  if (asset.name) return asset.name;
-  const parts = [asset.brand, asset.model].filter(Boolean);
-  return parts.length > 0 ? parts.join(" ") : t("unnamed");
-}
-
-function assetSubtitle(asset: AssetLink["asset"]): string | null {
-  if (!asset.name) return null;
-  const parts = [asset.brand, asset.model].filter(Boolean);
-  return parts.length > 0 ? parts.join(" ") : null;
-}
-
 interface TicketAssetsProps {
   ticketId: string;
   companyId: string;
@@ -84,7 +61,7 @@ export function TicketAssets({ ticketId, companyId }: TicketAssetsProps) {
   async function handleUnlink(linkId: string) {
     try {
       await unlinkAsset.mutateAsync(linkId);
-      toast.success(t("assetUnlinked") as string);
+      toast.success("Asset unlinked");
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Failed to unlink asset",
@@ -125,7 +102,7 @@ export function TicketAssets({ ticketId, companyId }: TicketAssetsProps) {
         </div>
       ) : (
         <div className="space-y-2">
-          {assetLinks.map((link) => (
+          {assetLinks.map((link: AssetLink) => (
             <div
               key={link.id}
               className="flex items-center gap-3 rounded-lg border bg-card p-3"
@@ -140,35 +117,17 @@ export function TicketAssets({ ticketId, companyId }: TicketAssetsProps) {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="truncate text-sm font-medium">
-                    {assetDisplayName(link.asset, t as (key: string) => string)}
+                    {link.asset.name}
                   </span>
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "text-xs font-medium",
-                      assetStatusStyles[link.asset.status] || "",
-                    )}
-                  >
-                    {t(link.asset.status as any)}
+                  <Badge variant="outline" className="text-xs">
+                    {t(link.asset.type as "LAPTOP" | "DESKTOP" | "PRINTER" | "MONITOR" | "PHONE" | "NETWORK" | "OTHER")}
                   </Badge>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  {assetSubtitle(link.asset) && (
-                    <span className="truncate">
-                      {assetSubtitle(link.asset)}
-                    </span>
-                  )}
-                  {link.asset.serialNumber && (
-                    <>
-                      {assetSubtitle(link.asset) && (
-                        <span className="text-border">|</span>
-                      )}
-                      <span className="truncate font-mono">
-                        {link.asset.serialNumber}
-                      </span>
-                    </>
-                  )}
-                </div>
+                {link.asset.assignedTo && (
+                  <p className="text-xs text-muted-foreground">
+                    {link.asset.assignedTo}
+                  </p>
+                )}
                 {link.note && (
                   <p className="mt-1 text-xs text-muted-foreground/80 italic">
                     {link.note}

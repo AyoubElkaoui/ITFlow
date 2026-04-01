@@ -63,10 +63,8 @@ export async function GET() {
       _sum: { hours: true },
       where: { date: { gte: monthStart, lte: monthEnd } },
     }),
-    // Total active assets
-    prisma.asset.count({
-      where: { status: "ACTIVE" },
-    }),
+    // Total deployed assets
+    prisma.asset.count(),
     // Tickets grouped by status
     prisma.ticket.groupBy({
       by: ["status"],

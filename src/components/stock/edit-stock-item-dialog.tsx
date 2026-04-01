@@ -6,7 +6,6 @@ import { useUpdateStockItem } from "@/hooks/use-stock";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -44,12 +43,9 @@ interface StockItemData {
   id: string;
   name: string;
   category: StockCategory;
-  description: string | null;
-  sku: string | null;
   quantity: number;
   minStock: number;
   location: string | null;
-  notes: string | null;
 }
 
 interface EditStockItemDialogProps {
@@ -69,20 +65,14 @@ export function EditStockItemDialog({
 
   const [name, setName] = useState(item.name);
   const [category, setCategory] = useState<StockCategory>(item.category);
-  const [description, setDescription] = useState(item.description || "");
-  const [sku, setSku] = useState(item.sku || "");
   const [minStock, setMinStock] = useState(String(item.minStock));
   const [location, setLocation] = useState(item.location || "");
-  const [notes, setNotes] = useState(item.notes || "");
 
   useEffect(() => {
     setName(item.name);
     setCategory(item.category);
-    setDescription(item.description || "");
-    setSku(item.sku || "");
     setMinStock(String(item.minStock));
     setLocation(item.location || "");
-    setNotes(item.notes || "");
   }, [item]);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -91,11 +81,8 @@ export function EditStockItemDialog({
       await updateItem.mutateAsync({
         name,
         category,
-        description: description || undefined,
-        sku: sku || undefined,
         minStock: parseInt(minStock) || 0,
         location: location || undefined,
-        notes: notes || undefined,
       });
       toast.success(t("itemUpdated"));
       onOpenChange(false);
@@ -106,7 +93,7 @@ export function EditStockItemDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>{t("editItem")}</DialogTitle>
         </DialogHeader>
@@ -141,34 +128,15 @@ export function EditStockItemDialog({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-sku">{t("sku")}</Label>
+              <Label htmlFor="edit-min-stock">{t("minStock")}</Label>
               <Input
-                id="edit-sku"
-                value={sku}
-                onChange={(e) => setSku(e.target.value)}
+                id="edit-min-stock"
+                type="number"
+                min={0}
+                value={minStock}
+                onChange={(e) => setMinStock(e.target.value)}
               />
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="edit-description">{t("description")}</Label>
-            <Textarea
-              id="edit-description"
-              rows={2}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="edit-min-stock">{t("minStock")}</Label>
-            <Input
-              id="edit-min-stock"
-              type="number"
-              min={0}
-              value={minStock}
-              onChange={(e) => setMinStock(e.target.value)}
-            />
           </div>
 
           <div className="space-y-2">
@@ -177,16 +145,6 @@ export function EditStockItemDialog({
               id="edit-location"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="edit-notes">{tc("notes")}</Label>
-            <Textarea
-              id="edit-notes"
-              rows={2}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
             />
           </div>
 

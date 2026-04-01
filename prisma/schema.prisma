@@ -46,13 +46,6 @@ enum AssetType {
   OTHER
 }
 
-enum AssetStatus {
-  ACTIVE
-  IN_REPAIR
-  STORED
-  RETIRED
-}
-
 enum StockCategory {
   CABLE
   ADAPTER
@@ -72,7 +65,6 @@ enum StockCategory {
 enum StockMovementType {
   IN
   OUT
-  ADJUSTMENT
 }
 
 model User {
@@ -211,10 +203,9 @@ model Ticket {
   assignedTo  User?           @relation("AssignedTickets", fields: [assignedToId], references: [id], onDelete: SetNull)
   createdBy   User            @relation("CreatedTickets", fields: [createdById], references: [id])
   template    TicketTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
-  timeEntries    TimeEntry[]
-  notes          TicketNote[]
-  assetLinks     AssetTicket[]
-  stockMovements StockMovement[]
+  timeEntries TimeEntry[]
+  notes       TicketNote[]
+  assetLinks  AssetTicket[]
 
   @@index([companyId])
   @@index([status])
@@ -248,29 +239,22 @@ model TimeEntry {
 }
 
 model Asset {
-  id           String      @id @default(cuid())
-  companyId    String
-  type         AssetType   @default(OTHER)
-  brand        String?
-  model        String?
-  name         String?
-  assetTag     String?     @unique
-  serialNumber String?
-  purchaseDate DateTime?   @db.Date
-  warrantyEnd  DateTime?   @db.Date
-  assignedTo   String?
-  status       AssetStatus @default(ACTIVE)
-  notes        String?
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  id          String    @id @default(cuid())
+  companyId   String
+  type        AssetType @default(OTHER)
+  name        String
+  assignedTo  String?
+  stockItemId String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  company        Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  ticketLinks    AssetTicket[]
-  stockMovements StockMovement[]
+  company     Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  stockItem   StockItem? @relation(fields: [stockItemId], references: [id], onDelete: SetNull)
+  ticketLinks AssetTicket[]
 
   @@index([companyId])
-  @@index([status])
   @@index([type])
+  @@index([stockItemId])
 }
 
 model TicketNote {
@@ -325,20 +309,18 @@ model AssetTicket {
 }
 
 model StockItem {
-  id          String        @id @default(cuid())
-  name        String
-  category    StockCategory @default(OTHER)
-  description String?
-  sku         String?       @unique
-  quantity    Int           @default(0)
-  minStock    Int           @default(0)
-  location    String?
-  notes       String?
-  isActive    Boolean       @default(true)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id        String        @id @default(cuid())
+  name      String
+  category  StockCategory @default(OTHER)
+  quantity  Int           @default(0)
+  minStock  Int           @default(0)
+  location  String?
+  isActive  Boolean       @default(true)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 
   movements StockMovement[]
+  assets    Asset[]
 
   @@index([category])
   @@index([isActive])
@@ -351,20 +333,14 @@ model StockMovement {
   quantity    Int
   note        String?
   companyId   String?
-  ticketId    String?
-  assetId     String?
   performedBy String
   createdAt   DateTime          @default(now())
 
   stockItem StockItem @relation(fields: [stockItemId], references: [id], onDelete: Cascade)
   company   Company?  @relation(fields: [companyId], references: [id], onDelete: SetNull)
-  ticket    Ticket?   @relation(fields: [ticketId], references: [id], onDelete: SetNull)
-  asset     Asset?    @relation(fields: [assetId], references: [id], onDelete: SetNull)
 
   @@index([stockItemId])
   @@index([companyId])
-  @@index([ticketId])
-  @@index([assetId])
   @@index([createdAt])
 }
 

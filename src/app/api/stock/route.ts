@@ -23,12 +23,9 @@ const stockItemCreateSchema = z.object({
       "OTHER",
     ])
     .default("OTHER"),
-  description: z.string().optional(),
-  sku: z.string().optional(),
   quantity: z.number().int().min(0).default(0),
   minStock: z.number().int().min(0).default(0),
   location: z.string().optional(),
-  notes: z.string().optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -49,8 +46,6 @@ export async function GET(request: NextRequest) {
     ...(search && {
       OR: [
         { name: { contains: search, mode: "insensitive" as const } },
-        { sku: { contains: search, mode: "insensitive" as const } },
-        { description: { contains: search, mode: "insensitive" as const } },
         { location: { contains: search, mode: "insensitive" as const } },
       ],
     }),
@@ -60,12 +55,11 @@ export async function GET(request: NextRequest) {
   const items = await prisma.stockItem.findMany({
     where,
     include: {
-      _count: { select: { movements: true } },
+      _count: { select: { movements: true, assets: true } },
     },
     orderBy: { name: "asc" },
   });
 
-  // Prisma lacks cross-column comparison, filter post-query
   const filtered = lowStock
     ? items.filter((item) => item.quantity <= item.minStock)
     : items;

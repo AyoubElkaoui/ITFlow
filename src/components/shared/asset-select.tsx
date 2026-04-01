@@ -27,7 +27,7 @@ export function AssetSelect({
   const { data: assets } = useAssets({});
 
   const assetList = (
-    (assets as { id: string; name: string | null; assetTag: string | null }[]) || []
+    (assets as { id: string; name: string; assignedTo: string | null }[]) || []
   );
 
   return (
@@ -39,12 +39,10 @@ export function AssetSelect({
         {allowAll && <SelectItem value="all">-</SelectItem>}
         {assetList.map((asset) => (
           <SelectItem key={asset.id} value={asset.id}>
-            <span className="font-medium">
-              {asset.name || asset.assetTag || t("unnamed")}
-            </span>
-            {asset.assetTag && asset.name && (
+            <span className="font-medium">{asset.name}</span>
+            {asset.assignedTo && (
               <span className="text-muted-foreground ml-2">
-                {asset.assetTag}
+                ({asset.assignedTo})
               </span>
             )}
           </SelectItem>

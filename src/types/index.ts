@@ -9,7 +9,6 @@ import type {
   Priority,
   TicketCategory,
   AssetType,
-  AssetStatus,
 } from "@/generated/prisma/client";
 
 // Re-export Prisma types
@@ -24,7 +23,6 @@ export type {
   Priority,
   TicketCategory,
   AssetType,
-  AssetStatus,
 };
 
 // Extended types with relations

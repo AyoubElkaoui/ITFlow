@@ -26,6 +26,7 @@ export async function GET(
       timeEntries: {
         include: { user: { select: { id: true, name: true } } },
         orderBy: { date: "desc" },
+        take: 50,
       },
     },
   });

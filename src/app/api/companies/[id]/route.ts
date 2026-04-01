@@ -18,7 +18,7 @@ export async function GET(
   const company = await prisma.company.findUnique({
     where: { id },
     include: {
-      contacts: { orderBy: { isPrimary: "desc" } },
+      contacts: { orderBy: { isPrimary: "desc" }, take: 50 },
       _count: {
         select: {
           tickets: true,

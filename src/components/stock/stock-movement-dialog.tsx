@@ -13,18 +13,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CompanySelect } from "@/components/shared/company-select";
-import { AssetSelect } from "@/components/shared/asset-select";
 import { toast } from "sonner";
-
-type MovementType = "IN" | "OUT" | "ADJUSTMENT";
+import { ArrowUpRight, ArrowDownLeft } from "lucide-react";
 
 interface StockMovementDialogProps {
   open: boolean;
@@ -45,20 +37,21 @@ export function StockMovementDialog({
   const tc = useTranslations("common");
   const createMovement = useCreateStockMovement(stockItemId);
 
-  const [type, setType] = useState<MovementType>("IN");
-  const [quantity, setQuantity] = useState("");
+  const [tab, setTab] = useState<"OUT" | "IN">("OUT");
+  const [quantity, setQuantity] = useState("1");
   const [note, setNote] = useState("");
+  // OUT fields
   const [companyId, setCompanyId] = useState("");
-  const [ticketId, setTicketId] = useState("");
-  const [assetId, setAssetId] = useState("");
+  const [assetName, setAssetName] = useState(stockItemName);
+  const [assignedTo, setAssignedTo] = useState("");
 
   function resetForm() {
-    setType("IN");
-    setQuantity("");
+    setTab("OUT");
+    setQuantity("1");
     setNote("");
     setCompanyId("");
-    setTicketId("");
-    setAssetId("");
+    setAssetName(stockItemName);
+    setAssignedTo("");
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -67,15 +60,28 @@ export function StockMovementDialog({
     if (!qty || qty < 1) return;
 
     try {
-      await createMovement.mutateAsync({
-        type,
-        quantity: qty,
-        note: note || undefined,
-        companyId: companyId || undefined,
-        ticketId: ticketId || undefined,
-        assetId: assetId || undefined,
-      });
-      toast.success(t("movementCreated"));
+      if (tab === "OUT") {
+        if (!companyId) {
+          toast.error(t("companyRequired"));
+          return;
+        }
+        await createMovement.mutateAsync({
+          type: "OUT",
+          quantity: qty,
+          note: note || undefined,
+          companyId,
+          assetName: assetName || stockItemName,
+          assignedTo: assignedTo || undefined,
+        });
+        toast.success(t("uitgifteSuccess"));
+      } else {
+        await createMovement.mutateAsync({
+          type: "IN",
+          quantity: qty,
+          note: note || undefined,
+        });
+        toast.success(t("innameSuccess"));
+      }
       resetForm();
       onOpenChange(false);
     } catch (err) {
@@ -98,101 +104,108 @@ export function StockMovementDialog({
     >
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>
-            {t("addMovement")} — {stockItemName}
-          </DialogTitle>
+          <DialogTitle>{stockItemName}</DialogTitle>
         </DialogHeader>
         <p className="text-sm text-muted-foreground">
-          {t("quantity")}: <span className="font-medium">{currentQuantity}</span>
+          {t("currentStock")}: <span className="font-medium">{currentQuantity}</span>
         </p>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label>{t("movementType")}</Label>
-            <Select
-              value={type}
-              onValueChange={(v) => setType(v as MovementType)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="IN">{t("IN")}</SelectItem>
-                <SelectItem value="OUT">{t("OUT")}</SelectItem>
-                <SelectItem value="ADJUSTMENT">{t("ADJUSTMENT")}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="movement-qty">
-              {type === "ADJUSTMENT" ? t("quantity") + " (nieuw)" : t("movementQuantity")} *
-            </Label>
-            <Input
-              id="movement-qty"
-              type="number"
-              min={1}
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              required
-            />
-          </div>
+        <Tabs value={tab} onValueChange={(v) => setTab(v as "OUT" | "IN")}>
+          <TabsList className="w-full">
+            <TabsTrigger value="OUT" className="flex-1 gap-1.5">
+              <ArrowUpRight className="h-3.5 w-3.5" />
+              {t("uitgifte")}
+            </TabsTrigger>
+            <TabsTrigger value="IN" className="flex-1 gap-1.5">
+              <ArrowDownLeft className="h-3.5 w-3.5" />
+              {t("inname")}
+            </TabsTrigger>
+          </TabsList>
 
-          <div className="space-y-2">
-            <Label htmlFor="movement-note">{t("movementNote")}</Label>
-            <Textarea
-              id="movement-note"
-              rows={2}
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+            {/* Quantity — always shown */}
+            <div className="space-y-2">
+              <Label htmlFor="movement-qty">{t("quantity")} *</Label>
+              <Input
+                id="movement-qty"
+                type="number"
+                min={1}
+                max={tab === "OUT" ? currentQuantity : undefined}
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+                required
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label>{t("movementCompany")}</Label>
-            <CompanySelect
-              value={companyId || undefined}
-              onValueChange={(v) => setCompanyId(v === "all" ? "" : v)}
-              placeholder={tc("selectCompany")}
-              allowAll
-            />
-          </div>
+            <TabsContent value="OUT" className="mt-0 space-y-4">
+              {/* Company — required for OUT */}
+              <div className="space-y-2">
+                <Label>{tc("company")} *</Label>
+                <CompanySelect
+                  value={companyId || undefined}
+                  onValueChange={(v) => setCompanyId(v === "all" ? "" : v)}
+                  placeholder={tc("selectCompany")}
+                />
+              </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="movement-ticket">{t("movementTicket")}</Label>
-            <Input
-              id="movement-ticket"
-              placeholder="Ticket ID"
-              value={ticketId}
-              onChange={(e) => setTicketId(e.target.value)}
-            />
-          </div>
+              {/* Asset name — pre-filled */}
+              <div className="space-y-2">
+                <Label htmlFor="asset-name">{t("name")}</Label>
+                <Input
+                  id="asset-name"
+                  value={assetName}
+                  onChange={(e) => setAssetName(e.target.value)}
+                />
+              </div>
 
-          <div className="space-y-2">
-            <Label>{t("movementAsset")}</Label>
-            <AssetSelect
-              value={assetId || undefined}
-              onValueChange={(v) => setAssetId(v === "all" ? "" : v)}
-              placeholder={t("movementAsset")}
-              allowAll
-            />
-          </div>
+              {/* Assigned to */}
+              <div className="space-y-2">
+                <Label htmlFor="assigned-to">{t("assignedTo")}</Label>
+                <Input
+                  id="assigned-to"
+                  value={assignedTo}
+                  onChange={(e) => setAssignedTo(e.target.value)}
+                  placeholder={t("assignedToPlaceholder")}
+                />
+              </div>
+            </TabsContent>
 
-          <div className="flex justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                resetForm();
-                onOpenChange(false);
-              }}
-            >
-              {tc("cancel")}
-            </Button>
-            <Button type="submit" disabled={createMovement.isPending}>
-              {createMovement.isPending ? tc("saving") : tc("save")}
-            </Button>
-          </div>
-        </form>
+            <TabsContent value="IN" className="mt-0 space-y-4">
+              {/* Nothing extra needed for IN — just quantity */}
+            </TabsContent>
+
+            {/* Note — always shown */}
+            <div className="space-y-2">
+              <Label htmlFor="movement-note">{t("movementNote")}</Label>
+              <Textarea
+                id="movement-note"
+                rows={2}
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+              />
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  resetForm();
+                  onOpenChange(false);
+                }}
+              >
+                {tc("cancel")}
+              </Button>
+              <Button type="submit" disabled={createMovement.isPending}>
+                {createMovement.isPending
+                  ? tc("saving")
+                  : tab === "OUT"
+                    ? t("uitgifte")
+                    : t("inname")}
+              </Button>
+            </div>
+          </form>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );

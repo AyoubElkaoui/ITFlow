@@ -6,26 +6,10 @@ import { getSessionUser } from "@/lib/auth-utils";
 
 const assetUpdateSchema = z
   .object({
-    companyId: z.string().min(1, "Company is required"),
-    type: z.enum([
-      "LAPTOP",
-      "DESKTOP",
-      "PRINTER",
-      "MONITOR",
-      "PHONE",
-      "NETWORK",
-      "OTHER",
-    ]),
-    brand: z.string().optional(),
-    model: z.string().optional(),
-    name: z.string().optional(),
-    assetTag: z.string().optional(),
-    serialNumber: z.string().optional(),
-    purchaseDate: z.coerce.date().optional(),
-    warrantyEnd: z.coerce.date().optional(),
+    companyId: z.string().min(1),
+    type: z.enum(["LAPTOP", "DESKTOP", "PRINTER", "MONITOR", "PHONE", "NETWORK", "OTHER"]),
+    name: z.string().min(1),
     assignedTo: z.string().optional(),
-    status: z.enum(["ACTIVE", "IN_REPAIR", "STORED", "RETIRED"]),
-    notes: z.string().optional(),
   })
   .partial();
 
@@ -127,7 +111,24 @@ export async function DELETE(
   }
 
   const { id } = await params;
-  await prisma.asset.delete({ where: { id } });
+
+  // If asset is linked to a stock item, increment stock back
+  const asset = await prisma.asset.findUnique({
+    where: { id },
+    select: { stockItemId: true },
+  });
+
+  if (asset?.stockItemId) {
+    await prisma.$transaction([
+      prisma.asset.delete({ where: { id } }),
+      prisma.stockItem.update({
+        where: { id: asset.stockItemId },
+        data: { quantity: { increment: 1 } },
+      }),
+    ]);
+  } else {
+    await prisma.asset.delete({ where: { id } });
+  }
 
   safeLogAudit({
     entityType: "Asset",

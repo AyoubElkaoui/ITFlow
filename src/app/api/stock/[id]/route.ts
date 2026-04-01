@@ -22,11 +22,8 @@ const stockItemUpdateSchema = z
       "NETWORK_EQUIPMENT",
       "OTHER",
     ]),
-    description: z.string().optional(),
-    sku: z.string().optional(),
     minStock: z.number().int().min(0),
     location: z.string().optional(),
-    notes: z.string().optional(),
   })
   .partial();
 
@@ -47,8 +44,6 @@ export async function GET(
       movements: {
         include: {
           company: { select: { id: true, name: true, shortName: true } },
-          ticket: { select: { id: true, ticketNumber: true, subject: true } },
-          asset: { select: { id: true, name: true, assetTag: true } },
         },
         orderBy: { createdAt: "desc" },
         take: 50,

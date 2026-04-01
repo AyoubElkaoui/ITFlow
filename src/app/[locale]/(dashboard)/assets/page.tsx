@@ -33,18 +33,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { CompanySelect } from "@/components/shared/company-select";
-import {
-  Plus,
-  Search,
-  Monitor,
-  Trash2,
-  Pencil,
-  Package,
-  PackageCheck,
-  Archive,
-} from "lucide-react";
+import { Plus, Search, Monitor, Trash2, Pencil, Package } from "lucide-react";
 import { toast } from "sonner";
 import { EditAssetDialog } from "@/components/assets/edit-asset-dialog";
 
@@ -60,34 +50,24 @@ const ASSET_TYPES = [
   "OTHER",
 ] as const;
 
-const ASSET_STATUSES = ["ACTIVE", "IN_REPAIR", "STORED", "RETIRED"] as const;
-
 type AssetType = (typeof ASSET_TYPES)[number];
-type AssetStatus = (typeof ASSET_STATUSES)[number];
 
 interface AssetRow {
   id: string;
-  companyId: string;
+  name: string;
   type: AssetType;
-  brand: string | null;
-  model: string | null;
-  name: string | null;
-  assetTag: string | null;
-  serialNumber: string | null;
-  purchaseDate: string | null;
-  warrantyEnd: string | null;
   assignedTo: string | null;
-  status: AssetStatus;
-  notes: string | null;
+  companyId: string;
+  company: { id: string; shortName: string; name: string };
+  stockItemId: string | null;
   createdAt: string;
-  company: { id: string; name: string; shortName: string };
-  _count?: { ticketLinks: number };
+  _count: { ticketLinks: number };
 }
 
 // -- Zod schema for create form -----------------------------------------------
 
 const assetFormSchema = z.object({
-  companyId: z.string().min(1, "Company is required"),
+  name: z.string().min(1, "Name is required"),
   type: z
     .enum([
       "LAPTOP",
@@ -99,18 +79,8 @@ const assetFormSchema = z.object({
       "OTHER",
     ])
     .default("OTHER"),
-  brand: z.string().optional(),
-  model: z.string().optional(),
-  name: z.string().optional(),
-  assetTag: z.string().optional(),
-  serialNumber: z.string().optional(),
-  purchaseDate: z.string().optional(),
-  warrantyEnd: z.string().optional(),
+  companyId: z.string().min(1, "Company is required"),
   assignedTo: z.string().optional(),
-  status: z
-    .enum(["ACTIVE", "IN_REPAIR", "STORED", "RETIRED"])
-    .default("STORED"),
-  notes: z.string().optional(),
 });
 
 type AssetFormData = z.infer<typeof assetFormSchema>;
@@ -136,26 +106,12 @@ function typeBadgeVariant(
   }
 }
 
-function statusClassName(status: AssetStatus): string {
-  switch (status) {
-    case "ACTIVE":
-      return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
-    case "IN_REPAIR":
-      return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
-    case "STORED":
-      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
-    case "RETIRED":
-      return "bg-muted text-muted-foreground";
-  }
-}
-
 // -- Page component -----------------------------------------------------------
 
 export default function AssetsPage() {
   const t = useTranslations("assets");
   const tc = useTranslations("common");
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("all");
   const [type, setType] = useState("all");
   const [companyId, setCompanyId] = useState("all");
   const [showCreate, setShowCreate] = useState(false);
@@ -163,7 +119,6 @@ export default function AssetsPage() {
 
   const { data, isLoading } = useAssets({
     search: search || undefined,
-    status: status !== "all" ? status : undefined,
     type: type !== "all" ? type : undefined,
     companyId: companyId !== "all" ? companyId : undefined,
   });
@@ -171,10 +126,7 @@ export default function AssetsPage() {
   const deleteAsset = useDeleteAsset();
   const assets = (data as AssetRow[] | undefined) || [];
 
-  // Compute summary counts
   const totalCount = assets.length;
-  const storedCount = assets.filter((a) => a.status === "STORED").length;
-  const activeCount = assets.filter((a) => a.status === "ACTIVE").length;
 
   function handleDelete(id: string) {
     if (!window.confirm(t("deleteConfirm"))) return;
@@ -200,8 +152,8 @@ export default function AssetsPage() {
         </Button>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Summary Card */}
+      <div className="grid grid-cols-1 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
@@ -211,34 +163,6 @@ export default function AssetsPage() {
               <div>
                 <p className="text-sm text-muted-foreground">{t("total")}</p>
                 <p className="text-2xl font-bold">{totalCount}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-blue-100 dark:bg-blue-900 p-2">
-                <Archive className="h-5 w-5 text-blue-600 dark:text-blue-300" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">{t("inStock")}</p>
-                <p className="text-2xl font-bold">{storedCount}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-green-100 dark:bg-green-900 p-2">
-                <PackageCheck className="h-5 w-5 text-green-600 dark:text-green-300" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  {t("deployed")}
-                </p>
-                <p className="text-2xl font-bold">{activeCount}</p>
               </div>
             </div>
           </CardContent>
@@ -270,27 +194,13 @@ export default function AssetsPage() {
 
             <Select value={type} onValueChange={setType}>
               <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder={tc("type")} />
+                <SelectValue placeholder={t("type")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("allTypes")}</SelectItem>
                 {ASSET_TYPES.map((assetType) => (
                   <SelectItem key={assetType} value={assetType}>
                     {t(assetType)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder={tc("status")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("allStatuses")}</SelectItem>
-                {ASSET_STATUSES.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {t(s)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -309,10 +219,7 @@ export default function AssetsPage() {
               <Monitor className="h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium">{t("noAssets")}</h3>
               <p className="text-sm text-muted-foreground mt-1">
-                {search ||
-                status !== "all" ||
-                type !== "all" ||
-                companyId !== "all"
+                {search || type !== "all" || companyId !== "all"
                   ? t("adjustFilters")
                   : t("addFirst")}
               </p>
@@ -322,13 +229,10 @@ export default function AssetsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{t("assetTag")}</TableHead>
                     <TableHead>{t("name")}</TableHead>
                     <TableHead>{t("type")}</TableHead>
                     <TableHead>{t("company")}</TableHead>
-                    <TableHead>{t("serialNumber")}</TableHead>
                     <TableHead>{t("assignedTo")}</TableHead>
-                    <TableHead>{t("status")}</TableHead>
                     <TableHead className="w-[80px]">{t("actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -336,21 +240,7 @@ export default function AssetsPage() {
                   {assets.map((asset) => (
                     <TableRow key={asset.id}>
                       <TableCell>
-                        <span className="font-mono text-sm font-medium">
-                          {asset.assetTag || "\u2014"}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <div className="font-medium">
-                          {asset.name || t("unnamed")}
-                        </div>
-                        {(asset.brand || asset.model) && (
-                          <div className="text-sm text-muted-foreground">
-                            {[asset.brand, asset.model]
-                              .filter(Boolean)
-                              .join(" ")}
-                          </div>
-                        )}
+                        <div className="font-medium">{asset.name}</div>
                       </TableCell>
                       <TableCell>
                         <Badge variant={typeBadgeVariant(asset.type)}>
@@ -360,19 +250,8 @@ export default function AssetsPage() {
                       <TableCell className="text-sm text-muted-foreground">
                         {asset.company.shortName}
                       </TableCell>
-                      <TableCell className="text-sm font-mono text-muted-foreground">
-                        {asset.serialNumber || "\u2014"}
-                      </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {asset.assignedTo || "\u2014"}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={statusClassName(asset.status)}
-                        >
-                          {t(asset.status)}
-                        </Badge>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
@@ -434,18 +313,10 @@ function CreateAssetDialog({
   const form = useForm<AssetFormData>({
     resolver: typedResolver(assetFormSchema),
     defaultValues: {
-      companyId: "",
-      type: "OTHER",
-      brand: "",
-      model: "",
       name: "",
-      assetTag: "",
-      serialNumber: "",
-      purchaseDate: "",
-      warrantyEnd: "",
+      type: "OTHER",
+      companyId: "",
       assignedTo: "",
-      status: "STORED",
-      notes: "",
     },
   });
 
@@ -453,9 +324,7 @@ function CreateAssetDialog({
     try {
       const payload = {
         ...data,
-        assetTag: data.assetTag || undefined,
-        purchaseDate: data.purchaseDate || undefined,
-        warrantyEnd: data.warrantyEnd || undefined,
+        assignedTo: data.assignedTo || undefined,
       };
       await createAsset.mutateAsync(payload);
       toast.success("Asset created");
@@ -475,9 +344,40 @@ function CreateAssetDialog({
           <DialogTitle>{t("addAsset")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          {/* Name */}
+          <div className="space-y-2">
+            <Label htmlFor="asset-name">{t("name")} *</Label>
+            <Input id="asset-name" {...form.register("name")} />
+            {form.formState.errors.name && (
+              <p className="text-xs text-destructive">
+                {form.formState.errors.name.message}
+              </p>
+            )}
+          </div>
+
+          {/* Type */}
+          <div className="space-y-2">
+            <Label>{t("type")}</Label>
+            <Select
+              value={form.watch("type")}
+              onValueChange={(v) => form.setValue("type", v as AssetType)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ASSET_TYPES.map((assetType) => (
+                  <SelectItem key={assetType} value={assetType}>
+                    {t(assetType)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Company */}
           <div className="space-y-2">
-            <Label>{tc("company")} *</Label>
+            <Label>{t("company")} *</Label>
             <CompanySelect
               value={form.watch("companyId")}
               onValueChange={(v) => form.setValue("companyId", v)}
@@ -489,110 +389,10 @@ function CreateAssetDialog({
             )}
           </div>
 
-          {/* Asset Tag */}
+          {/* Assigned To */}
           <div className="space-y-2">
-            <Label htmlFor="asset-tag">{t("assetTag")}</Label>
-            <Input
-              id="asset-tag"
-              placeholder="bijv. MAZLAP022601"
-              {...form.register("assetTag")}
-            />
-          </div>
-
-          {/* Name */}
-          <div className="space-y-2">
-            <Label htmlFor="asset-name">{tc("name")}</Label>
-            <Input id="asset-name" {...form.register("name")} />
-          </div>
-
-          {/* Type & Status */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>{tc("type")}</Label>
-              <Select
-                value={form.watch("type")}
-                onValueChange={(v) => form.setValue("type", v as AssetType)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {ASSET_TYPES.map((assetType) => (
-                    <SelectItem key={assetType} value={assetType}>
-                      {t(assetType)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>{tc("status")}</Label>
-              <Select
-                value={form.watch("status")}
-                onValueChange={(v) => form.setValue("status", v as AssetStatus)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {ASSET_STATUSES.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {t(s)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Brand & Model */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="asset-brand">{tc("brand")}</Label>
-              <Input id="asset-brand" {...form.register("brand")} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="asset-model">{tc("model")}</Label>
-              <Input id="asset-model" {...form.register("model")} />
-            </div>
-          </div>
-
-          {/* Serial Number & Assigned To */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="asset-serial">{t("serialNumber")}</Label>
-              <Input id="asset-serial" {...form.register("serialNumber")} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="asset-assigned">{t("assignedTo")}</Label>
-              <Input id="asset-assigned" {...form.register("assignedTo")} />
-            </div>
-          </div>
-
-          {/* Purchase Date & Warranty End */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="asset-purchase">{t("purchaseDate")}</Label>
-              <Input
-                id="asset-purchase"
-                type="date"
-                {...form.register("purchaseDate")}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="asset-warranty">{t("warrantyEnd")}</Label>
-              <Input
-                id="asset-warranty"
-                type="date"
-                {...form.register("warrantyEnd")}
-              />
-            </div>
-          </div>
-
-          {/* Notes */}
-          <div className="space-y-2">
-            <Label htmlFor="asset-notes">{tc("notes")}</Label>
-            <Textarea id="asset-notes" rows={3} {...form.register("notes")} />
+            <Label htmlFor="asset-assigned">{t("assignedTo")}</Label>
+            <Input id="asset-assigned" {...form.register("assignedTo")} />
           </div>
 
           {/* Actions */}

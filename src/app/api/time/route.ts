@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
       : {}),
   };
 
-  const [entries, total, allEntries] = await Promise.all([
+  const [entries, total, totalAgg, billableAgg] = await Promise.all([
     prisma.timeEntry.findMany({
       where,
       include: {
@@ -49,33 +49,19 @@ export async function GET(request: NextRequest) {
       take: pageSize,
     }),
     prisma.timeEntry.count({ where }),
-    prisma.timeEntry.findMany({
+    prisma.timeEntry.aggregate({
       where,
-      select: {
-        hours: true,
-        billable: true,
-        company: { select: { hourlyRate: true } },
-      },
+      _sum: { hours: true },
+    }),
+    prisma.timeEntry.aggregate({
+      where: { ...where, billable: true },
+      _sum: { hours: true },
     }),
   ]);
 
-  let totalHours = 0;
-  let billableHours = 0;
-  let totalAmount = 0;
-  for (const e of allEntries) {
-    const hours = Number(e.hours);
-    totalHours += hours;
-    if (e.billable) {
-      billableHours += hours;
-      const rate = e.company.hourlyRate ? Number(e.company.hourlyRate) : 0;
-      totalAmount += hours * rate;
-    }
-  }
-
-  // Round to quarter-hour precision to avoid floating point drift
-  totalHours = Math.round(totalHours * 4) / 4;
-  billableHours = Math.round(billableHours * 4) / 4;
-  totalAmount = Math.round(totalAmount * 100) / 100;
+  const totalHours = Math.round(Number(totalAgg._sum.hours || 0) * 4) / 4;
+  const billableHours = Math.round(Number(billableAgg._sum.hours || 0) * 4) / 4;
+  const totalAmount = 0;
 
   return NextResponse.json({
     data: entries,

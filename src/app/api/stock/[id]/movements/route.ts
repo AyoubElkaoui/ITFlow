@@ -4,13 +4,29 @@ import { prisma } from "@/lib/prisma";
 import { safeLogAudit } from "@/lib/audit";
 import { getSessionUser } from "@/lib/auth-utils";
 
+// Map StockCategory to AssetType
+function categoryToAssetType(cat: string): string {
+  const map: Record<string, string> = {
+    LAPTOP: "LAPTOP",
+    DESKTOP: "DESKTOP",
+    PRINTER: "PRINTER",
+    MONITOR: "MONITOR",
+    PHONE: "PHONE",
+    NETWORK_EQUIPMENT: "NETWORK",
+  };
+  return map[cat] || "OTHER";
+}
+
 const movementCreateSchema = z.object({
-  type: z.enum(["IN", "OUT", "ADJUSTMENT"]),
+  type: z.enum(["IN", "OUT"]),
   quantity: z.number().int().min(1, "Quantity must be at least 1"),
   note: z.string().optional(),
+  // For OUT (uitgifte): create asset
   companyId: z.string().optional(),
-  ticketId: z.string().optional(),
-  assetId: z.string().optional(),
+  assetName: z.string().optional(),
+  assignedTo: z.string().optional(),
+  // For IN (inname): optionally return an asset
+  returnAssetId: z.string().optional(),
 });
 
 export async function GET(
@@ -28,8 +44,6 @@ export async function GET(
     where: { stockItemId: id },
     include: {
       company: { select: { id: true, name: true, shortName: true } },
-      ticket: { select: { id: true, ticketNumber: true, subject: true } },
-      asset: { select: { id: true, name: true, assetTag: true } },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -59,11 +73,11 @@ export async function POST(
     );
   }
 
-  const { type, quantity, note, companyId, ticketId, assetId } = parsed.data;
+  const { type, quantity, note, companyId, assetName, assignedTo, returnAssetId } = parsed.data;
 
   const current = await prisma.stockItem.findUnique({
     where: { id },
-    select: { quantity: true },
+    select: { quantity: true, name: true, category: true },
   });
 
   if (!current) {
@@ -73,57 +87,109 @@ export async function POST(
     );
   }
 
-  // Prevent negative stock on OUT
-  if (type === "OUT" && current.quantity < quantity) {
-    return NextResponse.json(
-      { error: "Insufficient stock" },
-      { status: 400 },
-    );
-  }
+  if (type === "OUT") {
+    // Uitgifte: decrement stock + create asset
+    if (current.quantity < quantity) {
+      return NextResponse.json(
+        { error: "Insufficient stock" },
+        { status: 400 },
+      );
+    }
 
-  // Calculate quantity delta
-  let delta: number;
-  if (type === "IN") {
-    delta = quantity;
-  } else if (type === "OUT") {
-    delta = -quantity;
+    if (!companyId) {
+      return NextResponse.json(
+        { error: "Company is required for uitgifte" },
+        { status: 400 },
+      );
+    }
+
+    const assetType = categoryToAssetType(current.category);
+
+    // Transaction: create movement + decrement stock + create asset(s)
+    const results = await prisma.$transaction(async (tx) => {
+      const movement = await tx.stockMovement.create({
+        data: {
+          stockItemId: id,
+          type: "OUT",
+          quantity,
+          note: note || null,
+          companyId,
+          performedBy: user.id,
+        },
+        include: {
+          company: { select: { id: true, name: true, shortName: true } },
+        },
+      });
+
+      await tx.stockItem.update({
+        where: { id },
+        data: { quantity: { decrement: quantity } },
+      });
+
+      // Create one asset per unit
+      const assets = [];
+      for (let i = 0; i < quantity; i++) {
+        const asset = await tx.asset.create({
+          data: {
+            name: assetName || current.name,
+            type: assetType as "LAPTOP" | "DESKTOP" | "PRINTER" | "MONITOR" | "PHONE" | "NETWORK" | "OTHER",
+            companyId,
+            assignedTo: assignedTo || null,
+            stockItemId: id,
+          },
+        });
+        assets.push(asset);
+      }
+
+      return { movement, assets };
+    });
+
+    safeLogAudit({
+      entityType: "StockMovement",
+      entityId: results.movement.id,
+      action: "CREATE",
+      userId: user.id,
+      metadata: { stockItemId: id, type: "OUT", quantity, assetsCreated: results.assets.length },
+    });
+
+    return NextResponse.json(results.movement, { status: 201 });
   } else {
-    // ADJUSTMENT: quantity is the new absolute value
-    delta = quantity - current.quantity;
+    // Inname: increment stock + optionally delete returned asset
+    const results = await prisma.$transaction(async (tx) => {
+      const movement = await tx.stockMovement.create({
+        data: {
+          stockItemId: id,
+          type: "IN",
+          quantity,
+          note: note || null,
+          companyId: companyId || null,
+          performedBy: user.id,
+        },
+        include: {
+          company: { select: { id: true, name: true, shortName: true } },
+        },
+      });
+
+      await tx.stockItem.update({
+        where: { id },
+        data: { quantity: { increment: quantity } },
+      });
+
+      if (returnAssetId) {
+        await tx.asset.delete({ where: { id: returnAssetId } });
+      }
+
+      return { movement };
+    });
+
+    safeLogAudit({
+      entityType: "StockMovement",
+      entityId: results.movement.id,
+      action: "CREATE",
+      userId: user.id,
+      metadata: { stockItemId: id, type: "IN", quantity, returnedAssetId: returnAssetId },
+    });
+
+    return NextResponse.json(results.movement, { status: 201 });
   }
-
-  // Transaction: create movement + update quantity
-  const [movement] = await prisma.$transaction([
-    prisma.stockMovement.create({
-      data: {
-        stockItemId: id,
-        type,
-        quantity,
-        note: note || null,
-        companyId: companyId || null,
-        ticketId: ticketId || null,
-        assetId: assetId || null,
-        performedBy: user.id,
-      },
-      include: {
-        company: { select: { id: true, name: true, shortName: true } },
-        ticket: { select: { id: true, ticketNumber: true, subject: true } },
-        asset: { select: { id: true, name: true, assetTag: true } },
-      },
-    }),
-    prisma.stockItem.update({
-      where: { id },
-      data: { quantity: { increment: delta } },
-    }),
-  ]);
-
-  safeLogAudit({
-    entityType: "StockMovement",
-    entityId: movement.id,
-    action: "CREATE",
-    userId: user.id,
-    metadata: { stockItemId: id, type, quantity, delta },
-  });
-
-  return NextResponse.json(movement, { status: 201 });
 }

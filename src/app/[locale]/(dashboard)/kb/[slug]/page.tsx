@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 
 import { use } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useDeleteArticle } from "@/hooks/use-kb";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -47,10 +48,10 @@ export default function KbArticlePage({
   const deleteArticle = useDeleteArticle();
 
   // Fetch article by slug via query param
-  const { data: slugArticles, isLoading: slugLoading } = useSlugLookup(slug);
+  const { data: slugResponse, isLoading: slugLoading } = useSlugLookup(slug);
 
-  const articleList = (slugArticles || []) as KbArticle[];
-  const article = articleList[0] || null;
+  const slugData = slugResponse as { data: KbArticle[] } | undefined;
+  const article = slugData?.data?.[0] ?? null;
   const loading = slugLoading;
 
   async function handleDelete() {
@@ -86,7 +87,7 @@ export default function KbArticlePage({
           href="/kb"
           className="text-sm text-muted-foreground hover:underline"
         >
-          Back to Knowledge Base
+          {t("backToKb")}
         </Link>
       </div>
     );
@@ -113,12 +114,12 @@ export default function KbArticlePage({
           <Link href={`/kb/new?edit=${article.id}`}>
             <Button variant="outline" size="sm">
               <Pencil className="mr-2 h-4 w-4" />
-              Edit
+              {tc("edit")}
             </Button>
           </Link>
           <Button variant="destructive" size="sm" onClick={handleDelete}>
             <Trash2 className="mr-2 h-4 w-4" />
-            Delete
+            {tc("delete")}
           </Button>
         </div>
       </div>
@@ -157,12 +158,6 @@ export default function KbArticlePage({
     </div>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Small hook to look up an article by slug via the articles list endpoint
-// ---------------------------------------------------------------------------
-
-import { useQuery } from "@tanstack/react-query";
 
 function useSlugLookup(slug: string) {
   return useQuery({

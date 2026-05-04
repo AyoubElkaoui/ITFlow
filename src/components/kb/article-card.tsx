@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { User, CalendarDays } from "lucide-react";
@@ -31,7 +31,7 @@ export function ArticleCard({ article }: ArticleCardProps) {
               variant={article.isPublished ? "default" : "secondary"}
               className="shrink-0 text-xs"
             >
-              {article.isPublished ? "Published" : "Draft"}
+              {article.isPublished ? "Gepubliceerd" : "Concept"}
             </Badge>
           </div>
         </CardHeader>

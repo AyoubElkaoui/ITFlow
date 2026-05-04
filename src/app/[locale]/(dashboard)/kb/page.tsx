@@ -80,7 +80,7 @@ export default function KnowledgeBasePage() {
         name: newCategoryName.trim(),
         sortOrder: 0,
       });
-      toast.success("Category created");
+      toast.success(t("newCategory"));
       setNewCategoryName("");
       setShowCreateCategory(false);
     } catch (err) {
@@ -98,7 +98,7 @@ export default function KnowledgeBasePage() {
         <Link href="/kb/new">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
-            New Article
+            {t("newArticle")}
           </Button>
         </Link>
       </div>
@@ -122,7 +122,7 @@ export default function KnowledgeBasePage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Categories
+              {t("categories")}
             </h2>
             <Button
               variant="ghost"
@@ -181,9 +181,11 @@ export default function KnowledgeBasePage() {
               {totalPages > 1 && (
                 <div className="flex items-center justify-between pt-4">
                   <p className="text-sm text-muted-foreground">
-                    Showing {(page - 1) * pageSize + 1}-
-                    {Math.min(page * pageSize, totalArticles)} of{" "}
-                    {totalArticles} articles
+                    {t("showingArticles", {
+                      from: (page - 1) * pageSize + 1,
+                      to: Math.min(page * pageSize, totalArticles),
+                      total: totalArticles,
+                    })}
                   </p>
                   <div className="flex items-center gap-2">
                     <Button
@@ -192,10 +194,10 @@ export default function KnowledgeBasePage() {
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
                       disabled={page <= 1}
                     >
-                      Previous
+                      {tc("previous")}
                     </Button>
                     <span className="text-sm text-muted-foreground">
-                      Page {page} of {totalPages}
+                      {tc("page", { current: page, total: totalPages })}
                     </span>
                     <Button
                       variant="outline"
@@ -205,7 +207,7 @@ export default function KnowledgeBasePage() {
                       }
                       disabled={page >= totalPages}
                     >
-                      Next
+                      {tc("next")}
                     </Button>
                   </div>
                 </div>

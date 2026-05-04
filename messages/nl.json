@@ -764,6 +764,7 @@
     "PHONE": "Telefoon",
     "NETWORK_EQUIPMENT": "Netwerkapparatuur",
     "OTHER": "Overig",
+    "addMovement": "Voorraad muteren (uitgifte / inname)",
     "insufficientStock": "Onvoldoende voorraad",
     "itemCreated": "Voorraaditem aangemaakt",
     "itemUpdated": "Voorraaditem bijgewerkt",

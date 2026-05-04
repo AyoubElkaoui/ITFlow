@@ -65,12 +65,14 @@ export function EditStockItemDialog({
 
   const [name, setName] = useState(item.name);
   const [category, setCategory] = useState<StockCategory>(item.category);
+  const [quantity, setQuantity] = useState(String(item.quantity));
   const [minStock, setMinStock] = useState(String(item.minStock));
   const [location, setLocation] = useState(item.location || "");
 
   useEffect(() => {
     setName(item.name);
     setCategory(item.category);
+    setQuantity(String(item.quantity));
     setMinStock(String(item.minStock));
     setLocation(item.location || "");
   }, [item]);
@@ -81,6 +83,7 @@ export function EditStockItemDialog({
       await updateItem.mutateAsync({
         name,
         category,
+        quantity: parseInt(quantity) || 0,
         minStock: parseInt(minStock) || 0,
         location: location || undefined,
       });
@@ -108,24 +111,35 @@ export function EditStockItemDialog({
             />
           </div>
 
+          <div className="space-y-2">
+            <Label>{t("category")}</Label>
+            <Select
+              value={category}
+              onValueChange={(v) => setCategory(v as StockCategory)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {STOCK_CATEGORIES.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {t(cat)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>{t("category")}</Label>
-              <Select
-                value={category}
-                onValueChange={(v) => setCategory(v as StockCategory)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {STOCK_CATEGORIES.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {t(cat)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="edit-quantity">{t("currentStock")}</Label>
+              <Input
+                id="edit-quantity"
+                type="number"
+                min={0}
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-min-stock">{t("minStock")}</Label>

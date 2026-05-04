@@ -41,6 +41,7 @@ interface StockItemCreateInput {
 interface StockItemUpdateInput {
   name?: string;
   category?: string;
+  quantity?: number;
   minStock?: number;
   location?: string;
 }

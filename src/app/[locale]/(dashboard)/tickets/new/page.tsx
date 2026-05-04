@@ -14,6 +14,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useState } from "react";
+import { Clock } from "lucide-react";
+import { format } from "date-fns";
 import {
   Select,
   SelectContent,
@@ -41,6 +45,12 @@ export default function NewTicketPage() {
   const tt = useTranslations("tickets");
   const ttoast = useTranslations("toasts");
   const createTicket = useCreateTicket();
+
+  // Time entry state
+  const [logTime, setLogTime] = useState(true);
+  const [timeHours, setTimeHours] = useState("1");
+  const [timeDesc, setTimeDesc] = useState("");
+  const [timeBillable, setTimeBillable] = useState(true);
 
   const form = useForm<TicketCreateInput>({
     resolver: typedResolver(ticketCreateSchema),
@@ -98,7 +108,24 @@ export default function NewTicketPage() {
 
   async function onSubmit(data: TicketCreateInput) {
     try {
-      await createTicket.mutateAsync(data);
+      const ticket = await createTicket.mutateAsync(data) as { id: string };
+
+      // Auto-create time entry if enabled
+      if (logTime && parseFloat(timeHours) > 0) {
+        await fetch("/api/time", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ticketId: ticket.id,
+            companyId: data.companyId,
+            date: new Date(format(new Date(), "yyyy-MM-dd")).toISOString(),
+            hours: parseFloat(timeHours),
+            description: timeDesc || data.subject,
+            billable: timeBillable,
+          }),
+        });
+      }
+
       toast.success(ttoast("created", { entity: "Ticket" }));
       router.push("/tickets");
     } catch {
@@ -384,6 +411,65 @@ export default function NewTicketPage() {
               />
             </div>
           </CardContent>
+        </Card>
+
+        {/* Tijd registreren */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                {tc("hours")} registreren
+              </CardTitle>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="log-time"
+                  checked={logTime}
+                  onCheckedChange={(v) => setLogTime(v === true)}
+                />
+                <Label htmlFor="log-time" className="cursor-pointer font-normal">
+                  Automatisch registreren
+                </Label>
+              </div>
+            </div>
+          </CardHeader>
+          {logTime && (
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>{tc("hours")} *</Label>
+                  <Input
+                    type="number"
+                    min="0.25"
+                    max="24"
+                    step="0.25"
+                    value={timeHours}
+                    onChange={(e) => setTimeHours(e.target.value)}
+                    className="h-11"
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label>{tc("description")}</Label>
+                  <Input
+                    placeholder="Wat heb je gedaan? (optioneel, anders wordt onderwerp gebruikt)"
+                    value={timeDesc}
+                    onChange={(e) => setTimeDesc(e.target.value)}
+                    className="h-11"
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="time-billable"
+                  checked={timeBillable}
+                  onCheckedChange={(v) => setTimeBillable(v === true)}
+                />
+                <Label htmlFor="time-billable" className="cursor-pointer font-normal">
+                  {tc("billable")}
+                </Label>
+              </div>
+            </CardContent>
+          )}
         </Card>
 
         {/* Footer */}

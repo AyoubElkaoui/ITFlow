@@ -23,6 +23,7 @@ const stockItemUpdateSchema = z
       "OTHER",
     ]),
     minStock: z.number().int().min(0),
+    quantity: z.number().int().min(0),
     location: z.string().optional(),
   })
   .partial();

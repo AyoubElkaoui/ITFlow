@@ -764,6 +764,7 @@
     "PHONE": "Phone",
     "NETWORK_EQUIPMENT": "Network Equipment",
     "OTHER": "Other",
+    "addMovement": "Adjust stock (issue / return)",
     "insufficientStock": "Insufficient stock",
     "itemCreated": "Stock item created",
     "itemUpdated": "Stock item updated",

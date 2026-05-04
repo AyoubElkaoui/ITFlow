@@ -2,8 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-utils";
 import { safeLogAudit } from "@/lib/audit";
-import { resetPasswordSchema } from "@/lib/validations";
+import { z } from "zod";
 import { hash } from "bcryptjs";
+
+const apiResetPasswordSchema = z.object({
+  password: z.string().min(8, "Password must be at least 8 characters"),
+});
 
 export async function POST(
   request: NextRequest,
@@ -14,7 +18,7 @@ export async function POST(
     const { id } = await params;
 
     const body = await request.json();
-    const parsed = resetPasswordSchema.safeParse(body);
+    const parsed = apiResetPasswordSchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json(

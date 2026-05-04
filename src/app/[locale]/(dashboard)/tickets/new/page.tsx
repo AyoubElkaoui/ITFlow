@@ -9,6 +9,7 @@ import { typedResolver } from "@/lib/form-utils";
 import { ticketCreateSchema, type TicketCreateInput } from "@/lib/validations";
 import { useCreateTicket } from "@/hooks/use-tickets";
 import { useContacts } from "@/hooks/use-contacts";
+import { useAssets } from "@/hooks/use-assets";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
-import { Clock } from "lucide-react";
+import { Clock, Monitor } from "lucide-react";
 import { format } from "date-fns";
 import {
   Select,
@@ -52,6 +53,9 @@ export default function NewTicketPage() {
   const [timeDesc, setTimeDesc] = useState("");
   const [timeBillable, setTimeBillable] = useState(true);
 
+  // Asset state
+  const [selectedAssetId, setSelectedAssetId] = useState<string>("");
+
   const form = useForm<TicketCreateInput>({
     resolver: typedResolver(ticketCreateSchema),
     defaultValues: {
@@ -83,8 +87,10 @@ export default function NewTicketPage() {
   const selectedCompanyId = watch("companyId");
 
   const { data: contacts } = useContacts(selectedCompanyId || undefined);
+  const { data: assetsData } = useAssets({ companyId: selectedCompanyId || undefined });
 
   const contactList = (contacts as { id: string; name: string }[]) || [];
+  const assetList = (assetsData as { data?: { id: string; name: string; type: string; assignedTo: string | null }[] } | undefined)?.data || [];
 
   function handleTemplateSelect(template: TemplateData | null) {
     if (!template) return;
@@ -123,6 +129,15 @@ export default function NewTicketPage() {
             description: timeDesc || data.subject,
             billable: timeBillable,
           }),
+        });
+      }
+
+      // Link asset if selected
+      if (selectedAssetId) {
+        await fetch(`/api/tickets/${ticket.id}/assets`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ assetId: selectedAssetId }),
         });
       }
 
@@ -171,6 +186,7 @@ export default function NewTicketPage() {
                       onValueChange={(value) => {
                         setValue("companyId", value, { shouldValidate: true });
                         setValue("contactId", undefined);
+                        setSelectedAssetId("");
                       }}
                     />
                   </div>
@@ -412,6 +428,41 @@ export default function NewTicketPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Asset koppelen */}
+        {selectedCompanyId && assetList.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Monitor className="h-5 w-5" />
+                Asset koppelen (optioneel)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Select
+                value={selectedAssetId || "none"}
+                onValueChange={(v) => setSelectedAssetId(v === "none" ? "" : v)}
+              >
+                <SelectTrigger className="h-11">
+                  <SelectValue placeholder="Selecteer een asset..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">— Geen asset —</SelectItem>
+                  {assetList.map((asset) => (
+                    <SelectItem key={asset.id} value={asset.id}>
+                      <span className="font-medium">{asset.name}</span>
+                      {asset.assignedTo && (
+                        <span className="text-muted-foreground ml-2 text-xs">
+                          · {asset.assignedTo}
+                        </span>
+                      )}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Tijd registreren */}
         <Card>

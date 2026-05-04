@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CompanySelect } from "@/components/shared/company-select";
 import { TicketSelect } from "@/components/shared/ticket-select";
+import { TimeInput } from "@/components/ui/time-input";
 import { toast } from "sonner";
 
 interface TimeEntryData {
@@ -130,31 +131,27 @@ export function EditTimeEntryDialog({ open, onOpenChange, entry }: Props) {
           <div className="space-y-2">
             <Label>Tijd</Label>
             <div className="flex items-center gap-2">
-              <Input
-                type="time"
+              <TimeInput
                 value={startTime}
-                onChange={(e) => {
-                  const s = e.target.value;
+                onChange={(s) => {
                   const h = parseFloat(hours) || 0;
                   const end = h > 0 ? addHoursToTime(s, h) : endTime;
                   setStartTime(s);
                   setEndTime(end);
                 }}
-                className="w-[110px]"
-                placeholder="Start"
+                className="w-[100px]"
+                placeholder="HH:MM"
               />
               <span className="text-muted-foreground text-sm">→</span>
-              <Input
-                type="time"
+              <TimeInput
                 value={endTime}
-                onChange={(e) => {
-                  const end = e.target.value;
+                onChange={(end) => {
                   const h = timeDiffToHours(startTime, end);
                   setEndTime(end);
                   if (h > 0) setHours(String(h));
                 }}
-                className="w-[110px]"
-                placeholder="Eind"
+                className="w-[100px]"
+                placeholder="HH:MM"
               />
             </div>
           </div>

@@ -39,6 +39,7 @@ import {
 import { CompanySelect } from "@/components/shared/company-select";
 import { TicketSelect } from "@/components/shared/ticket-select";
 import { UserSelect } from "@/components/shared/user-select";
+import { TimeInput } from "@/components/ui/time-input";
 import { EditTimeEntryDialog } from "@/components/time/edit-time-entry-dialog";
 
 const PAGE_SIZE = 20;
@@ -505,11 +506,9 @@ export default function TimePage() {
                   {/* Tijd: start → uren → eind */}
                   <div className="grid grid-cols-[100px_16px_90px_16px_100px_1fr_auto_auto] items-center gap-2">
                     {/* Starttijd */}
-                    <Input
-                      type="time"
+                    <TimeInput
                       value={row.startTime}
-                      onChange={(e) => {
-                        const start = e.target.value;
+                      onChange={(start) => {
                         const end = row.hours > 0
                           ? addHoursToTime(start, row.hours)
                           : row.endTime;
@@ -537,11 +536,9 @@ export default function TimePage() {
                     />
                     <span className="text-muted-foreground text-xs text-center">=</span>
                     {/* Eindtijd */}
-                    <Input
-                      type="time"
+                    <TimeInput
                       value={row.endTime}
-                      onChange={(e) => {
-                        const end = e.target.value;
+                      onChange={(end) => {
                         const hours = timeDiffToHours(row.startTime, end);
                         updateRow(i, { endTime: end, hours });
                       }}

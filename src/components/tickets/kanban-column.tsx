@@ -42,12 +42,15 @@ export function KanbanColumn({ status, title, tickets, color }: KanbanColumnProp
     },
   });
 
-  const ticketIds = tickets.map((t) => t.id);
+  const MAX_VISIBLE = 15;
+  const visibleTickets = tickets.slice(0, MAX_VISIBLE);
+  const hiddenCount = tickets.length - MAX_VISIBLE;
+  const ticketIds = visibleTickets.map((t) => t.id);
 
   return (
     <div
       className={cn(
-        "flex flex-col rounded-xl border border-t-4 bg-muted/30 min-w-[280px] w-[280px] shrink-0",
+        "flex flex-col rounded-xl border border-t-4 bg-muted/30 min-w-0",
         colorBorderMap[color] || "border-t-gray-400",
         isOver && "bg-muted/60 ring-2 ring-primary/20"
       )}
@@ -69,20 +72,25 @@ export function KanbanColumn({ status, title, tickets, color }: KanbanColumnProp
       {/* Ticket List */}
       <div
         ref={setNodeRef}
-        className="flex-1 overflow-y-auto px-2 pb-2 space-y-2 min-h-[120px]"
+        className="overflow-y-auto px-2 pb-2 space-y-2 min-h-[120px] max-h-[calc(100vh-220px)]"
       >
         <SortableContext items={ticketIds} strategy={verticalListSortingStrategy}>
           {tickets.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <Inbox className="h-8 w-8 text-muted-foreground/40 mb-2" />
-              <p className="text-xs text-muted-foreground/60">No tickets</p>
+              <p className="text-xs text-muted-foreground/60">Geen tickets</p>
             </div>
           ) : (
-            tickets.map((ticket) => (
+            visibleTickets.map((ticket) => (
               <KanbanCard key={ticket.id} ticket={ticket} />
             ))
           )}
         </SortableContext>
+        {hiddenCount > 0 && (
+          <p className="text-center text-xs text-muted-foreground py-2">
+            +{hiddenCount} meer in de lijst
+          </p>
+        )}
       </div>
     </div>
   );

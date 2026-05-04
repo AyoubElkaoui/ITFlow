@@ -51,6 +51,50 @@ export async function GET(
   }
 }
 
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const admin = await requireAdmin();
+    const { id } = await params;
+
+    if (id === admin.id) {
+      return NextResponse.json(
+        { error: "Je kunt je eigen account niet verwijderen" },
+        { status: 400 },
+      );
+    }
+
+    const existing = await prisma.user.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: "Gebruiker niet gevonden" }, { status: 404 });
+    }
+
+    await prisma.user.delete({ where: { id } });
+
+    await safeLogAudit({
+      entityType: "User",
+      entityId: id,
+      action: "DELETE",
+      userId: admin.id,
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    if (err instanceof Error && err.message === "Unauthorized") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (err instanceof Error && err.message === "Forbidden") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },

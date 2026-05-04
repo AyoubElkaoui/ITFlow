@@ -18,6 +18,7 @@ import {
   useCreateUser,
   useUpdateUser,
   useResetPassword,
+  useDeleteUser,
 } from "@/hooks/use-users";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -46,7 +47,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Plus, Shield, UserCog, Pencil, KeyRound, Users } from "lucide-react";
+import { Plus, Shield, UserCog, Pencil, KeyRound, Users, Trash2 } from "lucide-react";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -383,6 +384,20 @@ export default function UsersPage() {
   const { data: users, isLoading } = useUsers();
   const queryClient = useQueryClient();
   const userList = (users || []) as UserRow[];
+  const deleteUser = useDeleteUser();
+
+  async function handleDeleteUser(user: UserRow) {
+    const confirmed = window.confirm(
+      `Weet je zeker dat je gebruiker "${user.name}" wilt verwijderen? Dit kan niet ongedaan worden gemaakt.`,
+    );
+    if (!confirmed) return;
+    try {
+      await deleteUser.mutateAsync(user.id);
+      toast.success(`Gebruiker ${user.name} verwijderd`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Verwijderen mislukt");
+    }
+  }
 
   async function handleToggleActive(user: UserRow) {
     try {
@@ -509,7 +524,7 @@ export default function UsersPage() {
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-muted-foreground"
-                          title="Edit user"
+                          title={tc("edit")}
                           onClick={() => setEditingUser(user)}
                         >
                           <Pencil className="h-4 w-4" />
@@ -518,7 +533,7 @@ export default function UsersPage() {
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-muted-foreground"
-                          title="Reset password"
+                          title="Wachtwoord resetten"
                           onClick={() => setResetUser(user)}
                         >
                           <KeyRound className="h-4 w-4" />
@@ -531,10 +546,20 @@ export default function UsersPage() {
                               ? "text-muted-foreground hover:text-destructive"
                               : "text-muted-foreground hover:text-green-600"
                           }`}
-                          title={user.isActive ? "Deactivate" : "Activate"}
+                          title={user.isActive ? tc("deactivate" as "active") : tc("activate" as "active")}
                           onClick={() => handleToggleActive(user)}
                         >
                           <UserCog className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                          title={tc("delete")}
+                          onClick={() => handleDeleteUser(user)}
+                          disabled={deleteUser.isPending}
+                        >
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>

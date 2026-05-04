@@ -226,11 +226,11 @@ export function KanbanBoard() {
 
   if (isLoading) {
     return (
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${COLUMNS.length}, minmax(0, 1fr))` }}>
         {COLUMNS.map((col) => (
           <div
             key={col.status}
-            className="min-w-[280px] w-[280px] shrink-0 rounded-xl border bg-muted/30 p-3"
+            className="rounded-xl border bg-muted/30 p-3"
           >
             <div className="h-6 w-24 bg-muted rounded animate-pulse mb-3" />
             <div className="space-y-2">
@@ -256,7 +256,7 @@ export function KanbanBoard() {
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${COLUMNS.length}, minmax(0, 1fr))` }}>
         {COLUMNS.map((col) => (
           <KanbanColumn
             key={col.status}

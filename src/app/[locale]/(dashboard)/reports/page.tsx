@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { BarChart3, Clock, Download, FileText, Ticket } from "lucide-react";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 import { format, startOfMonth, endOfMonth } from "date-fns";
 import {
   BarChart,
@@ -343,8 +343,6 @@ export default function ReportsPage() {
     const wb = XLSX.utils.book_new();
 
     const r2 = (v: number) => Math.round(v * 100) / 100;
-    const fmtCurrency = (v: number) =>
-      `€ ${v.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
     const fmtDate = (d: string | null | undefined) => {
       if (!d) return "-";
       try {
@@ -383,7 +381,6 @@ export default function ReportsPage() {
       [t("totalTickets"), totalTickets],
       [t("totalHours"), r2(totalHours)],
       [t("billableHours"), r2(totalBillableHours)],
-      [t("revenue"), fmtCurrency(totalRevenue)],
       [t("avgHoursPerDay"), r2(avgHoursPerDay)],
       [],
       [t("statusDistribution"), ""],
@@ -439,15 +436,9 @@ export default function ReportsPage() {
       t("description"),
       t("hours"),
       tc("billable"),
-      t("rate"),
-      t("amount"),
     ];
     const timeRows = timeEntries.map((e) => {
       const hours = parseFloat(e.hours || "0");
-      const rate = e.company?.hourlyRate
-        ? parseFloat(e.company.hourlyRate)
-        : 0;
-      const amount = e.billable ? hours * rate : 0;
       return [
         fmtDate(e.date),
         e.company?.shortName || "-",
@@ -456,35 +447,13 @@ export default function ReportsPage() {
         e.description || "-",
         r2(hours),
         e.billable ? tc("yes") : tc("no"),
-        e.billable ? fmtCurrency(rate) : "-",
-        e.billable ? fmtCurrency(amount) : "-",
       ];
     });
-    // Totals row
     const timeTotalHours = timeEntries.reduce(
       (s, e) => s + parseFloat(e.hours || "0"),
       0,
     );
-    const timeTotalAmount = timeEntries
-      .filter((e) => e.billable)
-      .reduce((s, e) => {
-        const h = parseFloat(e.hours || "0");
-        const rate = e.company?.hourlyRate
-          ? parseFloat(e.company.hourlyRate)
-          : 0;
-        return s + h * rate;
-      }, 0);
-    timeRows.push([
-      tc("total"),
-      "",
-      "",
-      "",
-      "",
-      r2(timeTotalHours),
-      "",
-      "",
-      fmtCurrency(timeTotalAmount),
-    ]);
+    timeRows.push([tc("total"), "", "", "", "", r2(timeTotalHours), ""]);
     const timeSheet = XLSX.utils.aoa_to_sheet([timeHeader, ...timeRows]);
     const timeColWidths = timeHeader.map((h, i) => {
       const maxLen = Math.max(
@@ -502,7 +471,6 @@ export default function ReportsPage() {
       t("tickets"),
       t("hours"),
       t("billableHours"),
-      t("revenue"),
       t("avgResponse"),
     ];
     const companyRows = companyBreakdown.map((row) => [
@@ -510,7 +478,6 @@ export default function ReportsPage() {
       row.tickets,
       r2(row.hours),
       r2(row.billableHours),
-      fmtCurrency(row.revenue),
       row.avgResponse,
     ]);
     companyRows.push([
@@ -518,21 +485,10 @@ export default function ReportsPage() {
       companyBreakdown.reduce((s, r) => s + r.tickets, 0),
       r2(companyBreakdown.reduce((s, r) => s + r.hours, 0)),
       r2(companyBreakdown.reduce((s, r) => s + r.billableHours, 0)),
-      fmtCurrency(companyBreakdown.reduce((s, r) => s + r.revenue, 0)),
       "-",
     ]);
-    const companySheet = XLSX.utils.aoa_to_sheet([
-      companyHeader,
-      ...companyRows,
-    ]);
-    companySheet["!cols"] = [
-      { wch: 20 },
-      { wch: 10 },
-      { wch: 10 },
-      { wch: 16 },
-      { wch: 14 },
-      { wch: 14 },
-    ];
+    const companySheet = XLSX.utils.aoa_to_sheet([companyHeader, ...companyRows]);
+    companySheet["!cols"] = [{ wch: 20 }, { wch: 10 }, { wch: 10 }, { wch: 16 }, { wch: 14 }];
     XLSX.utils.book_append_sheet(wb, companySheet, t("companyBreakdown"));
 
     // --- Sheet 5: Per medewerker (Employee breakdown) ---
@@ -571,19 +527,12 @@ export default function ReportsPage() {
 
   const handleExportPdf = () => {
     const doc = new jsPDF();
-    const autoTable = (opts: Record<string, unknown>) =>
-      (
-        doc as unknown as {
-          autoTable: (options: Record<string, unknown>) => void;
-        }
-      ).autoTable(opts);
+    const at = (opts: Parameters<typeof autoTable>[1]) => autoTable(doc, opts);
     const getFinalY = () =>
       (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable
-        .finalY;
+        ?.finalY ?? 40;
 
     const r2 = (v: number) => Math.round(v * 100) / 100;
-    const fmtCurrency = (v: number) =>
-      `€ ${v.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
     const fmtDate = (d: string | null | undefined) => {
       if (!d) return "-";
       try {
@@ -616,25 +565,13 @@ export default function ReportsPage() {
     doc.setFontSize(13);
     doc.text(t("summary"), 14, companyLabel ? 44 : 36);
 
-    autoTable({
+    at({
       startY: companyLabel ? 48 : 40,
-      head: [[t("totalTickets"), t("totalHours"), t("billableHours"), t("revenue")]],
-      body: [
-        [
-          totalTickets,
-          r2(totalHours).toFixed(2),
-          r2(totalBillableHours).toFixed(2),
-          fmtCurrency(totalRevenue),
-        ],
-      ],
+      head: [[t("totalTickets"), t("totalHours"), t("billableHours")]],
+      body: [[totalTickets, r2(totalHours).toFixed(2), r2(totalBillableHours).toFixed(2)]],
       styles: { fontSize: 10, halign: "center" },
       headStyles: { fillColor: [41, 128, 185], halign: "center" },
-      columnStyles: {
-        0: { halign: "center" },
-        1: { halign: "center" },
-        2: { halign: "center" },
-        3: { halign: "center" },
-      },
+      columnStyles: { 0: { halign: "center" }, 1: { halign: "center" }, 2: { halign: "center" } },
     });
 
     // Status distribution table
@@ -643,7 +580,7 @@ export default function ReportsPage() {
       doc.setFontSize(13);
       doc.text(t("statusDistribution"), 14, statusY);
 
-      autoTable({
+      at({
         startY: statusY + 4,
         head: [[tc("status"), t("tickets")]],
         body: ticketStatusData.map((s) => [s.name, s.value]),
@@ -662,30 +599,19 @@ export default function ReportsPage() {
       row.tickets,
       row.hours.toFixed(2),
       row.billableHours.toFixed(2),
-      fmtCurrency(row.revenue),
       row.avgResponse,
     ]);
     companyBody.push([
       tc("total"),
-      companyBreakdown.reduce((s, r) => s + r.tickets, 0),
+      String(companyBreakdown.reduce((s, r) => s + r.tickets, 0)),
       companyBreakdown.reduce((s, r) => s + r.hours, 0).toFixed(2),
       companyBreakdown.reduce((s, r) => s + r.billableHours, 0).toFixed(2),
-      fmtCurrency(companyBreakdown.reduce((s, r) => s + r.revenue, 0)),
       "-",
     ]);
 
-    autoTable({
+    at({
       startY: 24,
-      head: [
-        [
-          t("company"),
-          t("tickets"),
-          t("hours"),
-          t("billableHours"),
-          t("revenue"),
-          t("avgResponse"),
-        ],
-      ],
+      head: [[t("company"), t("tickets"), t("hours"), t("billableHours"), t("avgResponse")]],
       body: companyBody,
       styles: { fontSize: 8 },
       headStyles: { fillColor: [41, 128, 185] },
@@ -703,18 +629,18 @@ export default function ReportsPage() {
 
     const empBody = employeeBreakdown.map((row) => [
       row.name,
-      row.tickets,
+      String(row.tickets),
       row.hours.toFixed(2),
       row.billableHours.toFixed(2),
     ]);
     empBody.push([
       tc("total"),
-      employeeBreakdown.reduce((s, r) => s + r.tickets, 0),
+      String(employeeBreakdown.reduce((s, r) => s + r.tickets, 0)),
       employeeBreakdown.reduce((s, r) => s + r.hours, 0).toFixed(2),
       employeeBreakdown.reduce((s, r) => s + r.billableHours, 0).toFixed(2),
     ]);
 
-    autoTable({
+    at({
       startY: empY + 4,
       head: [[t("employee"), t("tickets"), t("hours"), t("billableHours")]],
       body: empBody,
@@ -733,20 +659,11 @@ export default function ReportsPage() {
       doc.setFontSize(14);
       doc.text(t("ticketList"), 14, 20);
 
-      autoTable({
+      at({
         startY: 24,
-        head: [
-          [
-            "#",
-            tc("subject"),
-            t("company"),
-            tc("status"),
-            tc("priority"),
-            tc("date"),
-          ],
-        ],
+        head: [["#", tc("subject"), t("company"), tc("status"), tc("priority"), tc("date")]],
         body: tickets.map((tk) => [
-          tk.ticketNumber || "-",
+          String(tk.ticketNumber || "-"),
           truncate(tk.subject, 40),
           tk.company?.shortName || "-",
           tk.status || "-",
@@ -755,14 +672,7 @@ export default function ReportsPage() {
         ]),
         styles: { fontSize: 7, cellPadding: 2 },
         headStyles: { fillColor: [41, 128, 185] },
-        columnStyles: {
-          0: { cellWidth: 12 },
-          1: { cellWidth: 55 },
-          2: { cellWidth: 28 },
-          3: { cellWidth: 22 },
-          4: { cellWidth: 18 },
-          5: { cellWidth: 24 },
-        },
+        columnStyles: { 0: { cellWidth: 12 }, 1: { cellWidth: 60 }, 2: { cellWidth: 30 }, 3: { cellWidth: 24 }, 4: { cellWidth: 20 }, 5: { cellWidth: 26 } },
       });
     }
 
@@ -772,46 +682,20 @@ export default function ReportsPage() {
       doc.setFontSize(14);
       doc.text(t("timeEntryList"), 14, 20);
 
-      const teBody = timeEntries.map((e) => {
-        const hours = parseFloat(e.hours || "0");
-        const rate = e.company?.hourlyRate
-          ? parseFloat(e.company.hourlyRate)
-          : 0;
-        const amount = e.billable ? hours * rate : 0;
-        return [
-          fmtDate(e.date),
-          e.company?.shortName || "-",
-          e.ticket?.ticketNumber ? `#${e.ticket.ticketNumber}` : "-",
-          truncate(e.description, 35),
-          r2(hours).toFixed(2),
-          e.billable ? tc("yes") : tc("no"),
-          e.billable ? fmtCurrency(amount) : "-",
-        ];
-      });
-      // Totals row
-      teBody.push([
-        tc("total"),
-        "",
-        "",
-        "",
-        r2(totalHours).toFixed(2),
-        "",
-        fmtCurrency(totalRevenue),
+      const teBody = timeEntries.map((e) => [
+        fmtDate(e.date),
+        e.company?.shortName || "-",
+        e.user?.name || "-",
+        e.ticket?.ticketNumber ? `#${e.ticket.ticketNumber}` : "-",
+        truncate(e.description, 35),
+        r2(parseFloat(e.hours || "0")).toFixed(2),
+        e.billable ? tc("yes") : tc("no"),
       ]);
+      teBody.push([tc("total"), "", "", "", "", r2(totalHours).toFixed(2), ""]);
 
-      autoTable({
+      at({
         startY: 24,
-        head: [
-          [
-            tc("date"),
-            t("company"),
-            "Ticket",
-            t("description"),
-            t("hours"),
-            tc("billable"),
-            t("amount"),
-          ],
-        ],
+        head: [[tc("date"), t("company"), t("employee"), "Ticket", t("description"), t("hours"), tc("billable")]],
         body: teBody,
         styles: { fontSize: 7, cellPadding: 2 },
         headStyles: { fillColor: [41, 128, 185] },
@@ -829,8 +713,20 @@ export default function ReportsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <h1 className="text-2xl font-bold">{t("title")}</h1>
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">{t("title")}</h1>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleExportExcel}>
+              <Download className="h-4 w-4 mr-1" />
+              {t("exportExcel")}
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleExportPdf}>
+              <FileText className="h-4 w-4 mr-1" />
+              {t("exportPdf")}
+            </Button>
+          </div>
+        </div>
         <div className="flex flex-wrap items-end gap-4">
           <div className="space-y-1.5">
             <Label htmlFor="from-date">{t("from")}</Label>
@@ -839,7 +735,7 @@ export default function ReportsPage() {
               type="date"
               value={fromDate}
               onChange={(e) => setFromDate(e.target.value)}
-              className="w-[160px]"
+              className="w-[150px]"
             />
           </div>
           <div className="space-y-1.5">
@@ -849,35 +745,25 @@ export default function ReportsPage() {
               type="date"
               value={toDate}
               onChange={(e) => setToDate(e.target.value)}
-              className="w-[160px]"
+              className="w-[150px]"
             />
           </div>
           <div className="space-y-1.5">
             <Label>{t("company")}</Label>
-            <div className="w-[200px]">
+            <div className="w-[180px]">
               <CompanySelect
                 value={companyId}
                 onValueChange={setCompanyId}
-                placeholder="All companies"
+                placeholder="Alle bedrijven"
                 allowAll
               />
             </div>
           </div>
           <div className="space-y-1.5">
             <Label>{t("employee")}</Label>
-            <div className="w-[200px]">
+            <div className="w-[180px]">
               <UserSelect value={userId} onValueChange={setUserId} allowAll />
             </div>
-          </div>
-          <div className="flex items-end gap-2">
-            <Button variant="outline" size="sm" onClick={handleExportExcel}>
-              <Download className="h-4 w-4 mr-1" />
-              {t("exportExcel")}
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleExportPdf}>
-              <FileText className="h-4 w-4 mr-1" />
-              {t("exportPdf")}
-            </Button>
           </div>
         </div>
       </div>

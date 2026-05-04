@@ -56,6 +56,15 @@ export function useUpdateUser(id: string) {
   });
 }
 
+export function useDeleteUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      fetchJson(`/api/users/${id}`, { method: "DELETE" }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["users"] }),
+  });
+}
+
 export function useResetPassword(id: string) {
   const qc = useQueryClient();
   return useMutation({

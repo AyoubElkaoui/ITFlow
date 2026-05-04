@@ -22,8 +22,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RichTextEditor } from "@/components/kb/rich-text-editor";
 import {
   Select,
   SelectContent,
@@ -33,8 +33,6 @@ import {
 } from "@/components/ui/select";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 
 interface KbCategory {
   id: string;
@@ -222,48 +220,23 @@ function NewKbArticleContent() {
           </CardContent>
         </Card>
 
-        {/* Content & Preview */}
-        <div className="grid gap-6 lg:grid-cols-2">
-          {/* Editor */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">{t("content")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                placeholder="Write your article in markdown..."
-                rows={20}
-                className="font-mono text-sm resize-y"
-                {...register("content")}
-              />
-              {errors.content && (
-                <p className="text-sm text-destructive mt-1">
-                  {errors.content.message}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Preview */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">{t("preview")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {contentValue ? (
-                <div className="prose prose-neutral dark:prose-invert max-w-none text-sm">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {contentValue}
-                  </ReactMarkdown>
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  {t("startTyping")}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+        {/* Content Editor */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t("content")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <RichTextEditor
+              value={contentValue}
+              onChange={(val) => setValue("content", val)}
+            />
+            {errors.content && (
+              <p className="text-sm text-destructive mt-1">
+                {errors.content.message}
+              </p>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Footer */}
         <div className="flex items-center justify-end gap-4">

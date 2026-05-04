@@ -112,14 +112,36 @@ export default function TimePage() {
   interface LogRow {
     companyId: string;
     ticketId: string;
+    startTime: string;
+    endTime: string;
     hours: number;
     description: string;
     billable: boolean;
   }
 
+  function addHoursToTime(time: string, hours: number): string {
+    if (!time) return "";
+    const [h, m] = time.split(":").map(Number);
+    const totalMinutes = h * 60 + m + Math.round(hours * 60);
+    const endH = Math.floor(totalMinutes / 60) % 24;
+    const endM = totalMinutes % 60;
+    return `${String(endH).padStart(2, "0")}:${String(endM).padStart(2, "0")}`;
+  }
+
+  function timeDiffToHours(start: string, end: string): number {
+    if (!start || !end) return 0;
+    const [sh, sm] = start.split(":").map(Number);
+    const [eh, em] = end.split(":").map(Number);
+    const diff = eh * 60 + em - (sh * 60 + sm);
+    if (diff <= 0) return 0;
+    return Math.round(diff / 15) * 0.25;
+  }
+
   const emptyRow = (): LogRow => ({
     companyId: "",
     ticketId: "",
+    startTime: "",
+    endTime: "",
     hours: 0,
     description: "",
     billable: true,
@@ -461,12 +483,9 @@ export default function TimePage() {
             {/* Rows */}
             <div className="space-y-3">
               {logRows.map((row, i) => (
-                <div
-                  key={i}
-                  className="rounded-lg border p-3 space-y-2"
-                >
-                  <div className="grid grid-cols-[1fr_1fr] gap-2">
-                    {/* Company */}
+                <div key={i} className="rounded-lg border p-3 space-y-3">
+                  {/* Company + Ticket */}
+                  <div className="grid grid-cols-2 gap-2">
                     <CompanySelect
                       value={row.companyId}
                       onValueChange={(v) =>
@@ -474,7 +493,6 @@ export default function TimePage() {
                       }
                       placeholder={tc("selectCompany")}
                     />
-                    {/* Ticket */}
                     <TicketSelect
                       value={row.ticketId}
                       onValueChange={(v) =>
@@ -483,37 +501,70 @@ export default function TimePage() {
                       companyId={row.companyId || undefined}
                     />
                   </div>
-                  <div className="grid grid-cols-[80px_1fr_auto_auto] items-center gap-2">
-                    {/* Hours */}
+
+                  {/* Tijd: start → uren → eind */}
+                  <div className="grid grid-cols-[100px_16px_90px_16px_100px_1fr_auto_auto] items-center gap-2">
+                    {/* Starttijd */}
+                    <Input
+                      type="time"
+                      value={row.startTime}
+                      onChange={(e) => {
+                        const start = e.target.value;
+                        const end = row.hours > 0
+                          ? addHoursToTime(start, row.hours)
+                          : row.endTime;
+                        updateRow(i, { startTime: start, endTime: end });
+                      }}
+                      className="text-sm"
+                    />
+                    <span className="text-muted-foreground text-xs text-center">→</span>
+                    {/* Uren */}
                     <Input
                       type="number"
                       step={0.25}
-                      min={0}
+                      min={0.25}
                       max={24}
                       value={row.hours || ""}
-                      onChange={(e) =>
-                        updateRow(i, {
-                          hours: parseFloat(e.target.value) || 0,
-                        })
-                      }
-                      placeholder={tc("hours")}
+                      onChange={(e) => {
+                        const hours = parseFloat(e.target.value) || 0;
+                        const end = row.startTime
+                          ? addHoursToTime(row.startTime, hours)
+                          : row.endTime;
+                        updateRow(i, { hours, endTime: end });
+                      }}
+                      placeholder="u"
+                      className="text-sm"
                     />
-                    {/* Description */}
+                    <span className="text-muted-foreground text-xs text-center">=</span>
+                    {/* Eindtijd */}
+                    <Input
+                      type="time"
+                      value={row.endTime}
+                      onChange={(e) => {
+                        const end = e.target.value;
+                        const hours = timeDiffToHours(row.startTime, end);
+                        updateRow(i, { endTime: end, hours });
+                      }}
+                      className="text-sm"
+                    />
+                    {/* Omschrijving */}
                     <Input
                       value={row.description}
                       onChange={(e) =>
                         updateRow(i, { description: e.target.value })
                       }
                       placeholder={t("whatDidYouWorkOn")}
+                      className="text-sm"
                     />
-                    {/* Billable */}
+                    {/* Factureerbaar */}
                     <Checkbox
                       checked={row.billable}
                       onCheckedChange={(v) =>
                         updateRow(i, { billable: v === true })
                       }
+                      title={tc("billable")}
                     />
-                    {/* Remove */}
+                    {/* Verwijderen */}
                     <Button
                       variant="ghost"
                       size="icon"
@@ -524,6 +575,21 @@ export default function TimePage() {
                       <Trash2 className="h-4 w-4 text-muted-foreground" />
                     </Button>
                   </div>
+
+                  {/* Samenvatting */}
+                  {row.hours > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      {row.startTime && row.endTime
+                        ? `${row.startTime} → ${row.endTime} = `
+                        : ""}
+                      <span className="font-medium text-foreground">
+                        {row.hours}u
+                        {row.hours % 1 !== 0
+                          ? ` (${Math.floor(row.hours)}u ${Math.round((row.hours % 1) * 60)}min)`
+                          : ""}
+                      </span>
+                    </p>
+                  )}
                 </div>
               ))}
             </div>

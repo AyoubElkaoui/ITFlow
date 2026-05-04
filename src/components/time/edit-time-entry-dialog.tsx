@@ -46,14 +46,33 @@ export function EditTimeEntryDialog({ open, onOpenChange, entry }: Props) {
   const [companyId, setCompanyId] = useState("");
   const [ticketId, setTicketId] = useState("");
   const [hours, setHours] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
   const [description, setDescription] = useState("");
   const [billable, setBillable] = useState(true);
+
+  function addHoursToTime(time: string, h: number): string {
+    if (!time) return "";
+    const [hh, mm] = time.split(":").map(Number);
+    const total = hh * 60 + mm + Math.round(h * 60);
+    return `${String(Math.floor(total / 60) % 24).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+  }
+
+  function timeDiffToHours(start: string, end: string): number {
+    if (!start || !end) return 0;
+    const [sh, sm] = start.split(":").map(Number);
+    const [eh, em] = end.split(":").map(Number);
+    const diff = eh * 60 + em - (sh * 60 + sm);
+    return diff <= 0 ? 0 : Math.round(diff / 15) * 0.25;
+  }
 
   useEffect(() => {
     setDate(format(new Date(entry.date), "yyyy-MM-dd"));
     setCompanyId(entry.company.id);
     setTicketId(entry.ticket?.id ?? "");
     setHours(String(Number(entry.hours)));
+    setStartTime("");
+    setEndTime("");
     setDescription(entry.description ?? "");
     setBillable(entry.billable);
   }, [entry]);
@@ -107,6 +126,39 @@ export function EditTimeEntryDialog({ open, onOpenChange, entry }: Props) {
             />
           </div>
 
+          {/* Tijd */}
+          <div className="space-y-2">
+            <Label>Tijd</Label>
+            <div className="flex items-center gap-2">
+              <Input
+                type="time"
+                value={startTime}
+                onChange={(e) => {
+                  const s = e.target.value;
+                  const h = parseFloat(hours) || 0;
+                  const end = h > 0 ? addHoursToTime(s, h) : endTime;
+                  setStartTime(s);
+                  setEndTime(end);
+                }}
+                className="w-[110px]"
+                placeholder="Start"
+              />
+              <span className="text-muted-foreground text-sm">→</span>
+              <Input
+                type="time"
+                value={endTime}
+                onChange={(e) => {
+                  const end = e.target.value;
+                  const h = timeDiffToHours(startTime, end);
+                  setEndTime(end);
+                  if (h > 0) setHours(String(h));
+                }}
+                className="w-[110px]"
+                placeholder="Eind"
+              />
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>{tc("hours")}</Label>
@@ -116,8 +168,18 @@ export function EditTimeEntryDialog({ open, onOpenChange, entry }: Props) {
                 min={0.25}
                 max={24}
                 value={hours}
-                onChange={(e) => setHours(e.target.value)}
+                onChange={(e) => {
+                  const h = e.target.value;
+                  setHours(h);
+                  if (startTime && parseFloat(h) > 0)
+                    setEndTime(addHoursToTime(startTime, parseFloat(h)));
+                }}
               />
+              {parseFloat(hours) > 0 && startTime && endTime && (
+                <p className="text-xs text-muted-foreground">
+                  {startTime} → {endTime}
+                </p>
+              )}
             </div>
             <div className="space-y-2 flex items-end gap-2 pb-1">
               <Checkbox

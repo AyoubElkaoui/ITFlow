@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 
 import { useState, useCallback } from "react";
-import { format } from "date-fns";
+import { format, startOfMonth } from "date-fns";
 import { toast } from "sonner";
 import { Plus, Clock, Trash2, Pencil } from "lucide-react";
 
@@ -78,8 +78,8 @@ export default function TimePage() {
   const tc = useTranslations("common");
   const [companyId, setCompanyId] = useState("all");
   const [userId, setUserId] = useState("all");
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
+  const [fromDate, setFromDate] = useState(format(startOfMonth(new Date()), "yyyy-MM-dd"));
+  const [toDate, setToDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [page, setPage] = useState(1);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editEntry, setEditEntry] = useState<TimeEntry | null>(null);

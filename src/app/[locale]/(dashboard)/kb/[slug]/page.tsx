@@ -149,9 +149,15 @@ export default function KbArticlePage({
         </CardHeader>
         <CardContent className="pt-6">
           <div className="prose prose-neutral dark:prose-invert max-w-none">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {article.content}
-            </ReactMarkdown>
+            {/<[a-z][^>]*>/i.test(article.content) ? (
+              // HTML content (saved via TipTap editor)
+              <div dangerouslySetInnerHTML={{ __html: article.content }} />
+            ) : (
+              // Legacy markdown content
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {article.content}
+              </ReactMarkdown>
+            )}
           </div>
         </CardContent>
       </Card>

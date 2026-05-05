@@ -2,8 +2,6 @@
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { Markdown } from "tiptap-markdown";
-import { useRef } from "react";
 import { cn } from "@/lib/utils";
 import {
   Bold,
@@ -34,25 +32,11 @@ export function RichTextEditor({
   placeholder = "Begin met schrijven...",
   className,
 }: RichTextEditorProps) {
-  // Capture value at mount time — parent uses key prop to remount when article changes
-  const initialValue = useRef(value);
-
   const editor = useEditor({
     immediatelyRender: false,
-    extensions: [
-      StarterKit,
-      Markdown.configure({
-        transformPastedText: true,
-        transformCopiedText: false,
-      }),
-    ],
-    content: "",
-    onCreate: ({ editor }) => {
-      if (initialValue.current) {
-        // setContent with tiptap-markdown properly parses markdown (unlike the content option)
-        editor.commands.setContent(initialValue.current);
-      }
-    },
+    extensions: [StarterKit],
+    // value is HTML — TipTap handles this natively
+    content: value || "",
     editorProps: {
       attributes: {
         class: cn(
@@ -73,13 +57,9 @@ export function RichTextEditor({
       },
     },
     onUpdate: ({ editor }) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const md = (editor.storage as any).markdown?.getMarkdown?.() ?? editor.getText();
-      onChange(md);
+      onChange(editor.getHTML());
     },
   });
-
-  // No sync effect needed — use key prop on parent to remount editor when article changes
 
   if (!editor) return null;
 
@@ -142,18 +122,14 @@ export function RichTextEditor({
         <Separator orientation="vertical" className="mx-1 h-5" />
 
         <ToolbarButton
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 2 }).run()
-          }
+          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
           active={editor.isActive("heading", { level: 2 })}
           title="Kop 2"
         >
           <Heading2 className="h-4 w-4" />
         </ToolbarButton>
         <ToolbarButton
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 3 }).run()
-          }
+          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
           active={editor.isActive("heading", { level: 3 })}
           title="Kop 3"
         >
@@ -207,13 +183,11 @@ export function RichTextEditor({
           <Redo className="h-4 w-4" />
         </ToolbarButton>
 
-        <div className="ml-auto text-xs text-muted-foreground px-2">
-          {placeholder && !editor.getText() && (
-            <span className="text-muted-foreground/60">
-              Klik om te beginnen met schrijven
-            </span>
-          )}
-        </div>
+        {!editor.getText() && (
+          <span className="ml-auto text-xs text-muted-foreground/60 px-2">
+            {placeholder}
+          </span>
+        )}
       </div>
 
       {/* Editor Content */}

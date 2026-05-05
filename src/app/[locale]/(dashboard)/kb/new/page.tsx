@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 
 import { Suspense, useEffect } from "react";
+import { marked } from "marked";
 import { useRouter } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { Link } from "@/i18n/navigation";
@@ -103,12 +104,16 @@ function NewKbArticleContent() {
     formState: { errors, isSubmitting },
   } = form;
 
-  // Pre-fill form when editing
+  // Pre-fill form when editing — convert markdown→HTML so editor always gets HTML
   useEffect(() => {
     if (isEditing && article) {
+      const isHtml = /<[a-z][^>]*>/i.test(article.content);
+      const content = isHtml
+        ? article.content
+        : (marked(article.content) as string);
       reset({
         title: article.title,
-        content: article.content,
+        content,
         categoryId: article.categoryId || undefined,
         companyId: article.companyId || undefined,
         isPublished: article.isPublished,

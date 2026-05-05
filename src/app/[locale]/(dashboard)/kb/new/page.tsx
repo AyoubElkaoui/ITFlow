@@ -227,8 +227,9 @@ function NewKbArticleContent() {
           </CardHeader>
           <CardContent>
             <RichTextEditor
+              key={article?.id ?? "new"}
               value={contentValue}
-              onChange={(val) => setValue("content", val)}
+              onChange={(val) => setValue("content", val, { shouldValidate: true })}
             />
             {errors.content && (
               <p className="text-sm text-destructive mt-1">

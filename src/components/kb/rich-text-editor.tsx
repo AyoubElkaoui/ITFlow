@@ -3,7 +3,6 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Markdown } from "tiptap-markdown";
-import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import {
   Bold,
@@ -69,16 +68,7 @@ export function RichTextEditor({
     },
   });
 
-  // Sync external value changes (e.g. when editing existing article)
-  useEffect(() => {
-    if (!editor) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const current = (editor.storage as any).markdown?.getMarkdown?.() ?? editor.getText();
-    if (value !== current) {
-      editor.commands.setContent(value);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
+  // No sync effect needed — use key prop on parent to remount editor when article changes
 
   if (!editor) return null;
 

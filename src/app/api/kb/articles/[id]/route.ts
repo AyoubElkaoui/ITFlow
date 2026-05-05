@@ -66,10 +66,14 @@ export async function PATCH(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = { ...parsed.data };
 
-    // Strip undefined values so Prisma doesn't set fields to null unintentionally
+    // Strip undefined values
     Object.keys(updateData).forEach((k) => {
       if (updateData[k] === undefined) delete updateData[k];
     });
+
+    // FK fields: empty string → null (prevents foreign key constraint violation)
+    if ("categoryId" in updateData && !updateData.categoryId) updateData.categoryId = null;
+    if ("companyId" in updateData && !updateData.companyId) updateData.companyId = null;
 
     // If title changed, regenerate slug
     if (parsed.data.title && parsed.data.title !== oldArticle.title) {

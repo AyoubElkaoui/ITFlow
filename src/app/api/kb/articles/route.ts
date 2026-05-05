@@ -100,9 +100,16 @@ export async function POST(request: NextRequest) {
     slug = `${slug}-${randomSuffix()}`;
   }
 
+  const createData = {
+    ...parsed.data,
+    // FK fields: empty string → null
+    categoryId: parsed.data.categoryId || null,
+    companyId: parsed.data.companyId || null,
+  };
+
   const article = await prisma.kbArticle.create({
     data: {
-      ...parsed.data,
+      ...createData,
       slug,
       authorId: user.id,
     },

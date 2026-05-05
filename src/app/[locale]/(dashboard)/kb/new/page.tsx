@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { marked } from "marked";
 import { useRouter } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
@@ -84,6 +84,12 @@ function NewKbArticleContent() {
   const categoryList = (categories || []) as KbCategory[];
   const article = existingArticle as KbArticle | undefined;
 
+  // editorInitialContent: null = editor nog niet klaar, string = klaar om te tonen
+  // Bij nieuw artikel: direct "", bij bewerken: wachten op artikel data
+  const [editorInitialContent, setEditorInitialContent] = useState<string | null>(
+    isEditing ? null : ""
+  );
+
   const form = useForm<KbArticleCreateInput>({
     resolver: typedResolver(kbArticleCreateSchema),
     defaultValues: {
@@ -104,20 +110,20 @@ function NewKbArticleContent() {
     formState: { errors, isSubmitting },
   } = form;
 
-  // Pre-fill form when editing — convert markdown→HTML so editor always gets HTML
+  // Pre-fill form when editing — convert markdown→HTML zodat editor altijd HTML krijgt
   useEffect(() => {
     if (isEditing && article) {
       const isHtml = /<[a-z][^>]*>/i.test(article.content);
-      const content = isHtml
-        ? article.content
-        : (marked(article.content) as string);
+      const html = isHtml ? article.content : (marked(article.content) as string);
       reset({
         title: article.title,
-        content,
+        content: html,
         categoryId: article.categoryId || undefined,
         companyId: article.companyId || undefined,
         isPublished: article.isPublished,
       });
+      // Zet NADAT reset() is aangeroepen zodat editor met juiste content monteert
+      setEditorInitialContent(html);
     }
   }, [isEditing, article, reset]);
 
@@ -231,11 +237,16 @@ function NewKbArticleContent() {
             <CardTitle className="text-base">{t("content")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <RichTextEditor
-              key={article?.id ?? "new"}
-              value={contentValue}
-              onChange={(val) => setValue("content", val, { shouldValidate: true })}
-            />
+            {editorInitialContent !== null && (
+              <RichTextEditor
+                key={isEditing ? `edit-${article?.id}` : "new"}
+                value={editorInitialContent}
+                onChange={(val) => setValue("content", val, { shouldValidate: true })}
+              />
+            )}
+            {editorInitialContent === null && (
+              <div className="h-[400px] rounded-md border border-input bg-muted/30 animate-pulse" />
+            )}
             {errors.content && (
               <p className="text-sm text-destructive mt-1">
                 {errors.content.message}

@@ -3,6 +3,7 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Markdown } from "tiptap-markdown";
+import { useRef } from "react";
 import { cn } from "@/lib/utils";
 import {
   Bold,
@@ -33,7 +34,11 @@ export function RichTextEditor({
   placeholder = "Begin met schrijven...",
   className,
 }: RichTextEditorProps) {
+  // Capture value at mount time — parent uses key prop to remount when article changes
+  const initialValue = useRef(value);
+
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit,
       Markdown.configure({
@@ -41,7 +46,13 @@ export function RichTextEditor({
         transformCopiedText: false,
       }),
     ],
-    content: value,
+    content: "",
+    onCreate: ({ editor }) => {
+      if (initialValue.current) {
+        // setContent with tiptap-markdown properly parses markdown (unlike the content option)
+        editor.commands.setContent(initialValue.current);
+      }
+    },
     editorProps: {
       attributes: {
         class: cn(

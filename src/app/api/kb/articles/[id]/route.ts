@@ -43,59 +43,72 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id } = await params;
-  const user = await getSessionUser();
+  try {
+    const { id } = await params;
+    const user = await getSessionUser();
 
-  const body = await request.json();
-  const parsed = kbArticleUpdateSchema.safeParse(body);
+    const body = await request.json();
+    const parsed = kbArticleUpdateSchema.safeParse(body);
 
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: "Validation failed", details: parsed.error.issues },
-      { status: 400 },
-    );
-  }
-
-  const oldArticle = await prisma.kbArticle.findUnique({ where: { id } });
-
-  if (!oldArticle) {
-    return NextResponse.json({ error: "Article not found" }, { status: 404 });
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const updateData: any = { ...parsed.data };
-
-  // If title changed, regenerate slug
-  if (parsed.data.title && parsed.data.title !== oldArticle.title) {
-    let slug = generateSlug(parsed.data.title);
-    const existing = await prisma.kbArticle.findUnique({ where: { slug } });
-    if (existing && existing.id !== id) {
-      slug = `${slug}-${randomSuffix()}`;
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: parsed.error.issues },
+        { status: 400 },
+      );
     }
-    updateData.slug = slug;
+
+    const oldArticle = await prisma.kbArticle.findUnique({ where: { id } });
+
+    if (!oldArticle) {
+      return NextResponse.json({ error: "Article not found" }, { status: 404 });
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updateData: any = { ...parsed.data };
+
+    // Strip undefined values so Prisma doesn't set fields to null unintentionally
+    Object.keys(updateData).forEach((k) => {
+      if (updateData[k] === undefined) delete updateData[k];
+    });
+
+    // If title changed, regenerate slug
+    if (parsed.data.title && parsed.data.title !== oldArticle.title) {
+      let slug = generateSlug(parsed.data.title);
+      const existing = await prisma.kbArticle.findUnique({ where: { slug } });
+      if (existing && existing.id !== id) {
+        slug = `${slug}-${randomSuffix()}`;
+      }
+      updateData.slug = slug;
+    }
+
+    const article = await prisma.kbArticle.update({
+      where: { id },
+      data: updateData,
+      include: {
+        author: { select: { id: true, name: true } },
+        category: { select: { id: true, name: true, slug: true } },
+      },
+    });
+
+    safeLogAudit({
+      entityType: "KbArticle",
+      entityId: id,
+      action: "UPDATE",
+      userId: user.id,
+      changes: diffChanges(
+        oldArticle as unknown as Record<string, unknown>,
+        parsed.data as Record<string, unknown>,
+      ),
+    });
+
+    return NextResponse.json(article);
+  } catch (err) {
+    if (err instanceof Error && err.message === "Unauthorized") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    console.error("PATCH /api/kb/articles/[id]:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-
-  const article = await prisma.kbArticle.update({
-    where: { id },
-    data: updateData,
-    include: {
-      author: { select: { id: true, name: true } },
-      category: { select: { id: true, name: true, slug: true } },
-    },
-  });
-
-  safeLogAudit({
-    entityType: "KbArticle",
-    entityId: id,
-    action: "UPDATE",
-    userId: user.id,
-    changes: diffChanges(
-      oldArticle as unknown as Record<string, unknown>,
-      parsed.data as Record<string, unknown>,
-    ),
-  });
-
-  return NextResponse.json(article);
 }
 
 export async function DELETE(

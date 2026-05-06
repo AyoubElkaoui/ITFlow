@@ -207,13 +207,13 @@ export function Header() {
   const hasQuery = query.trim().length > 0;
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-border bg-card px-6">
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-2 md:gap-4 border-b border-border bg-card px-3 md:px-6">
       {/* Search trigger */}
       <div className="relative flex-1 max-w-md">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder={t("placeholder")}
-          className="pl-9 bg-background cursor-pointer"
+          className="pl-9 bg-background cursor-pointer text-sm"
           readOnly
           onClick={() => setOpen(true)}
           onFocus={(e) => {
@@ -320,15 +320,16 @@ export function Header() {
         </CommandList>
       </CommandDialog>
 
-      <div className="flex items-center gap-2 ml-auto">
+      <div className="flex items-center gap-1 md:gap-2 ml-auto">
         {/* Notifications */}
         <NotificationBell />
 
-        {/* Language toggle */}
+        {/* Language toggle — hidden on mobile */}
         <Button
           variant="ghost"
           size="icon"
           onClick={toggleLocale}
+          className="hidden md:flex"
           title={
             locale === "nl" ? "Switch to English" : "Schakel naar Nederlands"
           }
@@ -338,11 +339,12 @@ export function Header() {
           </span>
         </Button>
 
-        {/* Theme toggle */}
+        {/* Theme toggle — hidden on mobile */}
         {mounted && (
           <Button
             variant="ghost"
             size="icon"
+            className="hidden md:flex"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           >
             {theme === "dark" ? (

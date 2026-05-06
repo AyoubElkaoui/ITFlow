@@ -120,10 +120,20 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
-    @apply bg-background text-foreground;
+  }
+}
+
+/* Safe area support voor iPhone notch/home indicator */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Mobiele touch targets minimaal 44px */
+@media (max-width: 768px) {
+  button, a, [role="button"] {
+    min-height: 44px;
   }
 }

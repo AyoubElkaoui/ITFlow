@@ -1,6 +1,8 @@
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { MobileSidebar } from "@/components/layout/mobile-sidebar";
+import { MobileNav } from "@/components/layout/mobile-nav";
+import { PwaInstallPrompt } from "@/components/layout/pwa-install-prompt";
 
 export default function DashboardLayout({
   children,
@@ -24,8 +26,17 @@ export default function DashboardLayout({
             <Header />
           </div>
         </div>
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-6">{children}</main>
+        {/* Extra bottom padding on mobile for the nav bar */}
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 md:p-6 pb-20 md:pb-6">
+          {children}
+        </main>
       </div>
+
+      {/* Mobile bottom navigation */}
+      <MobileNav />
+
+      {/* PWA install prompt */}
+      <PwaInstallPrompt />
     </div>
   );
 }

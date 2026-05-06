@@ -230,27 +230,32 @@ export default function TicketDetailPage({
   ].filter((f) => f.value);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link href="/tickets">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <span className="font-mono text-muted-foreground">
-              #{String(tk.ticketNumber).padStart(3, "0")}
-            </span>
-            <h1 className="text-2xl font-bold">{tk.subject}</h1>
-            <StatusBadge status={tk.status} />
-            <PriorityBadge priority={tk.priority} />
+      <div className="space-y-3">
+        {/* Rij 1: terug + nummer + titel */}
+        <div className="flex items-start gap-3">
+          <Link href="/tickets" className="shrink-0 mt-0.5">
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-mono text-sm text-muted-foreground">
+                #{String(tk.ticketNumber).padStart(3, "0")}
+              </span>
+              <StatusBadge status={tk.status} />
+              <PriorityBadge priority={tk.priority} />
+            </div>
+            <h1 className="text-lg md:text-2xl font-bold mt-1 leading-tight">{tk.subject}</h1>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+
+        {/* Rij 2: acties */}
+        <div className="flex items-center gap-2 flex-wrap pl-11">
           <Select value={tk.status} onValueChange={handleStatusChange}>
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="w-[150px] h-9">
               <SelectValue placeholder={t("changeStatus")} />
             </SelectTrigger>
             <SelectContent>
@@ -262,14 +267,10 @@ export default function TicketDetailPage({
               <SelectItem value="CLOSED">{ts("CLOSED")}</SelectItem>
             </SelectContent>
           </Select>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setEditOpen(true)}
-          >
+          <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setEditOpen(true)}>
             <Pencil className="h-4 w-4" />
           </Button>
-          <Button variant="destructive" size="icon" onClick={handleDelete}>
+          <Button variant="destructive" size="icon" className="h-9 w-9" onClick={handleDelete}>
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
@@ -282,7 +283,7 @@ export default function TicketDetailPage({
       />
 
       {/* Info Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
@@ -417,47 +418,54 @@ export default function TicketDetailPage({
             </CardHeader>
             <CardContent>
               {tk.timeEntries.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>{t("date")}</TableHead>
-                      <TableHead>{t("description")}</TableHead>
-                      <TableHead className="text-right">{t("hours")}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+                <>
+                  {/* Mobiele kaartweergave */}
+                  <div className="md:hidden space-y-2">
                     {tk.timeEntries.map((entry) => (
-                      <TableRow key={entry.id}>
-                        <TableCell className="text-sm">
-                          {format(new Date(entry.date), "dd MMM yyyy")}
-                        </TableCell>
-                        <TableCell className="text-sm">
-                          {entry.description || "\u2014"}
-                        </TableCell>
-                        <TableCell className="text-right font-mono">
-                          {Number(entry.hours).toFixed(2)}h
-                        </TableCell>
-                      </TableRow>
+                      <div key={entry.id} className="flex items-center justify-between rounded-lg border p-2.5">
+                        <div>
+                          <p className="text-xs text-muted-foreground">{format(new Date(entry.date), "dd MMM yyyy")}</p>
+                          {entry.description && <p className="text-sm mt-0.5 truncate max-w-[200px]">{entry.description}</p>}
+                        </div>
+                        <span className="font-mono font-semibold">{Number(entry.hours).toFixed(2)}h</span>
+                      </div>
                     ))}
-                  </TableBody>
-                </Table>
+                  </div>
+                  {/* Desktop tabelweergave */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>{t("date")}</TableHead>
+                          <TableHead>{t("description")}</TableHead>
+                          <TableHead className="text-right">{t("hours")}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {tk.timeEntries.map((entry) => (
+                          <TableRow key={entry.id}>
+                            <TableCell className="text-sm">{format(new Date(entry.date), "dd MMM yyyy")}</TableCell>
+                            <TableCell className="text-sm">{entry.description || "\u2014"}</TableCell>
+                            <TableCell className="text-right font-mono">{Number(entry.hours).toFixed(2)}h</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </>
               ) : (
                 <p className="text-sm text-muted-foreground text-center py-4">
                   {t("noTimeEntries")}
                 </p>
               )}
 
-              {/* Quick Log Time form */}
-              <form
-                onSubmit={handleLogTime}
-                className="mt-4 pt-4 border-t border-border space-y-3"
-              >
-                <div className="flex items-center gap-2">
+              {/* Quick Log Time form \u2014 verticaal gestapeld op mobiel */}
+              <form onSubmit={handleLogTime} className="mt-4 pt-4 border-t border-border space-y-2">
+                <div className="grid grid-cols-2 gap-2">
                   <Input
                     type="date"
                     value={timeDate}
                     onChange={(e) => setTimeDate(e.target.value)}
-                    className="w-[150px]"
                   />
                   <Input
                     type="number"
@@ -466,30 +474,24 @@ export default function TicketDetailPage({
                     placeholder={t("hours")}
                     value={timeHours}
                     onChange={(e) => setTimeHours(e.target.value)}
-                    className="w-24"
                   />
-                  <Input
-                    type="text"
-                    placeholder={t("description")}
-                    value={timeDescription}
-                    onChange={(e) => setTimeDescription(e.target.value)}
-                    className="flex-1"
-                  />
+                </div>
+                <Input
+                  type="text"
+                  placeholder={t("description")}
+                  value={timeDescription}
+                  onChange={(e) => setTimeDescription(e.target.value)}
+                />
+                <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5">
                     <Checkbox
                       id="time-billable"
                       checked={timeBillable}
                       onCheckedChange={(v) => setTimeBillable(v === true)}
                     />
-                    <Label htmlFor="time-billable" className="text-sm whitespace-nowrap">
-                      {tc("billable")}
-                    </Label>
+                    <Label htmlFor="time-billable" className="text-sm">{tc("billable")}</Label>
                   </div>
-                  <Button
-                    type="submit"
-                    size="sm"
-                    disabled={isLoggingTime || !timeHours}
-                  >
+                  <Button type="submit" size="sm" disabled={isLoggingTime || !timeHours}>
                     <Plus className="h-4 w-4 mr-1" />
                     {t("logTime")}
                   </Button>

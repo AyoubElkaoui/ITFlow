@@ -190,6 +190,7 @@ export default function TicketsPage() {
             </div>
           ) : (
             <>
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -265,6 +266,7 @@ export default function TicketsPage() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
 
               {/* Pagination */}
               {totalPages > 1 && (

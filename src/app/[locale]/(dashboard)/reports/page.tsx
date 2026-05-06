@@ -927,7 +927,7 @@ export default function ReportsPage() {
               {t("noData")}
             </p>
           ) : (
-            <Table>
+            <div className="overflow-x-auto"><Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>{t("company")}</TableHead>
@@ -980,7 +980,7 @@ export default function ReportsPage() {
                   </TableCell>
                 </TableRow>
               </TableBody>
-            </Table>
+            </Table></div>
           )}
         </CardContent>
       </Card>
@@ -1002,7 +1002,7 @@ export default function ReportsPage() {
               {t("noData")}
             </p>
           ) : (
-            <Table>
+            <div className="overflow-x-auto"><Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>{t("employee")}</TableHead>
@@ -1044,7 +1044,7 @@ export default function ReportsPage() {
                   </TableCell>
                 </TableRow>
               </TableBody>
-            </Table>
+            </Table></div>
           )}
         </CardContent>
       </Card>

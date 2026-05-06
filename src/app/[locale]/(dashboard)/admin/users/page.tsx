@@ -454,7 +454,7 @@ export default function UsersPage() {
               </p>
             </div>
           ) : (
-            <Table>
+            <div className="overflow-x-auto"><Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>{t("name")}</TableHead>
@@ -566,7 +566,7 @@ export default function UsersPage() {
                   </TableRow>
                 ))}
               </TableBody>
-            </Table>
+            </Table></div>
           )}
         </CardContent>
       </Card>

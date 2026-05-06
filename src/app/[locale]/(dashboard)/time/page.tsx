@@ -355,6 +355,7 @@ export default function TimePage() {
             </div>
           ) : (
             <>
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -421,6 +422,7 @@ export default function TimePage() {
                   })}
                 </TableBody>
               </Table>
+              </div>
 
               {/* Pagination */}
               {totalPages > 1 && (

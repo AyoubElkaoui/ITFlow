@@ -277,7 +277,7 @@ export default function ContactsPage() {
               </p>
             </div>
           ) : (
-            <Table>
+            <div className="overflow-x-auto"><Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>{t("name")}</TableHead>
@@ -382,7 +382,7 @@ export default function ContactsPage() {
                   </TableRow>
                 ))}
               </TableBody>
-            </Table>
+            </Table></div>
           )}
         </CardContent>
       </Card>

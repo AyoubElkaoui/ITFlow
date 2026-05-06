@@ -171,7 +171,7 @@ export default function ProjectsPage() {
               </div>
 
               {/* Cards */}
-              <ScrollArea className="h-[calc(100vh-220px)] md:h-[calc(100vh-220px)]" style={{ maxHeight: 'calc(100vh - 220px)' }}>
+              <ScrollArea className="max-h-[60vh] md:max-h-[calc(100vh-220px)]">
                 <div className="space-y-2 pr-2">
                   {colProjects.map((project) => (
                     <Card

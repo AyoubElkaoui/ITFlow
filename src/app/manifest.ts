@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "ITFlow — IT Beheer",
     short_name: "ITFlow",
     description: "IT ticket- en beheerplatform voor ITFin",
-    start_url: "/nl",
+    start_url: "/",
     display: "standalone",
     background_color: "#0f172a",
     theme_color: "#2563eb",

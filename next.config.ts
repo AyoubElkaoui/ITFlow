@@ -3,7 +3,7 @@ import createNextIntlPlugin from "next-intl/plugin";
 import withSerwistInit from "@serwist/next";
 
 const withSerwist = withSerwistInit({
-  swSrc: "app/sw.ts",
+  swSrc: "src/app/sw.ts",
   swDest: "public/sw.js",
   // Disable in dev — test PWA only via `next build && next start`
   disable: process.env.NODE_ENV === "development",

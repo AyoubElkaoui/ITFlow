@@ -80,7 +80,8 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t("title")}</h1>
-        <div className="flex gap-2">
+        {/* Knoppen alleen op desktop — bottom nav heeft deze acties op mobiel */}
+        <div className="hidden md:flex gap-2">
           <Link href="/tickets/new">
             <Button size="sm">
               <Plus className="mr-2 h-4 w-4" />
@@ -96,59 +97,26 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t("openTickets")}
-            </CardTitle>
-            <Ticket className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{stats?.openTickets || 0}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t("hoursThisWeek")}
-            </CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {stats?.hoursThisWeek?.toFixed(2) || "0.00"}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t("hoursThisMonth")}
-            </CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {stats?.hoursThisMonth?.toFixed(2) || "0.00"}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t("totalAssets")}
-            </CardTitle>
-            <Monitor className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{stats?.totalAssets || 0}</div>
-          </CardContent>
-        </Card>
+      {/* Stats Cards — 2×2 op mobiel, 4 op desktop */}
+      <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
+        {[
+          { label: t("openTickets"), value: stats?.openTickets || 0, icon: Ticket },
+          { label: t("hoursThisWeek"), value: stats?.hoursThisWeek?.toFixed(2) || "0.00", icon: Clock },
+          { label: t("hoursThisMonth"), value: stats?.hoursThisMonth?.toFixed(2) || "0.00", icon: Clock },
+          { label: t("totalAssets"), value: stats?.totalAssets || 0, icon: Monitor },
+        ].map(({ label, value, icon: Icon }) => (
+          <Card key={label}>
+            <CardHeader className="flex flex-row items-center justify-between pb-1 pt-4 px-4">
+              <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground leading-tight">
+                {label}
+              </CardTitle>
+              <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
+            </CardHeader>
+            <CardContent className="px-4 pb-4">
+              <div className="text-2xl md:text-3xl font-bold">{value}</div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -182,30 +150,27 @@ export default function DashboardPage() {
                     <Link
                       key={ticket.id}
                       href={`/tickets/${ticket.id}`}
-                      className="flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-accent"
+                      className="flex items-center gap-2 rounded-lg border border-border p-3 transition-colors hover:bg-accent"
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-muted-foreground font-mono">
+                          <span className="text-xs text-muted-foreground font-mono shrink-0">
                             #{String(ticket.ticketNumber).padStart(3, "0")}
                           </span>
-                          <span className="text-xs font-medium text-muted-foreground">
+                          <span className="text-xs font-medium text-muted-foreground truncate">
                             {ticket.company.shortName}
                           </span>
                         </div>
-                        <p className="text-sm font-medium truncate">
+                        <p className="text-sm font-medium truncate mt-0.5">
                           {ticket.subject}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <PriorityBadge priority={ticket.priority} />
+                      <div className="flex flex-col items-end gap-1 shrink-0">
                         <StatusBadge status={ticket.status} />
+                        <span className="text-[10px] text-muted-foreground">
+                          {formatDistanceToNow(new Date(ticket.createdAt), { addSuffix: true })}
+                        </span>
                       </div>
-                      <span className="text-xs text-muted-foreground shrink-0">
-                        {formatDistanceToNow(new Date(ticket.createdAt), {
-                          addSuffix: true,
-                        })}
-                      </span>
                     </Link>
                   ),
                 )}
@@ -225,7 +190,7 @@ export default function DashboardPage() {
                 {t("noHoursLogged")}
               </p>
             ) : (
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={hoursBreakdown}>
                   <XAxis
                     dataKey="companyShortName"

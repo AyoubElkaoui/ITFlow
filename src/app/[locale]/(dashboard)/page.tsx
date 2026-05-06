@@ -46,14 +46,14 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-4 w-full overflow-hidden">
         <h1 className="text-2xl font-bold">{t("title")}</h1>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 w-full">
           {[...Array(4)].map((_, i) => (
             <Card key={i} className="animate-pulse">
-              <CardContent className="pt-6">
-                <div className="h-8 bg-muted rounded w-16" />
-                <div className="h-4 bg-muted rounded w-24 mt-2" />
+              <CardContent className="pt-4 px-4 pb-4">
+                <div className="h-7 bg-muted rounded w-14" />
+                <div className="h-3 bg-muted rounded w-20 mt-2" />
               </CardContent>
             </Card>
           ))}
@@ -121,7 +121,7 @@ export default function DashboardPage() {
 
       <div className="grid gap-4 md:gap-6 lg:grid-cols-2 w-full overflow-hidden">
         {/* Recent Tickets */}
-        <Card>
+        <Card className="min-w-0">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>{t("recentTickets")}</CardTitle>
             <Link href="/tickets">
@@ -180,7 +180,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Hours per Company Chart */}
-        <Card>
+        <Card className="min-w-0">
           <CardHeader>
             <CardTitle>{t("hoursChart")}</CardTitle>
           </CardHeader>
@@ -190,6 +190,7 @@ export default function DashboardPage() {
                 {t("noHoursLogged")}
               </p>
             ) : (
+              <div className="w-full" style={{ minWidth: 0, overflow: 'hidden' }}>
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={hoursBreakdown}>
                   <XAxis
@@ -223,6 +224,7 @@ export default function DashboardPage() {
                   />
                 </BarChart>
               </ResponsiveContainer>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -231,7 +233,7 @@ export default function DashboardPage() {
       {/* Tickets by Status + Recent Activity */}
       <div className="grid gap-4 md:gap-6 lg:grid-cols-2 w-full overflow-hidden">
         {/* Tickets by Status */}
-        <Card>
+        <Card className="min-w-0">
           <CardHeader>
             <CardTitle>{t("ticketsByStatus")}</CardTitle>
           </CardHeader>
@@ -257,7 +259,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Recent Activity */}
-        <Card>
+        <Card className="min-w-0">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>{t("recentActivity")}</CardTitle>
             <Link href="/time">

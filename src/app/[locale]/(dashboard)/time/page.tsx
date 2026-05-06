@@ -355,7 +355,45 @@ export default function TimePage() {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              {/* Mobiele kaartweergave */}
+              <div className="md:hidden space-y-2">
+                {entries.map((entry) => {
+                  const hours = Number(entry.hours);
+                  return (
+                    <div key={entry.id} className="rounded-lg border p-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm">{entry.company.shortName}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {format(new Date(entry.date), "dd MMM yyyy")}
+                            {entry.ticket && ` \u00b7 #${String(entry.ticket.ticketNumber).padStart(3, "0")}`}
+                          </p>
+                        </div>
+                        <span className="font-mono font-bold text-base shrink-0">{hours.toFixed(2)}u</span>
+                      </div>
+                      {entry.description && (
+                        <p className="text-xs text-muted-foreground mt-1.5 truncate">{entry.description}</p>
+                      )}
+                      <div className="flex items-center justify-between mt-2">
+                        <Badge variant={entry.billable ? "default" : "secondary"} className="text-xs">
+                          {entry.billable ? tc("billable") : "Niet factureerbaar"}
+                        </Badge>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditEntry(entry)}>
+                            <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(entry.id)} disabled={deleteTimeEntry.isPending}>
+                            <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop tabelweergave */}
+              <div className="hidden md:block overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -372,7 +410,6 @@ export default function TimePage() {
                 <TableBody>
                   {entries.map((entry) => {
                     const hours = Number(entry.hours);
-
                     return (
                       <TableRow key={entry.id}>
                         <TableCell className="whitespace-nowrap">
@@ -392,27 +429,16 @@ export default function TimePage() {
                           {hours.toFixed(2)}
                         </TableCell>
                         <TableCell>
-                          <Badge
-                            variant={entry.billable ? "default" : "secondary"}
-                          >
+                          <Badge variant={entry.billable ? "default" : "secondary"}>
                             {entry.billable ? tc("yes") : tc("no")}
                           </Badge>
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => setEditEntry(entry)}
-                            >
+                            <Button variant="ghost" size="icon" onClick={() => setEditEntry(entry)}>
                               <Pencil className="h-4 w-4 text-muted-foreground" />
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDelete(entry.id)}
-                              disabled={deleteTimeEntry.isPending}
-                            >
+                            <Button variant="ghost" size="icon" onClick={() => handleDelete(entry.id)} disabled={deleteTimeEntry.isPending}>
                               <Trash2 className="h-4 w-4 text-muted-foreground" />
                             </Button>
                           </div>

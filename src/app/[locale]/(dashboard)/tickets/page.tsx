@@ -190,7 +190,33 @@ export default function TicketsPage() {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              {/* Mobiele kaartweergave */}
+              <div className="md:hidden space-y-2">
+                {tickets.map((ticket) => (
+                  <Link key={ticket.id} href={`/tickets/${ticket.id}`} className="block">
+                    <div className={`rounded-lg border p-3 hover:bg-muted/30 transition-colors ${ticket.company.name.toLowerCase().includes("elmar") ? "border-l-4 border-l-blue-500" : ""}`}>
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-sm leading-tight">{ticket.subject}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{ticket.company.shortName}</p>
+                        </div>
+                        <StatusBadge status={ticket.status} />
+                      </div>
+                      <div className="flex items-center gap-2 mt-2 flex-wrap">
+                        <span className="text-xs text-muted-foreground font-mono">#{String(ticket.ticketNumber).padStart(3, "0")}</span>
+                        <PriorityBadge priority={ticket.priority} />
+                        {ticket.assignedTo && (
+                          <span className="text-xs text-muted-foreground">{ticket.assignedTo.name}</span>
+                        )}
+                        <span className="text-xs text-muted-foreground ml-auto">{format(new Date(ticket.updatedAt), "dd MMM")}</span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Desktop tabelweergave */}
+              <div className="hidden md:block overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>

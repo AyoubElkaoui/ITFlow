@@ -76,7 +76,7 @@ export default function DashboardPage() {
   }> = data?.recentActivity || [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6 w-full min-w-0 overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t("title")}</h1>
@@ -98,7 +98,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Cards — 2×2 op mobiel, 4 op desktop */}
-      <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4 w-full overflow-hidden">
         {[
           { label: t("openTickets"), value: stats?.openTickets || 0, icon: Ticket },
           { label: t("hoursThisWeek"), value: stats?.hoursThisWeek?.toFixed(2) || "0.00", icon: Clock },
@@ -119,7 +119,7 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 md:gap-6 lg:grid-cols-2 w-full overflow-hidden">
         {/* Recent Tickets */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
@@ -229,7 +229,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Tickets by Status + Recent Activity */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 md:gap-6 lg:grid-cols-2 w-full overflow-hidden">
         {/* Tickets by Status */}
         <Card>
           <CardHeader>

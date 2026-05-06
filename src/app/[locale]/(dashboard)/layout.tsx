@@ -27,7 +27,7 @@ export default function DashboardLayout({
           </div>
         </div>
         {/* Extra bottom padding on mobile for the nav bar */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 md:p-6 pb-20 md:pb-6">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 md:p-6 mobile-scroll-padding">
           {children}
         </main>
       </div>

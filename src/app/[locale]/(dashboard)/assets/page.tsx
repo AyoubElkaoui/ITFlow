@@ -225,57 +225,66 @@ export default function AssetsPage() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("name")}</TableHead>
-                    <TableHead>{t("type")}</TableHead>
-                    <TableHead>{t("company")}</TableHead>
-                    <TableHead>{t("assignedTo")}</TableHead>
-                    <TableHead className="w-[80px]">{t("actions")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {assets.map((asset) => (
-                    <TableRow key={asset.id}>
-                      <TableCell>
-                        <div className="font-medium">{asset.name}</div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={typeBadgeVariant(asset.type)}>
-                          {t(asset.type)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {asset.company.shortName}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {asset.assignedTo || "\u2014"}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setEditingAsset(asset)}
-                          >
-                            <Pencil className="h-4 w-4 text-muted-foreground" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDelete(asset.id)}
-                          >
-                            <Trash2 className="h-4 w-4 text-muted-foreground" />
-                          </Button>
+            <>
+              {/* Mobiele kaartweergave */}
+              <div className="md:hidden space-y-2">
+                {assets.map((asset) => (
+                  <div key={asset.id} className="rounded-lg border p-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm">{asset.name}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant={typeBadgeVariant(asset.type)} className="text-xs">{t(asset.type)}</Badge>
+                          <span className="text-xs text-muted-foreground">{asset.company.shortName}</span>
                         </div>
-                      </TableCell>
+                        {asset.assignedTo && (
+                          <p className="text-xs text-muted-foreground mt-0.5">{asset.assignedTo}</p>
+                        )}
+                      </div>
+                      <div className="flex gap-1 shrink-0">
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingAsset(asset)}>
+                          <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(asset.id)}>
+                          <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop tabelweergave */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t("name")}</TableHead>
+                      <TableHead>{t("type")}</TableHead>
+                      <TableHead>{t("company")}</TableHead>
+                      <TableHead>{t("assignedTo")}</TableHead>
+                      <TableHead className="w-[80px]">{t("actions")}</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHeader>
+                  <TableBody>
+                    {assets.map((asset) => (
+                      <TableRow key={asset.id}>
+                        <TableCell><div className="font-medium">{asset.name}</div></TableCell>
+                        <TableCell><Badge variant={typeBadgeVariant(asset.type)}>{t(asset.type)}</Badge></TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{asset.company.shortName}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{asset.assignedTo || "\u2014"}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <Button variant="ghost" size="icon" onClick={() => setEditingAsset(asset)}><Pencil className="h-4 w-4 text-muted-foreground" /></Button>
+                            <Button variant="ghost" size="icon" onClick={() => handleDelete(asset.id)}><Trash2 className="h-4 w-4 text-muted-foreground" /></Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

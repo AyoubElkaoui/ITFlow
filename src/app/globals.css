@@ -131,9 +131,13 @@
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* Mobiele touch targets minimaal 44px */
-@media (max-width: 768px) {
-  button, a, [role="button"] {
-    min-height: 44px;
+/* Bottom padding voor mobiele content zodat bottom nav niet voor content zit */
+.mobile-scroll-padding {
+  padding-bottom: 1.5rem; /* desktop */
+}
+
+@media (max-width: 767px) {
+  .mobile-scroll-padding {
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
   }
 }

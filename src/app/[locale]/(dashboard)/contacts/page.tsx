@@ -277,112 +277,103 @@ export default function ContactsPage() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto"><Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("name")}</TableHead>
-                  <TableHead>{t("company")}</TableHead>
-                  <TableHead>{t("email")}</TableHead>
-                  <TableHead>{t("phone")}</TableHead>
-                  <TableHead>{t("function")}</TableHead>
-                  <TableHead className="text-center">
-                    {t("primaryContact")}
-                  </TableHead>
-                  <TableHead className="text-center">Portal</TableHead>
-                  <TableHead className="w-[120px]" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Mobiele kaartweergave */}
+              <div className="md:hidden space-y-2">
                 {contactList.map((contact) => (
-                  <TableRow key={contact.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
+                  <div key={contact.id} className="rounded-lg border p-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
                           {contact.name.charAt(0).toUpperCase()}
                         </div>
-                        <span className="font-medium">{contact.name}</span>
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm truncate">{contact.name}</p>
+                          <p className="text-xs text-muted-foreground">{contact.company?.shortName || "\u2014"}</p>
+                        </div>
                       </div>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {contact.company?.shortName || "\u2014"}
-                    </TableCell>
-                    <TableCell>
-                      {contact.email ? (
-                        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                          <Mail className="h-3.5 w-3.5" />
-                          {contact.email}
-                        </div>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">
-                          \u2014
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {contact.phone ? (
-                        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                          <Phone className="h-3.5 w-3.5" />
-                          {contact.phone}
-                        </div>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">
-                          \u2014
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {contact.function || "\u2014"}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {contact.isPrimary && (
-                        <Badge variant="default" className="text-xs">
-                          {t("primaryContact")}
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {contact.portalEnabled ? (
-                        <Badge variant="default" className="bg-green-600 text-xs">
-                          <Globe className="mr-1 h-3 w-3" />
-                          {tc("active")}
-                        </Badge>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">&mdash;</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground"
-                          title="Portal access"
-                          onClick={() => setPortalContact(contact)}
-                        >
-                          <Globe className="h-4 w-4" />
+                      <div className="flex gap-1 shrink-0">
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setPortalContact(contact)}>
+                          <Globe className="h-3.5 w-3.5 text-muted-foreground" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground"
-                          onClick={() => setEditingContact(contact)}
-                        >
-                          <Pencil className="h-4 w-4" />
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingContact(contact)}>
+                          <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                          onClick={() => handleDelete(contact.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(contact.id)}>
+                          <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
                         </Button>
                       </div>
-                    </TableCell>
-                  </TableRow>
+                    </div>
+                    <div className="mt-2 space-y-1">
+                      {contact.email && (
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <Mail className="h-3 w-3" />{contact.email}
+                        </div>
+                      )}
+                      {contact.phone && (
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <Phone className="h-3 w-3" />{contact.phone}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex gap-1.5 mt-2 flex-wrap">
+                      {contact.isPrimary && <Badge variant="default" className="text-xs">{t("primaryContact")}</Badge>}
+                      {contact.portalEnabled && <Badge variant="default" className="bg-green-600 text-xs"><Globe className="mr-1 h-3 w-3" />{tc("active")}</Badge>}
+                      {contact.function && <span className="text-xs text-muted-foreground">{contact.function}</span>}
+                    </div>
+                  </div>
                 ))}
-              </TableBody>
-            </Table></div>
+              </div>
+
+              {/* Desktop tabelweergave */}
+              <div className="hidden md:block overflow-x-auto"><Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("name")}</TableHead>
+                    <TableHead>{t("company")}</TableHead>
+                    <TableHead>{t("email")}</TableHead>
+                    <TableHead>{t("phone")}</TableHead>
+                    <TableHead>{t("function")}</TableHead>
+                    <TableHead className="text-center">{t("primaryContact")}</TableHead>
+                    <TableHead className="text-center">Portal</TableHead>
+                    <TableHead className="w-[120px]" />
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {contactList.map((contact) => (
+                    <TableRow key={contact.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
+                            {contact.name.charAt(0).toUpperCase()}
+                          </div>
+                          <span className="font-medium">{contact.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{contact.company?.shortName || "\u2014"}</TableCell>
+                      <TableCell>
+                        {contact.email ? <div className="flex items-center gap-1.5 text-sm text-muted-foreground"><Mail className="h-3.5 w-3.5" />{contact.email}</div> : <span className="text-sm text-muted-foreground">\u2014</span>}
+                      </TableCell>
+                      <TableCell>
+                        {contact.phone ? <div className="flex items-center gap-1.5 text-sm text-muted-foreground"><Phone className="h-3.5 w-3.5" />{contact.phone}</div> : <span className="text-sm text-muted-foreground">\u2014</span>}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{contact.function || "\u2014"}</TableCell>
+                      <TableCell className="text-center">{contact.isPrimary && <Badge variant="default" className="text-xs">{t("primaryContact")}</Badge>}</TableCell>
+                      <TableCell className="text-center">
+                        {contact.portalEnabled ? <Badge variant="default" className="bg-green-600 text-xs"><Globe className="mr-1 h-3 w-3" />{tc("active")}</Badge> : <span className="text-xs text-muted-foreground">\u2014</span>}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => setPortalContact(contact)}><Globe className="h-4 w-4" /></Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => setEditingContact(contact)}><Pencil className="h-4 w-4" /></Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => handleDelete(contact.id)}><Trash2 className="h-4 w-4" /></Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table></div>
+            </>
           )}
         </CardContent>
       </Card>

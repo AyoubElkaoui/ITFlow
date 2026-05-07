@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { TimeInput } from "@/components/ui/time-input";
+import { TicketSelect } from "@/components/shared/ticket-select";
 import { Plus, Trash2, Pencil, CalendarDays, User, Link2, AlertTriangle, CheckCircle2, Clock, Loader } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { format, isAfter, isBefore, startOfDay } from "date-fns";
@@ -321,10 +321,10 @@ export default function TasksPage() {
 
             <div className="space-y-2">
               <Label>Ticket koppelen (optioneel)</Label>
-              <Input
-                value={form.ticketId}
-                onChange={e => setForm(f => ({ ...f, ticketId: e.target.value }))}
-                placeholder="Ticket ID (kopieer uit de URL)"
+              <TicketSelect
+                value={form.ticketId || "none"}
+                onValueChange={v => setForm(f => ({ ...f, ticketId: v === "none" ? "" : v }))}
+                placeholder="Zoek ticket..."
               />
             </div>
 

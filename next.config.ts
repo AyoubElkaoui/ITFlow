@@ -11,6 +11,14 @@ const withSerwist = withSerwistInit({
 
 const nextConfig: NextConfig = {
   ...(process.env.DOCKER_BUILD === "1" && { output: "standalone" as const }),
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.public.blob.vercel-storage.com",
+      },
+    ],
+  },
   headers: async () => [
     {
       source: "/(.*)",

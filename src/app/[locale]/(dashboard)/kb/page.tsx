@@ -7,6 +7,7 @@ import {
   useKbArticles,
   useKbCategories,
   useCreateCategory,
+  useDeleteCategory,
 } from "@/hooks/use-kb";
 import { ArticleCard } from "@/components/kb/article-card";
 import { CategorySidebar } from "@/components/kb/category-sidebar";
@@ -62,6 +63,18 @@ export default function KnowledgeBasePage() {
 
   const { data: categories, isLoading: categoriesLoading } = useKbCategories();
   const createCategory = useCreateCategory();
+  const deleteCategory = useDeleteCategory();
+
+  async function handleDeleteCategory(id: string, name: string) {
+    if (!window.confirm(`Categorie "${name}" verwijderen? Artikelen worden losgekoppeld maar niet verwijderd.`)) return;
+    try {
+      await deleteCategory.mutateAsync(id);
+      if (selectedCategoryId === id) setSelectedCategoryId(null);
+      toast.success(`Categorie "${name}" verwijderd`);
+    } catch {
+      toast.error("Verwijderen mislukt");
+    }
+  }
 
   const articlesData = articlesResponse as
     | { data: KbArticle[]; total: number; page: number; pageSize: number }
@@ -149,6 +162,7 @@ export default function KnowledgeBasePage() {
                 setSelectedCategoryId(id);
                 setPage(1);
               }}
+              onDelete={handleDeleteCategory}
             />
           )}
         </div>

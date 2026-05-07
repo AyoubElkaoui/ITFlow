@@ -55,10 +55,15 @@ export function NotificationBell() {
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent align="end" className="w-96 p-0" sideOffset={8}>
+      <PopoverContent
+        align="end"
+        className="w-[min(22rem,calc(100vw-2rem))] p-0"
+        sideOffset={8}
+        collisionPadding={8}
+      >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
-          <h3 className="text-sm font-semibold">Notifications</h3>
+          <h3 className="text-sm font-semibold">Meldingen</h3>
           {unreadCount > 0 && (
             <Button
               variant="ghost"
@@ -68,21 +73,21 @@ export function NotificationBell() {
               disabled={markAllAsRead.isPending}
             >
               <CheckCheck className="mr-1 h-3 w-3" />
-              Mark all as read
+              Alles gelezen
             </Button>
           )}
         </div>
 
         {/* Notification list */}
-        <ScrollArea className="max-h-[400px]">
+        <ScrollArea className="max-h-[min(400px,60vh)]">
           {isLoading ? (
             <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
-              Loading...
+              Laden...
             </div>
           ) : displayedNotifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-2 py-8 text-muted-foreground">
               <Bell className="h-8 w-8" />
-              <p className="text-sm">No notifications</p>
+              <p className="text-sm">Geen meldingen</p>
             </div>
           ) : (
             <div className="py-1">

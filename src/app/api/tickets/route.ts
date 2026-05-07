@@ -133,8 +133,8 @@ export async function POST(request: NextRequest) {
     createNotification({
       userId: ticket.assignedToId,
       type: "ticket",
-      title: `New ticket assigned: ${ticket.subject}`,
-      message: `${ticket.company?.shortName} - ${ticket.priority}`,
+      title: `Nieuw ticket toegewezen: ${ticket.subject}`,
+      message: `${ticket.company?.shortName}`,
       link: `/tickets/${ticket.id}`,
     }).catch(() => {});
   }
@@ -142,8 +142,8 @@ export async function POST(request: NextRequest) {
   // Notify admins about new ticket
   notifyAdmins({
     type: "ticket",
-    title: `New ticket: ${ticket.subject}`,
-    message: `Created by ${user.name} for ${ticket.company?.shortName}`,
+    title: `Nieuw ticket: ${ticket.subject}`,
+    message: `Aangemaakt door ${user.name} voor ${ticket.company?.shortName}`,
     link: `/tickets/${ticket.id}`,
   }).catch(() => {});
 

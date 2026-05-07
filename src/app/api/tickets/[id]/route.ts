@@ -103,8 +103,8 @@ export async function PATCH(
     createNotification({
       userId: parsed.data.assignedToId,
       type: "ticket",
-      title: `Ticket assigned to you: ${ticket.subject}`,
-      message: `Assigned by ${user.name}`,
+      title: `Ticket toegewezen: ${ticket.subject}`,
+      message: `Toegewezen door ${user.name}`,
       link: `/tickets/${id}`,
     }).catch(() => {});
   }
@@ -119,8 +119,8 @@ export async function PATCH(
     createNotification({
       userId: oldTicket.createdById,
       type: "ticket",
-      title: `Ticket ${parsed.data.status.toLowerCase().replace("_", " ")}: ${ticket.subject}`,
-      message: `Updated by ${user.name}`,
+      title: `Ticket bijgewerkt: ${ticket.subject}`,
+      message: `Status gewijzigd door ${user.name}`,
       link: `/tickets/${id}`,
     }).catch(() => {});
   }

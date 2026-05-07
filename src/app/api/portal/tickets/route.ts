@@ -129,8 +129,8 @@ export async function POST(request: NextRequest) {
   // Notify admins about new portal ticket
   notifyAdmins({
     type: "ticket",
-    title: `Portal ticket: ${ticket.subject}`,
-    message: `Created by ${session.contactName} (${session.companyName})`,
+    title: `Nieuw portaalticket: ${ticket.subject}`,
+    message: `Aangemaakt door ${session.contactName} (${session.companyName})`,
     link: `/tickets/${ticket.id}`,
   }).catch(() => {});
 

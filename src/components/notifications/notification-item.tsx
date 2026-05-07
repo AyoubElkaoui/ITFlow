@@ -1,6 +1,7 @@
 "use client";
 
 import { formatDistanceToNow } from "date-fns";
+import { nl } from "date-fns/locale";
 import {
   Bell,
   Ticket,
@@ -38,6 +39,7 @@ export function NotificationItem({
 }: NotificationItemProps) {
   const timeAgo = formatDistanceToNow(new Date(notification.createdAt), {
     addSuffix: true,
+    locale: nl,
   });
 
   return (

@@ -45,11 +45,13 @@ import {
   ShieldCheck,
   MessageSquare,
   Link2,
+  ImageIcon,
   Pencil,
 } from "lucide-react";
 import { EditTicketDialog } from "@/components/tickets/edit-ticket-dialog";
 import { TicketNotes } from "@/components/tickets/ticket-notes";
 import { TicketAssets } from "@/components/tickets/ticket-assets";
+import { TicketAttachments } from "@/components/tickets/ticket-attachments";
 import { SlaIndicator } from "@/components/tickets/sla-indicator";
 import { Link } from "@/i18n/navigation";
 import { useRouter } from "@/i18n/navigation";
@@ -405,6 +407,19 @@ export default function TicketDetailPage({
             </CardHeader>
             <CardContent>
               <TicketAssets ticketId={tk.id} companyId={tk.company.id} />
+            </CardContent>
+          </Card>
+
+          {/* Bijlagen */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <ImageIcon className="h-4 w-4" />
+                Foto&apos;s &amp; bijlagen
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TicketAttachments ticketId={tk.id} />
             </CardContent>
           </Card>
 

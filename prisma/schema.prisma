@@ -205,7 +205,8 @@ model Ticket {
   template    TicketTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
   timeEntries TimeEntry[]
   notes       TicketNote[]
-  assetLinks  AssetTicket[]
+  assetLinks   AssetTicket[]
+  attachments  TicketAttachment[]
 
   @@index([companyId])
   @@index([status])
@@ -255,6 +256,20 @@ model Asset {
   @@index([companyId])
   @@index([type])
   @@index([stockItemId])
+}
+
+model TicketAttachment {
+  id           String   @id @default(cuid())
+  ticketId     String
+  ticket       Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  url          String
+  name         String
+  size         Int
+  mimeType     String
+  uploadedById String
+  createdAt    DateTime @default(now())
+
+  @@index([ticketId])
 }
 
 model TicketNote {

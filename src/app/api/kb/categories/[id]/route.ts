@@ -96,14 +96,12 @@ export async function DELETE(
     return NextResponse.json({ error: "Category not found" }, { status: 404 });
   }
 
+  // Artikelen loskoppelen van categorie voor verwijdering
   if (category._count.articles > 0) {
-    return NextResponse.json(
-      {
-        error:
-          "Cannot delete category with existing articles. Remove or reassign articles first.",
-      },
-      { status: 400 },
-    );
+    await prisma.kbArticle.updateMany({
+      where: { categoryId: id },
+      data: { categoryId: null },
+    });
   }
 
   await prisma.kbCategory.delete({ where: { id } });

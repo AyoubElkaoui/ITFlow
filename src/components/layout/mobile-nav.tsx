@@ -38,7 +38,7 @@ export function MobileNav() {
     { href: "/contacts", icon: Users, label: t("contacts") },
     { href: "/assets", icon: Monitor, label: t("assets") },
     { href: "/stock", icon: Package, label: t("stock") },
-    { href: "/projects", icon: FolderKanban, label: t("projects") },
+    { href: "/tasks", icon: FolderKanban, label: "Taken" },
     { href: "/kb", icon: BookOpen, label: t("kb") },
     { href: "/reports", icon: BarChart3, label: t("reports") },
   ];

@@ -25,6 +25,7 @@ export const metadata: Metadata = {
   icons: {
     apple: "/api/pwa/icon?size=180",
   },
+  manifest: "/manifest.webmanifest",
 };
 
 export const viewport: Viewport = {

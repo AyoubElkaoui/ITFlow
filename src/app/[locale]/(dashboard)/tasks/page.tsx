@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, type Task } from "@/hooks/use-tasks";
+import { useTasks, useCreateTask, useDeleteTask, type Task } from "@/hooks/use-tasks";
 import { useUsers } from "@/hooks/use-users";
+import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,6 +57,7 @@ export default function TasksPage() {
   const { data: users = [] } = useUsers();
   const createTask = useCreateTask();
   const deleteTask = useDeleteTask();
+  const qc = useQueryClient();
 
   const [showForm, setShowForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -97,11 +99,13 @@ export default function TasksPage() {
 
     try {
       if (editingTask) {
-        await fetch(`/api/tasks/${editingTask.id}`, {
+        const res = await fetch(`/api/tasks/${editingTask.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
         });
+        if (!res.ok) throw new Error("Mislukt");
+        await qc.invalidateQueries({ queryKey: ["tasks"] });
         toast.success("Taak bijgewerkt");
       } else {
         await createTask.mutateAsync(data);
@@ -114,12 +118,18 @@ export default function TasksPage() {
   }
 
   async function handleStatusChange(task: Task, status: Task["status"]) {
-    await fetch(`/api/tasks/${task.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    });
-    toast.success(`Verplaatst naar ${COLUMNS.find(c => c.status === status)?.label}`);
+    try {
+      const res = await fetch(`/api/tasks/${task.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) throw new Error("Mislukt");
+      await qc.invalidateQueries({ queryKey: ["tasks"] });
+      toast.success(`Verplaatst naar ${COLUMNS.find(c => c.status === status)?.label}`);
+    } catch {
+      toast.error("Status wijzigen mislukt");
+    }
   }
 
   async function handleDelete(task: Task) {

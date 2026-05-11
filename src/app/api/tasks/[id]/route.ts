@@ -8,7 +8,7 @@ const taskUpdateSchema = z.object({
   description: z.string().optional().nullable(),
   status: z.enum(["TODO", "IN_PROGRESS", "WAITING", "DONE"]).optional(),
   priority: z.enum(["LOW", "NORMAL", "HIGH", "URGENT"]).optional(),
-  dueDate: z.coerce.date().optional().nullable(),
+  dueDate: z.preprocess(v => v || undefined, z.coerce.date().optional()),
   ticketId: z.string().optional().nullable(),
   assignedToId: z.string().optional().nullable(),
 });

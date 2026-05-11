@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCompany, useUpdateCompany, useDeleteCompany } from "@/hooks/use-companies";
+import { CompanyCredentials } from "@/components/companies/company-credentials";
 import { useTickets } from "@/hooks/use-tickets";
 import { useTimeEntries } from "@/hooks/use-time-entries";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -276,6 +277,9 @@ export default function CompanyDetailPage({
                 <TabsTrigger value="contacts">
                   {`${t("contacts")} (${c.contacts.length})`}
                 </TabsTrigger>
+                <TabsTrigger value="credentials">
+                  🔑 Wachtwoorden
+                </TabsTrigger>
               </TabsList>
             </CardHeader>
             <CardContent>
@@ -402,6 +406,10 @@ export default function CompanyDetailPage({
                     ))}
                   </div>
                 )}
+              </TabsContent>
+
+              <TabsContent value="credentials" className="mt-0">
+                <CompanyCredentials companyId={c.id} />
               </TabsContent>
             </CardContent>
           </Tabs>

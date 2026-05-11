@@ -22,6 +22,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import DOMPurify from "isomorphic-dompurify";
 
 interface KbArticle {
   id: string;
@@ -150,8 +151,8 @@ export default function KbArticlePage({
         <CardContent className="pt-6">
           <div className="prose prose-neutral dark:prose-invert max-w-none">
             {/<[a-z][^>]*>/i.test(article.content) ? (
-              // HTML content (saved via TipTap editor)
-              <div dangerouslySetInnerHTML={{ __html: article.content }} />
+              // HTML content — gesaniteerd met DOMPurify tegen XSS
+              <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.content) }} />
             ) : (
               // Legacy markdown content
               <ReactMarkdown remarkPlugins={[remarkGfm]}>

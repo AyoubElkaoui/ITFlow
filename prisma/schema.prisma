@@ -95,8 +95,9 @@ model User {
   notifications   Notification[]
   kbArticles      KbArticle[]
   activeTimer     ActiveTimer?
-  assignedTasks   Task[]      @relation("AssignedTasks")
-  createdTasks    Task[]      @relation("CreatedTasks")
+  assignedTasks   Task[]       @relation("AssignedTasks")
+  createdTasks    Task[]       @relation("CreatedTasks")
+  createdCredentials Credential[]
 
   @@index([email])
 }
@@ -140,6 +141,7 @@ model Company {
   timeEntries      TimeEntry[]
   assets           Asset[]
   kbArticles       KbArticle[]
+  credentials      Credential[]
   recurringTickets RecurringTicket[]
   projects         Project[]
   stockMovements   StockMovement[]
@@ -280,6 +282,24 @@ model TicketAttachment {
   createdAt    DateTime @default(now())
 
   @@index([ticketId])
+}
+
+model Credential {
+  id          String   @id @default(cuid())
+  companyId   String
+  label       String
+  username    String?
+  password    String   // AES-256-GCM versleuteld
+  url         String?
+  notes       String?
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdBy User    @relation(fields: [createdById], references: [id])
+
+  @@index([companyId])
 }
 
 model Task {

@@ -132,7 +132,8 @@ export default function StockPage() {
 
   // Summary
   const totalCount = items.length;
-  const lowStockCount = items.filter((i) => i.quantity <= i.minStock).length;
+  const emptyCount = items.filter((i) => i.quantity === 0).length;
+  const lowStockCount = items.filter((i) => i.quantity > 0 && i.quantity <= i.minStock).length;
 
   function handleDelete(id: string) {
     if (!window.confirm(t("deleteConfirm"))) return;
@@ -155,35 +156,42 @@ export default function StockPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-3 md:gap-4">
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-muted p-2">
-                <Boxes className="h-5 w-5 text-muted-foreground" />
+          <CardContent className="pt-4 px-4 pb-4">
+            <div className="flex items-center gap-2">
+              <div className="rounded-lg bg-muted p-1.5">
+                <Boxes className="h-4 w-4 text-muted-foreground" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">{t("total")}</p>
-                <p className="text-2xl font-bold">{totalCount}</p>
+                <p className="text-xs text-muted-foreground">{t("total")}</p>
+                <p className="text-xl font-bold">{totalCount}</p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div
-                className={`rounded-lg p-2 ${lowStockCount > 0 ? "bg-red-100 dark:bg-red-900" : "bg-green-100 dark:bg-green-900"}`}
-              >
-                <AlertTriangle
-                  className={`h-5 w-5 ${lowStockCount > 0 ? "text-red-600 dark:text-red-300" : "text-green-600 dark:text-green-300"}`}
-                />
+          <CardContent className="pt-4 px-4 pb-4">
+            <div className="flex items-center gap-2">
+              <div className={`rounded-lg p-1.5 ${lowStockCount > 0 ? "bg-orange-100 dark:bg-orange-900" : "bg-muted"}`}>
+                <AlertTriangle className={`h-4 w-4 ${lowStockCount > 0 ? "text-orange-600 dark:text-orange-300" : "text-muted-foreground"}`} />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">
-                  {t("lowStock")}
-                </p>
-                <p className="text-2xl font-bold">{lowStockCount}</p>
+                <p className="text-xs text-muted-foreground">Bijna leeg</p>
+                <p className="text-xl font-bold">{lowStockCount}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 px-4 pb-4">
+            <div className="flex items-center gap-2">
+              <div className={`rounded-lg p-1.5 ${emptyCount > 0 ? "bg-red-100 dark:bg-red-900" : "bg-muted"}`}>
+                <AlertTriangle className={`h-4 w-4 ${emptyCount > 0 ? "text-red-600 dark:text-red-300" : "text-muted-foreground"}`} />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Leeg</p>
+                <p className="text-xl font-bold">{emptyCount}</p>
               </div>
             </div>
           </CardContent>
@@ -250,14 +258,17 @@ export default function StockPage() {
               {/* Mobiele kaartweergave */}
               <div className="md:hidden space-y-2">
                 {items.map((item) => {
-                  const isLow = item.quantity <= item.minStock;
+                  const isEmpty = item.quantity === 0;
+                  const isLow = !isEmpty && item.quantity <= item.minStock;
+                  const borderColor = isEmpty ? "border-red-400 dark:border-red-700" : isLow ? "border-orange-400 dark:border-orange-700" : "";
+                  const iconColor = isEmpty ? "text-red-500" : "text-orange-500";
                   return (
-                    <div key={item.id} className={`rounded-lg border p-3 ${isLow ? "border-red-300 dark:border-red-800" : ""}`}>
+                    <div key={item.id} className={`rounded-lg border p-3 ${borderColor}`}>
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5">
                             <p className="font-medium text-sm">{item.name}</p>
-                            {isLow && <AlertTriangle className="h-3.5 w-3.5 text-red-500 shrink-0" />}
+                            {(isEmpty || isLow) && <AlertTriangle className={`h-3.5 w-3.5 shrink-0 ${iconColor}`} />}
                           </div>
                           <div className="flex items-center gap-2 mt-1">
                             <Badge variant="secondary" className="text-xs">{t(item.category)}</Badge>
@@ -265,7 +276,13 @@ export default function StockPage() {
                           </div>
                         </div>
                         <div className="text-right shrink-0">
-                          <Badge variant={isLow ? "destructive" : "outline"} className={!isLow ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" : ""}>
+                          <Badge className={
+                            isEmpty
+                              ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                              : isLow
+                              ? "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300"
+                              : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                          }>
                             {item.quantity}
                           </Badge>
                           <p className="text-xs text-muted-foreground mt-0.5">min. {item.minStock}</p>
@@ -302,18 +319,26 @@ export default function StockPage() {
                   </TableHeader>
                   <TableBody>
                     {items.map((item) => {
-                      const isLow = item.quantity <= item.minStock;
+                      const isEmpty = item.quantity === 0;
+                      const isLow = !isEmpty && item.quantity <= item.minStock;
                       return (
                         <TableRow key={item.id}>
                           <TableCell>
                             <div className="flex items-center gap-2">
                               <span className="font-medium">{item.name}</span>
-                              {isLow && <AlertTriangle className="h-4 w-4 text-red-500" />}
+                              {isEmpty && <AlertTriangle className="h-4 w-4 text-red-500" />}
+                              {isLow && <AlertTriangle className="h-4 w-4 text-orange-500" />}
                             </div>
                           </TableCell>
                           <TableCell><Badge variant="secondary">{t(item.category)}</Badge></TableCell>
                           <TableCell className="text-right">
-                            <Badge variant={isLow ? "destructive" : "outline"} className={!isLow ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" : ""}>{item.quantity}</Badge>
+                            <Badge className={
+                              isEmpty
+                                ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                                : isLow
+                                ? "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300"
+                                : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                            }>{item.quantity}</Badge>
                           </TableCell>
                           <TableCell className="text-right text-sm text-muted-foreground">{item.minStock}</TableCell>
                           <TableCell className="text-sm text-muted-foreground">{item.location || "\u2014"}</TableCell>

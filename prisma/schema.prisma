@@ -219,6 +219,7 @@ model Ticket {
   assetLinks   AssetTicket[]
   attachments  TicketAttachment[]
   tasks        Task[]
+  credentials  Credential[]
 
   @@index([companyId])
   @@index([status])
@@ -287,6 +288,7 @@ model TicketAttachment {
 model Credential {
   id          String   @id @default(cuid())
   companyId   String
+  ticketId    String?
   label       String
   username    String?
   password    String   // AES-256-GCM versleuteld
@@ -296,10 +298,12 @@ model Credential {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  createdBy User    @relation(fields: [createdById], references: [id])
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  ticket    Ticket?  @relation(fields: [ticketId], references: [id], onDelete: SetNull)
+  createdBy User     @relation(fields: [createdById], references: [id])
 
   @@index([companyId])
+  @@index([ticketId])
 }
 
 model Task {

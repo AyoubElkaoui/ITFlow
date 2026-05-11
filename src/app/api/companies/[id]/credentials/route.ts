@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getSessionUser } from "@/lib/auth-utils";
+import { requireAdmin } from "@/lib/auth-utils";
 import { encrypt, decrypt } from "@/lib/crypto";
 import { z } from "zod/v4";
 
@@ -10,6 +10,7 @@ const schema = z.object({
   password: z.string().min(1),
   url: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
+  ticketId: z.string().optional().nullable(),
 });
 
 export async function GET(
@@ -17,18 +18,22 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   let user;
-  try { user = await getSessionUser(); } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try { user = await requireAdmin(); } catch {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const { id } = await params;
   const credentials = await prisma.credential.findMany({
     where: { companyId: id },
     orderBy: { label: "asc" },
-    select: { id: true, label: true, username: true, password: true, url: true, notes: true, createdAt: true, createdBy: { select: { name: true } } },
+    select: {
+      id: true, label: true, username: true, password: true,
+      url: true, notes: true, createdAt: true,
+      createdBy: { select: { name: true } },
+      ticket: { select: { id: true, ticketNumber: true, subject: true } },
+    },
   });
 
-  // Decrypt passwords
   const result = credentials.map((c) => {
     try {
       return { ...c, password: decrypt(c.password) };
@@ -37,7 +42,6 @@ export async function GET(
     }
   });
 
-  // Audit log elke keer dat wachtwoorden worden bekeken
   await prisma.auditLog.create({
     data: { entityType: "Credentials", entityId: id, action: "VIEW", userId: user.id },
   }).catch(() => {});
@@ -50,8 +54,8 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   let user;
-  try { user = await getSessionUser(); } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try { user = await requireAdmin(); } catch {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const { id } = await params;
@@ -59,17 +63,19 @@ export async function POST(
   const parsed = schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Validation failed" }, { status: 400 });
 
-  const encryptedPassword = encrypt(parsed.data.password);
-
   const credential = await prisma.credential.create({
     data: {
       companyId: id,
       label: parsed.data.label,
       username: parsed.data.username || null,
-      password: encryptedPassword,
+      password: encrypt(parsed.data.password),
       url: parsed.data.url || null,
       notes: parsed.data.notes || null,
+      ticketId: parsed.data.ticketId || null,
       createdById: user.id,
+    },
+    include: {
+      ticket: { select: { id: true, ticketNumber: true, subject: true } },
     },
   });
 
@@ -80,8 +86,8 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  try { await getSessionUser(); } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try { await requireAdmin(); } catch {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const { id } = await params;

@@ -49,6 +49,7 @@ interface TicketData {
   officeLicense: string | null;
   pendingTasks: string | null;
   equipmentTaken: string | null;
+  createdAt: string;
 }
 
 interface Props {
@@ -91,6 +92,7 @@ export function EditTicketDialog({ open, onOpenChange, ticket }: Props) {
       officeLicense: ticket.officeLicense ?? "",
       pendingTasks: ticket.pendingTasks ?? "",
       equipmentTaken: ticket.equipmentTaken ?? "",
+      createdAt: new Date(ticket.createdAt),
     },
   });
 
@@ -115,6 +117,7 @@ export function EditTicketDialog({ open, onOpenChange, ticket }: Props) {
       officeLicense: ticket.officeLicense ?? "",
       pendingTasks: ticket.pendingTasks ?? "",
       equipmentTaken: ticket.equipmentTaken ?? "",
+      createdAt: new Date(ticket.createdAt),
     });
   }, [ticket, form]);
 
@@ -404,6 +407,39 @@ export function EditTicketDialog({ open, onOpenChange, ticket }: Props) {
                   rows={3}
                   {...form.register("equipmentTaken")}
                 />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Datum */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Datum ticket</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <Label htmlFor="edit-createdAt">Aanmaakdatum</Label>
+                <Input
+                  id="edit-createdAt"
+                  type="datetime-local"
+                  className="w-[240px]"
+                  value={
+                    form.watch("createdAt")
+                      ? new Date(form.watch("createdAt") as Date)
+                          .toISOString()
+                          .slice(0, 16)
+                      : ""
+                  }
+                  onChange={(e) =>
+                    form.setValue(
+                      "createdAt",
+                      e.target.value ? new Date(e.target.value) : undefined,
+                    )
+                  }
+                />
+                <p className="text-xs text-muted-foreground">
+                  Wijzig de datum als het ticket later is ingevoerd dan het werk is gedaan.
+                </p>
               </div>
             </CardContent>
           </Card>

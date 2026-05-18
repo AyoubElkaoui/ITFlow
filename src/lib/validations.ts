@@ -54,7 +54,9 @@ export const ticketCreateSchema = z.object({
   equipmentTaken: z.string().optional(),
 });
 
-export const ticketUpdateSchema = ticketCreateSchema.partial();
+export const ticketUpdateSchema = ticketCreateSchema.partial().extend({
+  createdAt: z.coerce.date().optional(),
+});
 
 // TimeEntry schemas
 export const timeEntryCreateSchema = z.object({

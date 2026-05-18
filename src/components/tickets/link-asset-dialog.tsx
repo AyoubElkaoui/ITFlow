@@ -77,7 +77,7 @@ export function LinkAssetDialog({
   const t = useTranslations("assets");
   const tc = useTranslations("common");
   const [search, setSearch] = useState("");
-  const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [note, setNote] = useState("");
 
   const { data: allAssets, isLoading: assetsLoading } = useQuery<AssetItem[]>({
@@ -111,8 +111,16 @@ export function LinkAssetDialog({
 
   function handleReset() {
     setSearch("");
-    setSelectedAssetId(null);
+    setSelectedIds(new Set());
     setNote("");
+  }
+
+  function toggleAsset(id: string) {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
   }
 
   function handleOpenChange(nextOpen: boolean) {
@@ -121,16 +129,17 @@ export function LinkAssetDialog({
   }
 
   async function handleSubmit() {
-    if (!selectedAssetId) return;
+    if (selectedIds.size === 0) return;
     try {
-      await linkAsset.mutateAsync({
-        assetId: selectedAssetId,
-        note: note.trim() || undefined,
-      });
-      toast.success("Asset linked");
+      await Promise.all(
+        Array.from(selectedIds).map(assetId =>
+          linkAsset.mutateAsync({ assetId, note: note.trim() || undefined })
+        )
+      );
+      toast.success(`${selectedIds.size} asset${selectedIds.size > 1 ? "s" : ""} gekoppeld`);
       handleOpenChange(false);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to link asset");
+      toast.error(err instanceof Error ? err.message : "Koppelen mislukt");
     }
   }
 
@@ -139,7 +148,9 @@ export function LinkAssetDialog({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>{t("linkAsset")}</DialogTitle>
-          <DialogDescription>{t("linkAssetDescription")}</DialogDescription>
+          <DialogDescription>
+            Selecteer één of meerdere assets om te koppelen aan dit ticket.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -165,42 +176,38 @@ export function LinkAssetDialog({
               </div>
             ) : (
               <div className="p-1">
-                {availableAssets.map((asset) => (
-                  <button
-                    key={asset.id}
-                    type="button"
-                    onClick={() =>
-                      setSelectedAssetId(
-                        selectedAssetId === asset.id ? null : asset.id,
-                      )
-                    }
-                    className={cn(
-                      "flex w-full items-center gap-3 rounded-md px-3 py-2 text-left transition-colors hover:bg-accent",
-                      selectedAssetId === asset.id &&
-                        "bg-accent ring-1 ring-ring",
-                    )}
-                  >
-                    <div className="flex size-8 shrink-0 items-center justify-center rounded bg-muted">
-                      <AssetTypeIcon
-                        type={asset.type}
-                        className="size-3.5 text-muted-foreground"
-                      />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-medium">
-                        {asset.name}
-                      </div>
-                      {asset.assignedTo && (
-                        <div className="text-xs text-muted-foreground truncate">
-                          {asset.assignedTo}
-                        </div>
+                {availableAssets.map((asset) => {
+                  const isSelected = selectedIds.has(asset.id);
+                  return (
+                    <button
+                      key={asset.id}
+                      type="button"
+                      onClick={() => toggleAsset(asset.id)}
+                      className={cn(
+                        "flex w-full items-center gap-3 rounded-md px-3 py-2 text-left transition-colors hover:bg-accent",
+                        isSelected && "bg-accent ring-1 ring-ring",
                       )}
-                    </div>
-                    {selectedAssetId === asset.id && (
-                      <Check className="size-4 shrink-0 text-primary" />
-                    )}
-                  </button>
-                ))}
+                    >
+                      {/* Checkbox indicator */}
+                      <div className={cn(
+                        "flex size-5 shrink-0 items-center justify-center rounded border-2 transition-colors",
+                        isSelected ? "bg-primary border-primary" : "border-muted-foreground/40"
+                      )}>
+                        {isSelected && <Check className="size-3 text-primary-foreground" />}
+                      </div>
+
+                      <div className="flex size-8 shrink-0 items-center justify-center rounded bg-muted">
+                        <AssetTypeIcon type={asset.type} className="size-3.5 text-muted-foreground" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-medium">{asset.name}</div>
+                        {asset.assignedTo && (
+                          <div className="text-xs text-muted-foreground truncate">{asset.assignedTo}</div>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </ScrollArea>
@@ -216,23 +223,32 @@ export function LinkAssetDialog({
             />
           </div>
 
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => handleOpenChange(false)}>
-              {tc("cancel")}
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={!selectedAssetId || linkAsset.isPending}
-            >
-              {linkAsset.isPending ? (
-                <>
-                  <Loader2 className="mr-1.5 size-3.5 animate-spin" />
-                  {t("linking")}
-                </>
-              ) : (
-                t("linkAsset")
-              )}
-            </Button>
+          <div className="flex justify-between items-center gap-2">
+            <span className="text-xs text-muted-foreground">
+              {selectedIds.size > 0
+                ? `${selectedIds.size} geselecteerd`
+                : "Klik om te selecteren"}
+            </span>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => handleOpenChange(false)}>
+                {tc("cancel")}
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={selectedIds.size === 0 || linkAsset.isPending}
+              >
+                {linkAsset.isPending ? (
+                  <>
+                    <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+                    Koppelen...
+                  </>
+                ) : selectedIds.size > 1 ? (
+                  `${selectedIds.size} assets koppelen`
+                ) : (
+                  t("linkAsset")
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </DialogContent>

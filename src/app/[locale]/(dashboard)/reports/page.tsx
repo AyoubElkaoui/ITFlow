@@ -710,13 +710,183 @@ export default function ReportsPage() {
     doc.save(`rapport_${fromDate}_${toDate}.pdf`);
   };
 
+  const handleExportDetailedExcel = async () => {
+    const params = new URLSearchParams({ from: fromDate, to: toDate });
+    if (companyId !== "all") params.set("companyId", companyId);
+    if (userId !== "all") params.set("userId", userId);
+
+    const res = await fetch(`/api/reports/detailed?${params}`);
+    if (!res.ok) { alert("Export mislukt"); return; }
+
+    const detailedTickets = await res.json() as Array<{
+      id: string;
+      ticketNumber: number;
+      subject: string;
+      description: string | null;
+      status: string;
+      priority: string;
+      category: string | null;
+      tasksPerformed: string | null;
+      pcName: string | null;
+      serialNumber: string | null;
+      officeLicense: string | null;
+      pendingTasks: string | null;
+      equipmentTaken: string | null;
+      createdAt: string;
+      resolvedAt: string | null;
+      closedAt: string | null;
+      company: { shortName: string; hourlyRate: string | null };
+      contact: { name: string } | null;
+      assignedTo: { name: string } | null;
+      createdBy: { name: string };
+      timeEntries: Array<{
+        date: string;
+        hours: string;
+        billable: boolean;
+        description: string | null;
+        user: { name: string };
+      }>;
+      assetLinks: Array<{ asset: { name: string; type: string } }>;
+      notes: Array<{ content: string; isInternal: boolean; createdAt: string }>;
+    }>;
+
+    const wb = XLSX.utils.book_new();
+    const fmtDate = (d: string | null | undefined) => {
+      if (!d) return "-";
+      try { return format(new Date(d), "dd-MM-yyyy"); } catch { return "-"; }
+    };
+    const r2 = (v: number) => Math.round(v * 100) / 100;
+
+    // --- FACTUURDETAILS per ticket ---
+    const detailHeader = [
+      "Ticket #", "Onderwerp", "Bedrijf", "Contact", "Toegewezen aan",
+      "Status", "Prioriteit", "Categorie",
+      "Aangemaakt", "Opgelost", "Gesloten",
+      "Beschrijving", "Uitgevoerde taken",
+      "PC-naam", "Serienummer", "Office-licentie",
+      "Openstaande taken", "Meegenomen apparatuur",
+      "Gekoppelde assets",
+      "Totaal uren", "Factureerbare uren",
+      "Uurregistraties (datum | medewerker | uren | omschrijving)",
+    ];
+
+    const detailRows = detailedTickets.map((tk) => {
+      const totalH = tk.timeEntries.reduce((s, e) => s + parseFloat(e.hours || "0"), 0);
+      const billableH = tk.timeEntries.filter(e => e.billable).reduce((s, e) => s + parseFloat(e.hours || "0"), 0);
+      const assets = tk.assetLinks.map(l => l.asset.name).join(", ") || "-";
+      const timeStr = tk.timeEntries.map(e =>
+        `${fmtDate(e.date)} | ${e.user.name} | ${parseFloat(e.hours || "0").toFixed(2)}u | ${e.description || "-"}`
+      ).join("\n") || "-";
+
+      return [
+        `#${String(tk.ticketNumber).padStart(3, "0")}`,
+        tk.subject,
+        tk.company.shortName,
+        tk.contact?.name || "-",
+        tk.assignedTo?.name || "-",
+        tk.status,
+        tk.priority,
+        tk.category || "-",
+        fmtDate(tk.createdAt),
+        fmtDate(tk.resolvedAt),
+        fmtDate(tk.closedAt),
+        tk.description || "-",
+        tk.tasksPerformed || "-",
+        tk.pcName || "-",
+        tk.serialNumber || "-",
+        tk.officeLicense || "-",
+        tk.pendingTasks || "-",
+        tk.equipmentTaken || "-",
+        assets,
+        r2(totalH),
+        r2(billableH),
+        timeStr,
+      ];
+    });
+
+    const detailSheet = XLSX.utils.aoa_to_sheet([detailHeader, ...detailRows]);
+    detailSheet["!cols"] = [
+      { wch: 10 }, { wch: 35 }, { wch: 15 }, { wch: 18 }, { wch: 18 },
+      { wch: 14 }, { wch: 12 }, { wch: 12 },
+      { wch: 12 }, { wch: 12 }, { wch: 12 },
+      { wch: 40 }, { wch: 40 },
+      { wch: 18 }, { wch: 16 }, { wch: 20 },
+      { wch: 30 }, { wch: 25 },
+      { wch: 30 },
+      { wch: 12 }, { wch: 14 },
+      { wch: 60 },
+    ];
+    // Wrap text in last column
+    XLSX.utils.book_append_sheet(wb, detailSheet, "Factuurdetails");
+
+    // --- UURREGISTRATIES per ticket (voor factuur) ---
+    const uurHeader = [
+      "Ticket #", "Onderwerp", "Bedrijf", "Datum", "Medewerker",
+      "Uren", "Factureerbaar", "Omschrijving",
+    ];
+    const uurRows: (string | number)[][] = [];
+    detailedTickets.forEach(tk => {
+      tk.timeEntries.forEach(e => {
+        uurRows.push([
+          `#${String(tk.ticketNumber).padStart(3, "0")}`,
+          tk.subject,
+          tk.company.shortName,
+          fmtDate(e.date),
+          e.user.name,
+          r2(parseFloat(e.hours || "0")),
+          e.billable ? "Ja" : "Nee",
+          e.description || "-",
+        ]);
+      });
+    });
+    // Totaal rij
+    const totalBillableHours = uurRows.filter(r => r[6] === "Ja").reduce((s, r) => s + Number(r[5]), 0);
+    uurRows.push(["TOTAAL", "", "", "", "", r2(totalBillableHours), "Factureerbaar", ""]);
+
+    const uurSheet = XLSX.utils.aoa_to_sheet([uurHeader, ...uurRows]);
+    uurSheet["!cols"] = [
+      { wch: 10 }, { wch: 35 }, { wch: 15 }, { wch: 12 }, { wch: 18 },
+      { wch: 8 }, { wch: 14 }, { wch: 40 },
+    ];
+    XLSX.utils.book_append_sheet(wb, uurSheet, "Uurregistraties per ticket");
+
+    // --- TICKET OVERZICHT compact ---
+    const overzichtHeader = [
+      "Ticket #", "Onderwerp", "Bedrijf", "Status", "Prioriteit",
+      "Aangemaakt", "Gesloten", "Totaal uren", "Factureerbare uren",
+    ];
+    const overzichtRows = detailedTickets.map(tk => {
+      const totalH = tk.timeEntries.reduce((s, e) => s + parseFloat(e.hours || "0"), 0);
+      const billableH = tk.timeEntries.filter(e => e.billable).reduce((s, e) => s + parseFloat(e.hours || "0"), 0);
+      return [
+        `#${String(tk.ticketNumber).padStart(3, "0")}`,
+        tk.subject,
+        tk.company.shortName,
+        tk.status,
+        tk.priority,
+        fmtDate(tk.createdAt),
+        fmtDate(tk.closedAt),
+        r2(totalH),
+        r2(billableH),
+      ];
+    });
+    const overzichtSheet = XLSX.utils.aoa_to_sheet([overzichtHeader, ...overzichtRows]);
+    overzichtSheet["!cols"] = [
+      { wch: 10 }, { wch: 35 }, { wch: 15 }, { wch: 14 }, { wch: 12 },
+      { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 16 },
+    ];
+    XLSX.utils.book_append_sheet(wb, overzichtSheet, "Ticketoverzicht");
+
+    XLSX.writeFile(wb, `factuurdetails_${fromDate}_${toDate}.xlsx`);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">{t("title")}</h1>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Button variant="outline" size="sm" onClick={handleExportExcel}>
               <Download className="h-4 w-4 mr-1" />
               {t("exportExcel")}
@@ -724,6 +894,10 @@ export default function ReportsPage() {
             <Button variant="outline" size="sm" onClick={handleExportPdf}>
               <FileText className="h-4 w-4 mr-1" />
               {t("exportPdf")}
+            </Button>
+            <Button size="sm" onClick={handleExportDetailedExcel} className="bg-green-600 hover:bg-green-700 text-white">
+              <Download className="h-4 w-4 mr-1" />
+              Factuurexport
             </Button>
           </div>
         </div>

@@ -21,6 +21,7 @@ import {
 } from "@/hooks/use-kanban";
 import { KanbanColumn } from "@/components/tickets/kanban-column";
 import { KanbanCard } from "@/components/tickets/kanban-card";
+import { useTranslations } from "next-intl";
 
 const COLUMNS = [
   { status: "OPEN", title: "Open", color: "blue" },
@@ -39,6 +40,7 @@ const EMPTY_COLUMNS: KanbanColumns = {
 };
 
 export function KanbanBoard() {
+  const tf = useTranslations("teFactureren");
   const { data, isLoading } = useKanbanTickets();
   const reorderMutation = useReorderKanban();
   const [activeTicket, setActiveTicket] = useState<KanbanTicket | null>(null);
@@ -264,6 +266,8 @@ export function KanbanBoard() {
             title={col.title}
             tickets={columns[col.status] || []}
             color={col.color}
+            overflowHref={col.status === "BILLABLE" ? "/tickets/te-factureren" : undefined}
+            overflowLabel={col.status === "BILLABLE" ? tf("overflowLink") : undefined}
           />
         ))}
       </div>

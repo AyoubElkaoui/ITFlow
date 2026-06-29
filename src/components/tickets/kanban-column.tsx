@@ -9,12 +9,16 @@ import { KanbanCard } from "@/components/tickets/kanban-card";
 import type { KanbanTicket } from "@/hooks/use-kanban";
 import { cn } from "@/lib/utils";
 import { Inbox } from "lucide-react";
+import { Link } from "@/i18n/navigation";
 
 interface KanbanColumnProps {
   status: string;
   title: string;
   tickets: KanbanTicket[];
   color: string;
+  /** Optionele link voor de "+N meer"-overflow (bv. naar Te factureren-overzicht). */
+  overflowHref?: string;
+  overflowLabel?: string;
 }
 
 const colorBorderMap: Record<string, string> = {
@@ -33,7 +37,7 @@ const colorBgMap: Record<string, string> = {
   gray: "bg-gray-400",
 };
 
-export function KanbanColumn({ status, title, tickets, color }: KanbanColumnProps) {
+export function KanbanColumn({ status, title, tickets, color, overflowHref, overflowLabel }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: `column-${status}`,
     data: {
@@ -86,11 +90,19 @@ export function KanbanColumn({ status, title, tickets, color }: KanbanColumnProp
             ))
           )}
         </SortableContext>
-        {hiddenCount > 0 && (
-          <p className="text-center text-xs text-muted-foreground py-2">
-            +{hiddenCount} meer in de lijst
-          </p>
-        )}
+        {hiddenCount > 0 &&
+          (overflowHref ? (
+            <Link
+              href={overflowHref}
+              className="block rounded-md py-2 text-center text-xs font-medium text-primary hover:underline"
+            >
+              +{hiddenCount} — {overflowLabel}
+            </Link>
+          ) : (
+            <p className="text-center text-xs text-muted-foreground py-2">
+              +{hiddenCount} meer in de lijst
+            </p>
+          ))}
       </div>
     </div>
   );

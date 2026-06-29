@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
   const priority = searchParams.get("priority");
   const companyId = searchParams.get("companyId");
   const assignedToId = searchParams.get("assignedToId");
+  const archived = searchParams.get("archived"); // "true" | "false" | null (alles)
   const from = searchParams.get("from");
   const to = searchParams.get("to");
   const page = parseInt(searchParams.get("page") || "1");
@@ -45,6 +46,11 @@ export async function GET(request: NextRequest) {
     }),
     ...(companyId && { companyId }),
     ...(assignedToId && { assignedToId }),
+    ...(archived === "true"
+      ? { archivedAt: { not: null } }
+      : archived === "false"
+        ? { archivedAt: null }
+        : {}),
     ...(from || to
       ? {
           createdAt: {

@@ -354,12 +354,12 @@ export default function CompanyDetailPage({
                             {format(new Date(entry.date), "dd MMM yyyy")}
                           </TableCell>
                           <TableCell className="text-sm">
-                            {entry.description || "\u2014"}
+                            {entry.description || "—"}
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
                             {entry.ticket
                               ? `#${String(entry.ticket.ticketNumber).padStart(3, "0")}`
-                              : "\u2014"}
+                              : "—"}
                           </TableCell>
                           <TableCell className="text-right font-mono">
                             {Number(entry.hours).toFixed(2)}h

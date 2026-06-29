@@ -31,6 +31,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import {
   ArrowLeft,
   Clock,
   Building2,
@@ -38,7 +44,6 @@ import {
   Tag,
   Trash2,
   Plus,
-  FileText,
   Wrench,
   CalendarDays,
   UserCircle,
@@ -307,7 +312,7 @@ export default function TicketDetailPage({
               {t("contact")}
             </div>
             <div className="text-lg font-semibold">
-              {tk.contact?.name || "\u2014"}
+              {tk.contact?.name || "—"}
             </div>
           </CardContent>
         </Card>
@@ -318,7 +323,7 @@ export default function TicketDetailPage({
               {t("category")}
             </div>
             <div className="text-lg font-semibold">
-              {tk.category || "\u2014"}
+              {tk.category || "—"}
             </div>
           </CardContent>
         </Card>
@@ -339,18 +344,29 @@ export default function TicketDetailPage({
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Left column */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Description */}
+          {/* Werkzaamheden: beschrijving + IT Snippet samengevoegd */}
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                {t("description")}
+                <Wrench className="h-4 w-4" />
+                {t("workPerformed")}
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              {tk.description ? (
+            <CardContent className="space-y-3">
+              {tk.description && (
                 <p className="text-sm whitespace-pre-wrap">{tk.description}</p>
-              ) : (
+              )}
+              {snippetFields.map((field) => (
+                <div key={field.label}>
+                  <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    {field.label}
+                  </dt>
+                  <dd className="text-sm mt-0.5 whitespace-pre-wrap">
+                    {field.value}
+                  </dd>
+                </div>
+              ))}
+              {!tk.description && snippetFields.length === 0 && (
                 <p className="text-sm text-muted-foreground">
                   {t("noDescription")}
                 </p>
@@ -358,160 +374,130 @@ export default function TicketDetailPage({
             </CardContent>
           </Card>
 
-          {/* IT Snippet */}
-          {snippetFields.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Wrench className="h-4 w-4" />
-                  {t("itSnippet")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {snippetFields.map((field) => (
-                    <div key={field.label}>
-                      <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                        {field.label}
-                      </dt>
-                      <dd className="text-sm mt-0.5 whitespace-pre-wrap">
-                        {field.value}
-                      </dd>
-                    </div>
-                  ))}
+          {/* Secundaire blokken compact in tabs */}
+          <Card>
+            <CardContent className="pt-6">
+              <Tabs defaultValue="time">
+                <div className="overflow-x-auto">
+                  <TabsList>
+                    <TabsTrigger value="time">
+                      <Clock className="h-4 w-4 mr-1.5" />
+                      {t("timeEntries")}
+                    </TabsTrigger>
+                    <TabsTrigger value="notes">
+                      <MessageSquare className="h-4 w-4 mr-1.5" />
+                      {t("notes")}
+                    </TabsTrigger>
+                    <TabsTrigger value="assets">
+                      <Link2 className="h-4 w-4 mr-1.5" />
+                      {t("linkedAssets")}
+                    </TabsTrigger>
+                    <TabsTrigger value="attachments">
+                      <ImageIcon className="h-4 w-4 mr-1.5" />
+                      {t("attachments")}
+                    </TabsTrigger>
+                  </TabsList>
                 </div>
-              </CardContent>
-            </Card>
-          )}
 
-          {/* Notes */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <MessageSquare className="h-4 w-4" />
-                {t("notes")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <TicketNotes ticketId={tk.id} />
-            </CardContent>
-          </Card>
-
-          {/* Linked Assets */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Link2 className="h-4 w-4" />
-                {t("linkedAssets")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <TicketAssets ticketId={tk.id} companyId={tk.company.id} />
-            </CardContent>
-          </Card>
-
-          {/* Bijlagen */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <ImageIcon className="h-4 w-4" />
-                Foto&apos;s &amp; bijlagen
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <TicketAttachments ticketId={tk.id} />
-            </CardContent>
-          </Card>
-
-          {/* Time Entries */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                {t("timeEntries")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {tk.timeEntries.length > 0 ? (
-                <>
-                  {/* Mobiele kaartweergave */}
-                  <div className="md:hidden space-y-2">
-                    {tk.timeEntries.map((entry) => (
-                      <div key={entry.id} className="flex items-center justify-between rounded-lg border p-2.5">
-                        <div>
-                          <p className="text-xs text-muted-foreground">{format(new Date(entry.date), "dd MMM yyyy")}</p>
-                          {entry.description && <p className="text-sm mt-0.5 truncate max-w-[200px]">{entry.description}</p>}
-                        </div>
-                        <span className="font-mono font-semibold">{Number(entry.hours).toFixed(2)}h</span>
-                      </div>
-                    ))}
-                  </div>
-                  {/* Desktop tabelweergave */}
-                  <div className="hidden md:block overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>{t("date")}</TableHead>
-                          <TableHead>{t("description")}</TableHead>
-                          <TableHead className="text-right">{t("hours")}</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
+                {/* Uren */}
+                <TabsContent value="time" className="mt-4">
+                  {tk.timeEntries.length > 0 ? (
+                    <>
+                      {/* Mobiele kaartweergave */}
+                      <div className="md:hidden space-y-2">
                         {tk.timeEntries.map((entry) => (
-                          <TableRow key={entry.id}>
-                            <TableCell className="text-sm">{format(new Date(entry.date), "dd MMM yyyy")}</TableCell>
-                            <TableCell className="text-sm">{entry.description || "\u2014"}</TableCell>
-                            <TableCell className="text-right font-mono">{Number(entry.hours).toFixed(2)}h</TableCell>
-                          </TableRow>
+                          <div key={entry.id} className="flex items-center justify-between rounded-lg border p-2.5">
+                            <div>
+                              <p className="text-xs text-muted-foreground">{format(new Date(entry.date), "dd MMM yyyy")}</p>
+                              {entry.description && <p className="text-sm mt-0.5 truncate max-w-[200px]">{entry.description}</p>}
+                            </div>
+                            <span className="font-mono font-semibold">{Number(entry.hours).toFixed(2)}h</span>
+                          </div>
                         ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </>
-              ) : (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  {t("noTimeEntries")}
-                </p>
-              )}
+                      </div>
+                      {/* Desktop tabelweergave */}
+                      <div className="hidden md:block overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>{t("date")}</TableHead>
+                              <TableHead>{t("description")}</TableHead>
+                              <TableHead className="text-right">{t("hours")}</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {tk.timeEntries.map((entry) => (
+                              <TableRow key={entry.id}>
+                                <TableCell className="text-sm">{format(new Date(entry.date), "dd MMM yyyy")}</TableCell>
+                                <TableCell className="text-sm">{entry.description || "—"}</TableCell>
+                                <TableCell className="text-right font-mono">{Number(entry.hours).toFixed(2)}h</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      {t("noTimeEntries")}
+                    </p>
+                  )}
 
-              {/* Quick Log Time form \u2014 verticaal gestapeld op mobiel */}
-              <form onSubmit={handleLogTime} className="mt-4 pt-4 border-t border-border space-y-2">
-                <div className="grid grid-cols-2 gap-2">
-                  <Input
-                    type="date"
-                    value={timeDate}
-                    onChange={(e) => setTimeDate(e.target.value)}
-                  />
-                  <Input
-                    type="number"
-                    step="0.25"
-                    min="0.25"
-                    placeholder={t("hours")}
-                    value={timeHours}
-                    onChange={(e) => setTimeHours(e.target.value)}
-                  />
-                </div>
-                <Input
-                  type="text"
-                  placeholder={t("description")}
-                  value={timeDescription}
-                  onChange={(e) => setTimeDescription(e.target.value)}
-                />
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5">
-                    <Checkbox
-                      id="time-billable"
-                      checked={timeBillable}
-                      onCheckedChange={(v) => setTimeBillable(v === true)}
+                  {/* Quick Log Time form */}
+                  <form onSubmit={handleLogTime} className="mt-4 pt-4 border-t border-border space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        type="date"
+                        value={timeDate}
+                        onChange={(e) => setTimeDate(e.target.value)}
+                      />
+                      <Input
+                        type="number"
+                        step="0.25"
+                        min="0.25"
+                        placeholder={t("hours")}
+                        value={timeHours}
+                        onChange={(e) => setTimeHours(e.target.value)}
+                      />
+                    </div>
+                    <Input
+                      type="text"
+                      placeholder={t("description")}
+                      value={timeDescription}
+                      onChange={(e) => setTimeDescription(e.target.value)}
                     />
-                    <Label htmlFor="time-billable" className="text-sm">{tc("billable")}</Label>
-                  </div>
-                  <Button type="submit" size="sm" disabled={isLoggingTime || !timeHours}>
-                    <Plus className="h-4 w-4 mr-1" />
-                    {t("logTime")}
-                  </Button>
-                </div>
-              </form>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <Checkbox
+                          id="time-billable"
+                          checked={timeBillable}
+                          onCheckedChange={(v) => setTimeBillable(v === true)}
+                        />
+                        <Label htmlFor="time-billable" className="text-sm">{tc("billable")}</Label>
+                      </div>
+                      <Button type="submit" size="sm" disabled={isLoggingTime || !timeHours}>
+                        <Plus className="h-4 w-4 mr-1" />
+                        {t("logTime")}
+                      </Button>
+                    </div>
+                  </form>
+                </TabsContent>
+
+                {/* Notities */}
+                <TabsContent value="notes" className="mt-4">
+                  <TicketNotes ticketId={tk.id} />
+                </TabsContent>
+
+                {/* Gekoppelde assets */}
+                <TabsContent value="assets" className="mt-4">
+                  <TicketAssets ticketId={tk.id} companyId={tk.company.id} />
+                </TabsContent>
+
+                {/* Bijlagen */}
+                <TabsContent value="attachments" className="mt-4">
+                  <TicketAttachments ticketId={tk.id} />
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
         </div>
@@ -523,18 +509,6 @@ export default function TicketDetailPage({
               <CardTitle className="text-base">{t("details")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 text-sm">
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">{t("status")}</span>
-                <StatusBadge status={tk.status} />
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">{t("priority")}</span>
-                <PriorityBadge priority={tk.priority} />
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">{t("category")}</span>
-                <span>{tk.category || "\u2014"}</span>
-              </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">{t("sla")}</span>
                 <SlaIndicator
@@ -549,7 +523,7 @@ export default function TicketDetailPage({
                   <ShieldCheck className="h-3.5 w-3.5" />
                   {t("assignedTo")}
                 </span>
-                <span>{tk.assignedTo?.name || "\u2014"}</span>
+                <span>{tk.assignedTo?.name || "—"}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground flex items-center gap-1.5">

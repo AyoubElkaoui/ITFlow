@@ -20,6 +20,8 @@ export async function GET() {
         status: {
           in: ["OPEN", "IN_PROGRESS", "WAITING", "RESOLVED", "BILLABLE"],
         },
+        // Verwerkte (gearchiveerde) tickets niet op het bord tonen.
+        archivedAt: null,
       },
       include: {
         company: { select: { id: true, name: true, shortName: true } },

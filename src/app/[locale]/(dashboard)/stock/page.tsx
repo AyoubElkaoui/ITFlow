@@ -341,7 +341,7 @@ export default function StockPage() {
                             }>{item.quantity}</Badge>
                           </TableCell>
                           <TableCell className="text-right text-sm text-muted-foreground">{item.minStock}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground">{item.location || "\u2014"}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">{item.location || "—"}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-1">
                               <Button variant="ghost" size="icon" title={t("addMovement")} onClick={() => setMovementItem(item)}><ArrowDownUp className="h-4 w-4 text-muted-foreground" /></Button>

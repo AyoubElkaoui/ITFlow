@@ -18,6 +18,7 @@ interface TicketFilters {
   priority?: string;
   companyId?: string;
   assignedToId?: string;
+  archived?: string; // "true" | "false" — weglaten = alles
   from?: string;
   to?: string;
   page?: number;
@@ -31,6 +32,7 @@ export function useTickets(filters: TicketFilters = {}) {
   if (filters.priority) params.set("priority", filters.priority);
   if (filters.companyId) params.set("companyId", filters.companyId);
   if (filters.assignedToId) params.set("assignedToId", filters.assignedToId);
+  if (filters.archived) params.set("archived", filters.archived);
   if (filters.from) params.set("from", filters.from);
   if (filters.to) params.set("to", filters.to);
   if (filters.page) params.set("page", String(filters.page));
@@ -78,6 +80,26 @@ export function useUpdateTicket(id: string) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["tickets"] });
       qc.invalidateQueries({ queryKey: ["ticket", id] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+}
+
+// Markeer een ticket als verwerkt (archivedAt) of zet het terug (null).
+export function useArchiveTicket() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, archived }: { id: string; archived: boolean }) =>
+      fetchJson(`/api/tickets/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          archivedAt: archived ? new Date().toISOString() : null,
+        }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["tickets"] });
+      qc.invalidateQueries({ queryKey: ["kanban-tickets"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });

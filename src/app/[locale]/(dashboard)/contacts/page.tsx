@@ -36,6 +36,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { CompanySelect } from "@/components/shared/company-select";
+import { formatPhone } from "@/lib/utils";
 import { toast } from "sonner";
 import { Plus, Search, Users, Trash2, Mail, Phone, Pencil, Globe, ShieldCheck, ShieldOff, Copy, Eye, EyeOff } from "lucide-react";
 import { EditContactDialog } from "@/components/contacts/edit-contact-dialog";
@@ -289,7 +290,7 @@ export default function ContactsPage() {
                         </div>
                         <div className="min-w-0">
                           <p className="font-medium text-sm truncate">{contact.name}</p>
-                          <p className="text-xs text-muted-foreground">{contact.company?.shortName || "\u2014"}</p>
+                          <p className="text-xs text-muted-foreground">{contact.company?.shortName || "—"}</p>
                         </div>
                       </div>
                       <div className="flex gap-1 shrink-0">
@@ -350,17 +351,17 @@ export default function ContactsPage() {
                           <span className="font-medium">{contact.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{contact.company?.shortName || "\u2014"}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{contact.company?.shortName || "—"}</TableCell>
                       <TableCell>
-                        {contact.email ? <div className="flex items-center gap-1.5 text-sm text-muted-foreground"><Mail className="h-3.5 w-3.5" />{contact.email}</div> : <span className="text-sm text-muted-foreground">\u2014</span>}
+                        {contact.email ? <div className="flex items-center gap-1.5 text-sm text-muted-foreground"><Mail className="h-3.5 w-3.5" />{contact.email}</div> : <span className="text-sm text-muted-foreground">—</span>}
                       </TableCell>
                       <TableCell>
-                        {contact.phone ? <div className="flex items-center gap-1.5 text-sm text-muted-foreground"><Phone className="h-3.5 w-3.5" />{contact.phone}</div> : <span className="text-sm text-muted-foreground">\u2014</span>}
+                        {contact.phone ? <div className="flex items-center gap-1.5 text-sm text-muted-foreground"><Phone className="h-3.5 w-3.5" />{formatPhone(contact.phone)}</div> : <span className="text-sm text-muted-foreground">—</span>}
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{contact.function || "\u2014"}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{contact.function || "—"}</TableCell>
                       <TableCell className="text-center">{contact.isPrimary && <Badge variant="default" className="text-xs">{t("primaryContact")}</Badge>}</TableCell>
                       <TableCell className="text-center">
-                        {contact.portalEnabled ? <Badge variant="default" className="bg-green-600 text-xs"><Globe className="mr-1 h-3 w-3" />{tc("active")}</Badge> : <span className="text-xs text-muted-foreground">\u2014</span>}
+                        {contact.portalEnabled ? <Badge variant="default" className="bg-green-600 text-xs"><Globe className="mr-1 h-3 w-3" />{tc("active")}</Badge> : <span className="text-xs text-muted-foreground">—</span>}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">

@@ -27,7 +27,9 @@ import {
 import { StatusBadge, PriorityBadge } from "@/components/shared/status-badge";
 import { CompanySelect } from "@/components/shared/company-select";
 import { BulkActionsBar } from "@/components/tickets/bulk-actions-bar";
-import { Plus, Search, Ticket, Kanban } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Plus, Search, Ticket, Kanban, Receipt } from "lucide-react";
 import { format } from "date-fns";
 
 const PAGE_SIZE = 20;
@@ -53,10 +55,12 @@ export default function TicketsPage() {
   const tc = useTranslations("common");
   const ts = useTranslations("status");
   const tp = useTranslations("priority");
+  const tf = useTranslations("teFactureren");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [priority, setPriority] = useState("all");
   const [companyId, setCompanyId] = useState("all");
+  const [showArchived, setShowArchived] = useState(false);
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -65,6 +69,7 @@ export default function TicketsPage() {
     status: status !== "all" ? status : undefined,
     priority: priority !== "all" ? priority : undefined,
     companyId: companyId !== "all" ? companyId : undefined,
+    archived: showArchived ? undefined : "false",
     page,
     pageSize: PAGE_SIZE,
   });
@@ -83,6 +88,12 @@ export default function TicketsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t("title")}</h1>
         <div className="flex items-center gap-2">
+          <Link href="/tickets/te-factureren">
+            <Button variant="outline">
+              <Receipt className="mr-2 h-4 w-4" />
+              {tf("title")}
+            </Button>
+          </Link>
           <Link href="/tickets/board">
             <Button variant="outline">
               <Kanban className="mr-2 h-4 w-4" />
@@ -165,6 +176,20 @@ export default function TicketsPage() {
                 placeholder={t("allCompanies")}
                 allowAll
               />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Switch
+                id="showArchivedTickets"
+                checked={showArchived}
+                onCheckedChange={(v) => {
+                  setShowArchived(v);
+                  setPage(1);
+                }}
+              />
+              <Label htmlFor="showArchivedTickets" className="cursor-pointer">
+                {tf("showArchived")}
+              </Label>
             </div>
           </div>
         </CardHeader>
@@ -283,7 +308,7 @@ export default function TicketsPage() {
                         <PriorityBadge priority={ticket.priority} />
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {ticket.assignedTo?.name || "\u2014"}
+                        {ticket.assignedTo?.name || "—"}
                       </TableCell>
                       <TableCell className="text-right text-sm text-muted-foreground">
                         {format(new Date(ticket.updatedAt), "dd MMM yyyy")}

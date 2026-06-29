@@ -99,7 +99,7 @@ export default function CompaniesPage() {
                       </Link>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {company.contactPerson || "\u2014"}
+                      {company.contactPerson || "—"}
                     </TableCell>
                     <TableCell className="text-center">
                       {company._count.tickets}

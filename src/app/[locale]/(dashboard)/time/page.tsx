@@ -420,10 +420,10 @@ export default function TimePage() {
                         <TableCell>
                           {entry.ticket
                             ? `#${String(entry.ticket.ticketNumber).padStart(3, "0")}`
-                            : "\u2014"}
+                            : "—"}
                         </TableCell>
                         <TableCell className="max-w-[300px] truncate">
-                          {entry.description || "\u2014"}
+                          {entry.description || "—"}
                         </TableCell>
                         <TableCell className="text-right font-mono">
                           {hours.toFixed(2)}

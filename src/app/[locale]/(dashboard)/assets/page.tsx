@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 
-import { useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod/v4";
 import { typedResolver } from "@/lib/form-utils";
@@ -34,8 +34,9 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { CompanySelect } from "@/components/shared/company-select";
-import { Plus, Search, Monitor, Trash2, Pencil, Package } from "lucide-react";
+import { Plus, Search, Monitor, Trash2, Pencil, Package, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
+import { format } from "date-fns";
 import { EditAssetDialog } from "@/components/assets/edit-asset-dialog";
 
 // -- Types --------------------------------------------------------------------
@@ -62,6 +63,39 @@ interface AssetRow {
   stockItemId: string | null;
   createdAt: string;
   _count: { ticketLinks: number };
+}
+
+// Een voorraad-uitgifte maakt één Asset-rij per stuk aan. Identieke assets
+// (zelfde bedrijf + type + naam + persoon) groeperen we tot één regel met een
+// aantal-badge; uitklappen toont de losse stuks met datum + eigen acties.
+interface AssetGroup {
+  key: string;
+  name: string;
+  type: AssetType;
+  company: { id: string; shortName: string; name: string };
+  assignedTo: string | null;
+  units: AssetRow[];
+}
+
+function groupAssets(assets: AssetRow[]): AssetGroup[] {
+  const groups = new Map<string, AssetGroup>();
+  for (const a of assets) {
+    const key = `${a.companyId}|${a.type}|${a.name}|${a.assignedTo ?? ""}`;
+    const g = groups.get(key);
+    if (g) {
+      g.units.push(a);
+    } else {
+      groups.set(key, {
+        key,
+        name: a.name,
+        type: a.type,
+        company: a.company,
+        assignedTo: a.assignedTo,
+        units: [a],
+      });
+    }
+  }
+  return [...groups.values()];
 }
 
 // -- Zod schema for create form -----------------------------------------------
@@ -116,6 +150,7 @@ export default function AssetsPage() {
   const [companyId, setCompanyId] = useState("all");
   const [showCreate, setShowCreate] = useState(false);
   const [editingAsset, setEditingAsset] = useState<AssetRow | null>(null);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   const { data, isLoading } = useAssets({
     search: search || undefined,
@@ -127,6 +162,16 @@ export default function AssetsPage() {
   const assets = (data as AssetRow[] | undefined) || [];
 
   const totalCount = assets.length;
+  const groups = useMemo(() => groupAssets(assets), [assets]);
+
+  function toggleGroup(key: string) {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
 
   function handleDelete(id: string) {
     if (!window.confirm(t("deleteConfirm"))) return;
@@ -228,30 +273,65 @@ export default function AssetsPage() {
             <>
               {/* Mobiele kaartweergave */}
               <div className="md:hidden space-y-2">
-                {assets.map((asset) => (
-                  <div key={asset.id} className="rounded-lg border p-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="font-medium text-sm">{asset.name}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge variant={typeBadgeVariant(asset.type)} className="text-xs">{t(asset.type)}</Badge>
-                          <span className="text-xs text-muted-foreground">{asset.company.shortName}</span>
-                        </div>
-                        {asset.assignedTo && (
-                          <p className="text-xs text-muted-foreground mt-0.5">{asset.assignedTo}</p>
+                {groups.map((group) => {
+                  const multi = group.units.length > 1;
+                  const isOpen = expanded.has(group.key);
+                  return (
+                    <div key={group.key} className="rounded-lg border p-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <button
+                          type="button"
+                          className="min-w-0 text-left"
+                          onClick={() => multi ? toggleGroup(group.key) : setEditingAsset(group.units[0])}
+                        >
+                          <p className="font-medium text-sm flex items-center gap-1.5">
+                            {multi && (
+                              <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${isOpen ? "" : "-rotate-90"}`} />
+                            )}
+                            {group.name}
+                            {multi && <Badge variant="secondary" className="text-xs">×{group.units.length}</Badge>}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant={typeBadgeVariant(group.type)} className="text-xs">{t(group.type)}</Badge>
+                            <span className="text-xs text-muted-foreground">{group.company.shortName}</span>
+                          </div>
+                          {group.assignedTo && (
+                            <p className="text-xs text-muted-foreground mt-0.5">{group.assignedTo}</p>
+                          )}
+                        </button>
+                        {!multi && (
+                          <div className="flex gap-1 shrink-0">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingAsset(group.units[0])}>
+                              <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(group.units[0].id)}>
+                              <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                            </Button>
+                          </div>
                         )}
                       </div>
-                      <div className="flex gap-1 shrink-0">
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingAsset(asset)}>
-                          <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(asset.id)}>
-                          <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                        </Button>
-                      </div>
+                      {multi && isOpen && (
+                        <div className="mt-2 space-y-1.5 border-t pt-2">
+                          {group.units.map((unit, i) => (
+                            <div key={unit.id} className="flex items-center justify-between gap-2 text-xs">
+                              <span className="text-muted-foreground">
+                                #{i + 1} · {format(new Date(unit.createdAt), "dd MMM yyyy")}
+                              </span>
+                              <div className="flex gap-1 shrink-0">
+                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setEditingAsset(unit)}>
+                                  <Pencil className="h-3 w-3 text-muted-foreground" />
+                                </Button>
+                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleDelete(unit.id)}>
+                                  <Trash2 className="h-3 w-3 text-muted-foreground" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Desktop tabelweergave */}
@@ -259,6 +339,7 @@ export default function AssetsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-8" />
                       <TableHead>{t("name")}</TableHead>
                       <TableHead>{t("type")}</TableHead>
                       <TableHead>{t("company")}</TableHead>
@@ -267,20 +348,58 @@ export default function AssetsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {assets.map((asset) => (
-                      <TableRow key={asset.id}>
-                        <TableCell><div className="font-medium">{asset.name}</div></TableCell>
-                        <TableCell><Badge variant={typeBadgeVariant(asset.type)}>{t(asset.type)}</Badge></TableCell>
-                        <TableCell className="text-sm text-muted-foreground">{asset.company.shortName}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">{asset.assignedTo || "\u2014"}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <Button variant="ghost" size="icon" onClick={() => setEditingAsset(asset)}><Pencil className="h-4 w-4 text-muted-foreground" /></Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDelete(asset.id)}><Trash2 className="h-4 w-4 text-muted-foreground" /></Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {groups.map((group) => {
+                      const multi = group.units.length > 1;
+                      const isOpen = expanded.has(group.key);
+                      return (
+                        <Fragment key={group.key}>
+                          <TableRow
+                            className={multi ? "cursor-pointer" : ""}
+                            onClick={multi ? () => toggleGroup(group.key) : undefined}
+                          >
+                            <TableCell>
+                              {multi && (
+                                <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "" : "-rotate-90"}`} />
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <div className="font-medium flex items-center gap-2">
+                                {group.name}
+                                {multi && <Badge variant="secondary" className="text-xs">×{group.units.length}</Badge>}
+                              </div>
+                            </TableCell>
+                            <TableCell><Badge variant={typeBadgeVariant(group.type)}>{t(group.type)}</Badge></TableCell>
+                            <TableCell className="text-sm text-muted-foreground">{group.company.shortName}</TableCell>
+                            <TableCell className="text-sm text-muted-foreground">{group.assignedTo || "—"}</TableCell>
+                            <TableCell onClick={(e) => e.stopPropagation()}>
+                              {!multi && (
+                                <div className="flex items-center gap-1">
+                                  <Button variant="ghost" size="icon" onClick={() => setEditingAsset(group.units[0])}><Pencil className="h-4 w-4 text-muted-foreground" /></Button>
+                                  <Button variant="ghost" size="icon" onClick={() => handleDelete(group.units[0].id)}><Trash2 className="h-4 w-4 text-muted-foreground" /></Button>
+                                </div>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                          {multi && isOpen && group.units.map((unit, i) => (
+                            <TableRow key={unit.id} className="bg-muted/40">
+                              <TableCell />
+                              <TableCell className="text-sm text-muted-foreground pl-8">
+                                #{i + 1} · {format(new Date(unit.createdAt), "dd MMM yyyy")}
+                              </TableCell>
+                              <TableCell />
+                              <TableCell />
+                              <TableCell />
+                              <TableCell>
+                                <div className="flex items-center gap-1">
+                                  <Button variant="ghost" size="icon" onClick={() => setEditingAsset(unit)}><Pencil className="h-4 w-4 text-muted-foreground" /></Button>
+                                  <Button variant="ghost" size="icon" onClick={() => handleDelete(unit.id)}><Trash2 className="h-4 w-4 text-muted-foreground" /></Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </Fragment>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>

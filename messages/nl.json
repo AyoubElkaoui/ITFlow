@@ -83,7 +83,8 @@
     "audit": "Audittrail",
     "settings": "Instellingen",
     "dagafsluiting": "Dagafsluiting",
-    "urenOverzicht": "Uren-overzicht"
+    "urenOverzicht": "Uren-overzicht",
+    "teFactureren": "Te factureren"
   },
   "status": {
     "OPEN": "Open",
@@ -216,7 +217,9 @@
     "selected": "geselecteerd",
     "deleteConfirm": "Weet u zeker dat u {count} ticket(s) wilt verwijderen? Dit kan niet ongedaan worden gemaakt.",
     "ticketDeleteConfirm": "Weet u zeker dat u ticket #{number} \"{subject}\" wilt verwijderen? Dit kan niet ongedaan worden gemaakt.",
-    "editTicket": "Ticket bewerken"
+    "editTicket": "Ticket bewerken",
+    "workPerformed": "Werkzaamheden",
+    "attachments": "Bijlagen"
   },
   "newTicket": {
     "title": "Nieuw ticket",
@@ -832,5 +835,26 @@
     "copied": "Totalen gekopieerd",
     "copyFailed": "Kopiëren mislukt",
     "noData": "Geen afgesloten of open dagen in deze periode."
+  },
+  "teFactureren": {
+    "title": "Te factureren",
+    "subtitle": "Gegroepeerd per klant en maand — markeer verwerkte tickets",
+    "board": "Bord",
+    "list": "Lijst",
+    "searchPlaceholder": "Zoek op onderwerp...",
+    "showArchived": "Toon verwerkte",
+    "openTotal": "{count} openstaand",
+    "markGroupDone": "Alles verwerkt",
+    "markGroupConfirm": "{count} tickets van {company} als verwerkt markeren?",
+    "markedGroupDone": "{count} tickets gemarkeerd als verwerkt",
+    "markDone": "Verwerkt",
+    "markedDone": "Gemarkeerd als verwerkt",
+    "restore": "Terugzetten",
+    "restored": "Teruggezet",
+    "archived": "Verwerkt",
+    "archivedCount": "{count} verwerkt",
+    "allDone": "Niets te factureren",
+    "allDoneHint": "Alle tickets zijn verwerkt of er staan geen tickets klaar.",
+    "overflowLink": "Open Te factureren-overzicht"
   }
 }

@@ -57,6 +57,7 @@ export const ticketCreateSchema = z.object({
 
 export const ticketUpdateSchema = ticketCreateSchema.partial().extend({
   createdAt: z.coerce.date().optional(),
+  archivedAt: z.coerce.date().nullable().optional(),
 });
 
 // TimeEntry schemas

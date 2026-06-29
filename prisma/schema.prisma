@@ -209,6 +209,9 @@ model Ticket {
 
   resolvedAt DateTime?
   closedAt   DateTime?
+  // "Verwerkt"-markering voor het Te factureren-eindstation: haalt het ticket uit
+  // de standaardweergave (board/lijst/overzicht) zonder de status te wijzigen.
+  archivedAt DateTime?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 
@@ -231,6 +234,7 @@ model Ticket {
   @@index([ticketNumber])
   @@index([kanbanOrder])
   @@index([assignedToId])
+  @@index([archivedAt])
 }
 
 model TimeEntry {

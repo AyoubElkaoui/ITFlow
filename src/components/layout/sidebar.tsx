@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Ticket,
   Kanban,
+  Receipt,
   Clock,
   CalendarCheck,
   Building2,
@@ -43,6 +44,7 @@ const navigation: NavItem[] = [
   { nameKey: "dashboard", href: "/", icon: LayoutDashboard },
   { nameKey: "tickets", href: "/tickets", icon: Ticket },
   { nameKey: "board", href: "/tickets/board", icon: Kanban },
+  { nameKey: "teFactureren", href: "/tickets/te-factureren", icon: Receipt },
   { nameKey: "time", href: "/time", icon: Clock },
   { nameKey: "dagafsluiting", href: "/dagafsluiting", icon: CalendarCheck },
   { nameKey: "urenOverzicht", href: "/uren-overzicht", icon: BarChart3 },
@@ -181,7 +183,7 @@ export function Sidebar() {
           )}
         >
           <Settings className="h-5 w-5 shrink-0" />
-          {!collapsed && <span>{t("settings" as any)}</span>}
+          {!collapsed && <span>{t("settings")}</span>}
         </Link>
       </div>
 

@@ -1,0 +1,13 @@
+[Unit]
+Description=Dagelijkse ITFlow dagafsluiting-herinnering om 17:00 (werkdagen)
+
+[Timer]
+# Maandag t/m vrijdag om 17:00 lokale tijd.
+OnCalendar=Mon..Fri 17:00
+# Was de machine uit/in slaapstand op 17:00? Dan alsnog vuren bij eerstvolgende start.
+Persistent=true
+# Spreid niet uit; we willen exact om 17:00.
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target

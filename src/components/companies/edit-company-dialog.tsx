@@ -36,6 +36,7 @@ interface Props {
     contactEmail: string | null;
     contactPhone: string | null;
     hourlyRate: string | null;
+    clockwiseCode: string | null;
     notes: string | null;
     isActive: boolean;
   };
@@ -58,6 +59,7 @@ export function EditCompanyDialog({ open, onOpenChange, company }: Props) {
       contactPerson: company.contactPerson ?? "",
       contactEmail: company.contactEmail ?? "",
       contactPhone: company.contactPhone ?? "",
+      clockwiseCode: company.clockwiseCode ?? "",
       notes: company.notes ?? "",
       isActive: company.isActive,
     },
@@ -74,6 +76,7 @@ export function EditCompanyDialog({ open, onOpenChange, company }: Props) {
       contactPerson: company.contactPerson ?? "",
       contactEmail: company.contactEmail ?? "",
       contactPhone: company.contactPhone ?? "",
+      clockwiseCode: company.clockwiseCode ?? "",
       notes: company.notes ?? "",
       isActive: company.isActive,
     });
@@ -132,6 +135,15 @@ export function EditCompanyDialog({ open, onOpenChange, company }: Props) {
               <Label htmlFor="phone">{tc("phone")}</Label>
               <Input id="phone" {...form.register("phone")} />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="clockwiseCode">{t("clockwiseCode")}</Label>
+            <Input
+              id="clockwiseCode"
+              placeholder={t("clockwiseCodePlaceholder")}
+              {...form.register("clockwiseCode")}
+            />
           </div>
 
           <div className="space-y-2">

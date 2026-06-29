@@ -98,6 +98,7 @@ model User {
   assignedTasks   Task[]       @relation("AssignedTasks")
   createdTasks    Task[]       @relation("CreatedTasks")
   createdCredentials Credential[]
+  workDays        WorkDay[]
 
   @@index([email])
 }
@@ -131,20 +132,22 @@ model Company {
   contactEmail  String?
   contactPhone  String?
   hourlyRate    Decimal? @db.Decimal(10, 2)
+  clockwiseCode String?  // Code waaronder dit bedrijf in Clockwise wordt geboekt, bv. "Elmar"
   notes         String?
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  contacts         Contact[]
-  tickets          Ticket[]
-  timeEntries      TimeEntry[]
-  assets           Asset[]
-  kbArticles       KbArticle[]
-  credentials      Credential[]
-  recurringTickets RecurringTicket[]
-  projects         Project[]
-  stockMovements   StockMovement[]
+  contacts           Contact[]
+  tickets            Ticket[]
+  timeEntries        TimeEntry[]
+  assets             Asset[]
+  kbArticles         KbArticle[]
+  credentials        Credential[]
+  recurringTickets   RecurringTicket[]
+  projects           Project[]
+  stockMovements     StockMovement[]
+  workDayAllocations WorkDayAllocation[]
 
   @@index([shortName])
   @@index([isActive])
@@ -614,4 +617,46 @@ model CustomFieldValue {
 
   @@unique([fieldDefinitionId, entityType, entityId])
   @@index([entityType, entityId])
+}
+
+enum WorkDayStatus {
+  OPEN
+  CLOSED
+}
+
+// Dagafsluiting: één rij per werkdag. Netto is de enige waarheid (geen pauze opgeslagen).
+// Genereert het plak-format voor Clockwise; raakt de Clockd v2 -> Syntess pipeline niet.
+model WorkDay {
+  id        String        @id @default(cuid())
+  userId    String
+  date      DateTime      @unique @db.Date
+  start     String        @default("09:00") // "HH:MM" - begin van de werkdag
+  netHours  Float         @default(8) // netto uren (zonder pauze)
+  status    WorkDayStatus @default(OPEN)
+  pastedAt  DateTime? // gezet wanneer het format naar Clockwise is gekopieerd
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  user        User                @relation(fields: [userId], references: [id])
+  allocations WorkDayAllocation[]
+
+  @@index([userId])
+  @@index([date])
+}
+
+// Verdeling van de netto-uren over de klanten van die dag.
+model WorkDayAllocation {
+  id          String   @id @default(cuid())
+  workDayId   String
+  companyId   String
+  hours       Float    @default(0) // stappen van 0.25
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workDay WorkDay @relation(fields: [workDayId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([workDayId])
+  @@index([companyId])
 }

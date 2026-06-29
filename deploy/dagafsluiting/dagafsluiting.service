@@ -1,0 +1,9 @@
+[Unit]
+Description=ITFlow dagafsluiting-herinnering (notificatie)
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/dagafsluiting-notify.sh
+# notify-send --action blokkeert tot de notificatie wordt weggeklikt/geactiveerd;
+# ruim op na maximaal een kwartier zodat er geen oude notificaties blijven hangen.
+TimeoutStartSec=900

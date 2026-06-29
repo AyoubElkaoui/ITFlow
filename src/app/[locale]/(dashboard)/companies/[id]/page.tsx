@@ -88,6 +88,7 @@ export default function CompanyDetailPage({
     contactEmail: string | null;
     contactPhone: string | null;
     hourlyRate: string | null;
+    clockwiseCode: string | null;
     notes: string | null;
     isActive: boolean;
     contacts: {

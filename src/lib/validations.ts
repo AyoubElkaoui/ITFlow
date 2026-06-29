@@ -12,6 +12,7 @@ export const companyCreateSchema = z.object({
   contactEmail: z.email().optional().or(z.literal("")),
   contactPhone: z.string().optional(),
   hourlyRate: z.coerce.number().positive().optional(),
+  clockwiseCode: z.string().optional(),
   notes: z.string().optional(),
   isActive: z.boolean().default(true),
 });
@@ -265,3 +266,31 @@ export type ProjectCreateInput = z.infer<typeof projectCreateSchema>;
 export type ProjectUpdateInput = z.infer<typeof projectUpdateSchema>;
 export type ProjectTaskCreateInput = z.infer<typeof projectTaskCreateSchema>;
 export type ProjectTaskUpdateInput = z.infer<typeof projectTaskUpdateSchema>;
+
+// Dagafsluiting (WorkDay) schemas
+const quarterHours = z.coerce
+  .number()
+  .min(0, "Hours cannot be negative")
+  .max(24, "Cannot exceed 24 hours")
+  .check(
+    z.refine(
+      (v) => Math.round(v * 4) === v * 4,
+      "Hours must be in quarter-hour increments (0.25)",
+    ),
+  );
+
+export const workDayAllocationSchema = z.object({
+  companyId: z.string().min(1, "Company is required"),
+  hours: quarterHours,
+  description: z.string().optional().default(""),
+});
+
+export const workDayCloseSchema = z.object({
+  date: z.coerce.date(),
+  start: z.string().regex(/^\d{1,2}:\d{2}$/, "Start must be HH:MM"),
+  netHours: quarterHours,
+  allocations: z.array(workDayAllocationSchema).min(1, "At least one client row"),
+});
+
+export type WorkDayAllocationInput = z.infer<typeof workDayAllocationSchema>;
+export type WorkDayCloseInput = z.infer<typeof workDayCloseSchema>;

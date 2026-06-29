@@ -10,6 +10,7 @@ import { ticketCreateSchema, type TicketCreateInput } from "@/lib/validations";
 import { useCreateTicket } from "@/hooks/use-tickets";
 import { useContacts } from "@/hooks/use-contacts";
 import { useAssets } from "@/hooks/use-assets";
+import { useUsers } from "@/hooks/use-users";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -88,6 +89,7 @@ export default function NewTicketPage() {
 
   const { data: contacts } = useContacts(selectedCompanyId || undefined);
   const { data: assetsData } = useAssets({ companyId: selectedCompanyId || undefined });
+  const { data: users } = useUsers() as { data: Array<{ id: string; name: string }> | undefined };
 
   const contactList = (contacts as { id: string; name: string }[]) || [];
   const assetList = (assetsData as { data?: { id: string; name: string; type: string; assignedTo: string | null }[] } | undefined)?.data || [];
@@ -238,6 +240,29 @@ export default function NewTicketPage() {
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Assigned To */}
+            <div className="space-y-2">
+              <Label className="text-base">{tt("assignedTo")}</Label>
+              <Select
+                value={watch("assignedToId") || "none"}
+                onValueChange={(value) =>
+                  setValue("assignedToId", value === "none" ? undefined : value)
+                }
+              >
+                <SelectTrigger className="h-11">
+                  <SelectValue placeholder={tc("none")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{tc("none")}</SelectItem>
+                  {users?.map((u) => (
+                    <SelectItem key={u.id} value={u.id}>
+                      {u.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Subject */}

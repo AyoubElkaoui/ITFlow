@@ -295,3 +295,28 @@ export const workDayCloseSchema = z.object({
 
 export type WorkDayAllocationInput = z.infer<typeof workDayAllocationSchema>;
 export type WorkDayCloseInput = z.infer<typeof workDayCloseSchema>;
+
+// Ticket time log (werk-tijd, rauwe minuten) — bron voor het dagafsluiting-voorstel.
+export const ticketTimeLogCreateSchema = z.object({
+  startedAt: z.coerce.date(),
+  minutes: z.coerce
+    .number()
+    .int("Minutes must be a whole number")
+    .min(1, "Minutes must be positive")
+    .max(1440, "Cannot exceed 24 hours"),
+  note: z.string().optional(),
+});
+
+export const ticketTimeLogUpdateSchema = z.object({
+  startedAt: z.coerce.date().optional(),
+  minutes: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(1440)
+    .optional(),
+  note: z.string().nullable().optional(),
+});
+
+export type TicketTimeLogCreateInput = z.infer<typeof ticketTimeLogCreateSchema>;
+export type TicketTimeLogUpdateInput = z.infer<typeof ticketTimeLogUpdateSchema>;

@@ -219,7 +219,10 @@
     "ticketDeleteConfirm": "Weet u zeker dat u ticket #{number} \"{subject}\" wilt verwijderen? Dit kan niet ongedaan worden gemaakt.",
     "editTicket": "Ticket bewerken",
     "workPerformed": "Werkzaamheden",
-    "attachments": "Bijlagen"
+    "attachments": "Bijlagen",
+    "startWork": "Start werk",
+    "stopWork": "Stop werk",
+    "workTime": "Werk-tijd"
   },
   "newTicket": {
     "title": "Nieuw ticket",
@@ -805,7 +808,8 @@
     "saveFailed": "Afsluiten mislukt",
     "loadFailed": "Dag kon niet geladen worden",
     "noClients": "Nog geen klanten. Voeg een klant toe om te beginnen.",
-    "remove": "Verwijderen"
+    "remove": "Verwijderen",
+    "proposalHint": "Voorstel uit ticket-tijd: {proposal}u (netto {net}u). Pas de uren aan naar je netto-dag."
   },
   "urenOverzicht": {
     "title": "Uren-overzicht",

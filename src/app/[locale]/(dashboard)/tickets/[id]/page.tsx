@@ -44,6 +44,8 @@ import {
   Tag,
   Trash2,
   Plus,
+  Play,
+  Square,
   Wrench,
   CalendarDays,
   UserCircle,
@@ -53,7 +55,14 @@ import {
   ImageIcon,
   Pencil,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import {
+  useTicketTimeLogs,
+  useStartWork,
+  useStopWork,
+} from "@/hooks/use-ticket-time-logs";
 import { EditTicketDialog } from "@/components/tickets/edit-ticket-dialog";
+import { TicketTimeLogs } from "@/components/tickets/ticket-time-logs";
 import { TicketNotes } from "@/components/tickets/ticket-notes";
 import { TicketAssets } from "@/components/tickets/ticket-assets";
 import { TicketAttachments } from "@/components/tickets/ticket-attachments";
@@ -110,9 +119,18 @@ export default function TicketDetailPage({
   const ts = useTranslations("status");
   const ttoast = useTranslations("toasts");
   const { data: ticket, isLoading } = useTicket(id);
+  const { data: session } = useSession();
+  const currentUserId = (session?.user as { id?: string } | undefined)?.id;
   const updateTicket = useUpdateTicket(id);
   const deleteTicket = useDeleteTicket();
   const createTimeEntry = useCreateTimeEntry();
+
+  const { data: timeLogs } = useTicketTimeLogs(id);
+  const startWork = useStartWork(id);
+  const stopWork = useStopWork(id);
+  const myRunningLog = (timeLogs ?? []).find(
+    (l) => l.endedAt === null && l.userId === currentUserId,
+  );
 
   const [timeHours, setTimeHours] = useState("");
   const [timeDescription, setTimeDescription] = useState("");
@@ -261,6 +279,28 @@ export default function TicketDetailPage({
 
         {/* Rij 2: acties */}
         <div className="flex items-center gap-2 flex-wrap pl-11">
+          {myRunningLog ? (
+            <Button
+              variant="destructive"
+              size="sm"
+              className="h-9"
+              onClick={() => stopWork.mutate(myRunningLog.id)}
+              disabled={stopWork.isPending}
+            >
+              <Square className="mr-1.5 h-4 w-4" />
+              {t("stopWork")}
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              className="h-9"
+              onClick={() => startWork.mutate()}
+              disabled={startWork.isPending}
+            >
+              <Play className="mr-1.5 h-4 w-4" />
+              {t("startWork")}
+            </Button>
+          )}
           <Select value={tk.status} onValueChange={handleStatusChange}>
             <SelectTrigger className="w-[150px] h-9">
               <SelectValue placeholder={t("changeStatus")} />
@@ -377,9 +417,13 @@ export default function TicketDetailPage({
           {/* Secundaire blokken compact in tabs */}
           <Card>
             <CardContent className="pt-6">
-              <Tabs defaultValue="time">
+              <Tabs defaultValue="timelogs">
                 <div className="overflow-x-auto">
                   <TabsList>
+                    <TabsTrigger value="timelogs">
+                      <Clock className="h-4 w-4 mr-1.5" />
+                      {t("workTime")}
+                    </TabsTrigger>
                     <TabsTrigger value="time">
                       <Clock className="h-4 w-4 mr-1.5" />
                       {t("timeEntries")}
@@ -399,7 +443,12 @@ export default function TicketDetailPage({
                   </TabsList>
                 </div>
 
-                {/* Uren */}
+                {/* Werk-tijd (TicketTimeLog — bron voor dagafsluiting) */}
+                <TabsContent value="timelogs" className="mt-4">
+                  <TicketTimeLogs ticketId={tk.id} currentUserId={currentUserId} />
+                </TabsContent>
+
+                {/* Uren (facturatie) */}
                 <TabsContent value="time" className="mt-4">
                   {tk.timeEntries.length > 0 ? (
                     <>

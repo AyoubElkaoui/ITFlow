@@ -11,6 +11,7 @@ import {
   Copy,
   Check,
   AlertTriangle,
+  Info,
 } from "lucide-react";
 
 import { useCompanies } from "@/hooks/use-companies";
@@ -19,7 +20,7 @@ import {
   useCloseWorkDay,
   type WorkDayCompany,
 } from "@/hooks/use-workday";
-import { generateClockwiseFormat, sumHours } from "@/lib/clockwise";
+import { generateClockwiseFormat, sumHours, formatHours } from "@/lib/clockwise";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -176,6 +177,16 @@ export default function DagafsluitingPage() {
         <div className="flex items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
           <AlertTriangle className="h-4 w-4 shrink-0" />
           {t("reopenHint")}
+        </div>
+      )}
+
+      {!data?.existing && (data?.proposalHours ?? 0) > 0 && (
+        <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-800 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-200">
+          <Info className="h-4 w-4 shrink-0" />
+          {t("proposalHint", {
+            proposal: formatHours(data!.proposalHours ?? 0),
+            net: formatHours(data!.netHours),
+          })}
         </div>
       )}
 

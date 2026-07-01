@@ -99,6 +99,7 @@ model User {
   createdTasks    Task[]       @relation("CreatedTasks")
   createdCredentials Credential[]
   workDays        WorkDay[]
+  timeLogs        TicketTimeLog[]
 
   @@index([email])
 }
@@ -226,6 +227,7 @@ model Ticket {
   attachments  TicketAttachment[]
   tasks        Task[]
   credentials  Credential[]
+  timeLogs     TicketTimeLog[]
 
   @@index([companyId])
   @@index([status])
@@ -257,6 +259,28 @@ model TimeEntry {
   @@index([userId])
   @@index([date])
   @@index([ticketId])
+}
+
+// Rauwe werk-tijd per ticket per user. Bron voor het dagafsluiting-voorstel.
+// minutes wordt ONAFGEROND bewaard (nodig voor latere per-ticket facturatie);
+// null = de log loopt nog. Staat los van TimeEntry (facturatie) en ActiveTimer.
+model TicketTimeLog {
+  id        String    @id @default(cuid())
+  ticketId  String
+  userId    String
+  startedAt DateTime
+  endedAt   DateTime?
+  minutes   Int?
+  note      String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([ticketId])
+  @@index([userId])
+  @@index([startedAt])
 }
 
 model Asset {

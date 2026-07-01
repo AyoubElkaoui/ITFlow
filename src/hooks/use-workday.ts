@@ -36,6 +36,10 @@ export interface WorkDayResponse {
   pastedAt: string | null;
   allocations: WorkDayAllocationDTO[];
   format: ClockwiseFormat;
+  // Alleen bij een vers voorstel (existing=false): totaal voorgestelde uren uit
+  // ticket-tijd en het verschil t.o.v. de netto-dag.
+  proposalHours?: number;
+  netDiff?: number;
 }
 
 export function useWorkDay(date: string) {

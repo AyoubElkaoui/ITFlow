@@ -105,49 +105,69 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  // Voorstel uit de tickets van die dag (kalenderdag in NL-tijd, tijdzone-veilig).
+  // Voorstel uit mijn werk-tijd (TicketTimeLog) van die dag, o.b.v. startedAt.
+  // Kalenderdag in NL-tijd, tijdzone-veilig.
   const { start: dayStart, end: dayEnd } = zonedDayRange(dateParam);
-  const tickets = await prisma.ticket.findMany({
-    where: {
-      createdById: user.id,
-      createdAt: { gte: dayStart, lt: dayEnd },
-    },
+  const now = new Date();
+  const logs = await prisma.ticketTimeLog.findMany({
+    where: { userId: user.id, startedAt: { gte: dayStart, lt: dayEnd } },
     select: {
-      subject: true,
-      company: { select: companySelect },
+      minutes: true,
+      startedAt: true,
+      endedAt: true,
+      ticket: {
+        select: { subject: true, company: { select: companySelect } },
+      },
     },
-    orderBy: { createdAt: "asc" },
+    orderBy: { startedAt: "asc" },
   });
 
-  // Groepeer per klant; omschrijving = de ticket-subjects samengevoegd.
-  const byCompany = new Map<string, AllocationDTO>();
-  for (const ticket of tickets) {
-    const company = ticket.company;
-    const current = byCompany.get(company.id);
-    if (current) {
-      current.description = current.description
-        ? `${current.description}, ${ticket.subject}`
-        : ticket.subject;
-    } else {
-      byCompany.set(company.id, {
-        companyId: company.id,
-        company,
-        hours: 0,
-        description: ticket.subject,
-      });
+  // Groepeer per klant: som RAUWE minuten (lopende log = tot nu), omschrijving = subjects.
+  interface Acc {
+    company: CompanyLite;
+    minutes: number;
+    subjects: string[];
+  }
+  const byCompany = new Map<string, Acc>();
+  for (const log of logs) {
+    const company = log.ticket.company;
+    const endMs = log.endedAt ? new Date(log.endedAt).getTime() : now.getTime();
+    const mins =
+      log.minutes ??
+      Math.max(1, Math.round((endMs - new Date(log.startedAt).getTime()) / 60000));
+    const acc = byCompany.get(company.id) ?? {
+      company,
+      minutes: 0,
+      subjects: [],
+    };
+    acc.minutes += mins;
+    if (log.ticket.subject && !acc.subjects.includes(log.ticket.subject)) {
+      acc.subjects.push(log.ticket.subject);
     }
+    byCompany.set(company.id, acc);
   }
 
-  const allocations = [...byCompany.values()];
+  // Minuten -> uren, per klant afgerond op 0.25 (rauwe minuten blijven bewaard).
+  const allocations: AllocationDTO[] = [...byCompany.values()].map((acc) => ({
+    companyId: acc.company.id,
+    company: acc.company,
+    hours: Math.round((acc.minutes / 60) * 4) / 4,
+    description: acc.subjects.join(", "),
+  }));
+
+  const netHours = 8;
+  const proposalHours = Math.round(sumHours(allocations) * 4) / 4;
 
   return NextResponse.json({
     existing: false,
     date: dateParam,
     start: "09:00",
-    netHours: 8,
+    netHours,
     status: "OPEN",
     allocations,
-    // Preview heeft nog 0 uren; eind == start tot ik de uren verdeel.
+    // Verschil tussen voorstel-uren en netto-dag, zodat ik zie hoeveel ik nog moet bijstellen.
+    proposalHours,
+    netDiff: Math.round((proposalHours - netHours) * 4) / 4,
     format: buildFormat("09:00", allocations),
   });
 }

@@ -218,7 +218,10 @@
     "ticketDeleteConfirm": "Are you sure you want to delete ticket #{number} \"{subject}\"? This action cannot be undone.",
     "editTicket": "Edit Ticket",
     "workPerformed": "Work performed",
-    "attachments": "Attachments"
+    "attachments": "Attachments",
+    "startWork": "Start work",
+    "stopWork": "Stop work",
+    "workTime": "Work time"
   },
   "newTicket": {
     "title": "New Ticket",
@@ -804,7 +807,8 @@
     "saveFailed": "Failed to close day",
     "loadFailed": "Failed to load day",
     "noClients": "No clients yet. Add a client to get started.",
-    "remove": "Remove"
+    "remove": "Remove",
+    "proposalHint": "Proposed from ticket time: {proposal}h (net {net}h). Adjust hours to your net day."
   },
   "urenOverzicht": {
     "title": "Hours overview",

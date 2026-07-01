@@ -555,7 +555,9 @@
     "typeToSearch": "Type to search...",
     "tickets": "Tickets",
     "companies": "Companies",
-    "contacts": "Contacts"
+    "contacts": "Contacts",
+    "allResults": "All results for “{q}”",
+    "title2": "Search results"
   },
   "notifications": {
     "title": "Notifications",

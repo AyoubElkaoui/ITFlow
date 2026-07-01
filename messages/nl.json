@@ -556,7 +556,9 @@
     "typeToSearch": "Typ om te zoeken...",
     "tickets": "Tickets",
     "companies": "Bedrijven",
-    "contacts": "Contacten"
+    "contacts": "Contacten",
+    "allResults": "Alle resultaten voor “{q}”",
+    "title2": "Zoekresultaten"
   },
   "notifications": {
     "title": "Meldingen",

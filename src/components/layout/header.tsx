@@ -7,8 +7,10 @@ import {
   Ticket,
   Building2,
   Users,
+  Monitor,
+  BookOpen,
+  ArrowRight,
   Loader2,
-  Languages,
   LogOut,
 } from "lucide-react";
 import { NotificationBell } from "@/components/layout/notification-bell";
@@ -18,6 +20,7 @@ import { useRouter, usePathname } from "@/i18n/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,26 +37,29 @@ import {
   CommandItem,
 } from "@/components/ui/command";
 import { useEffect, useState, useRef, useCallback } from "react";
+import type { LucideIcon } from "lucide-react";
+import {
+  SEARCH_GROUPS,
+  type SearchType,
+  type SearchResult,
+  type SearchResponse,
+} from "@/types/search";
 
-interface TicketResult {
-  id: string;
-  subject: string;
-  status: string;
-  company?: { id: string; name: string; shortName?: string } | null;
-}
+const EMPTY_RESULTS: Record<SearchType, SearchResult[]> = {
+  TICKET: [],
+  KB: [],
+  ASSET: [],
+  CLIENT: [],
+  CONTACT: [],
+};
 
-interface CompanyResult {
-  id: string;
-  name: string;
-  shortName?: string | null;
-}
-
-interface ContactResult {
-  id: string;
-  name: string;
-  email?: string | null;
-  company?: { id: string; name: string; shortName?: string } | null;
-}
+const GROUP_ICON: Record<SearchType, LucideIcon> = {
+  TICKET: Ticket,
+  KB: BookOpen,
+  ASSET: Monitor,
+  CLIENT: Building2,
+  CONTACT: Users,
+};
 
 export function Header() {
   const { theme, setTheme } = useTheme();
@@ -67,9 +73,8 @@ export function Header() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
-  const [tickets, setTickets] = useState<TicketResult[]>([]);
-  const [companies, setCompanies] = useState<CompanyResult[]>([]);
-  const [contacts, setContacts] = useState<ContactResult[]>([]);
+  const [results, setResults] =
+    useState<Record<SearchType, SearchResult[]>>(EMPTY_RESULTS);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -97,28 +102,18 @@ export function Header() {
   useEffect(() => {
     if (!open) {
       setQuery("");
-      setTickets([]);
-      setCompanies([]);
-      setContacts([]);
+      setResults(EMPTY_RESULTS);
       setLoading(false);
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (abortControllerRef.current) abortControllerRef.current.abort();
     }
   }, [open]);
 
   const fetchResults = useCallback(async (searchQuery: string) => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
+    if (abortControllerRef.current) abortControllerRef.current.abort();
 
-    if (!searchQuery.trim()) {
-      setTickets([]);
-      setCompanies([]);
-      setContacts([]);
+    if (searchQuery.trim().length < 2) {
+      setResults(EMPTY_RESULTS);
       setLoading(false);
       return;
     }
@@ -128,63 +123,28 @@ export function Header() {
     setLoading(true);
 
     try {
-      const encoded = encodeURIComponent(searchQuery.trim());
-
-      const [ticketsRes, companiesRes, contactsRes] = await Promise.all([
-        fetch(`/api/tickets?search=${encoded}&pageSize=5`, {
-          signal: controller.signal,
-        }),
-        fetch(`/api/companies?search=${encoded}`, {
-          signal: controller.signal,
-        }),
-        fetch(`/api/contacts?search=${encoded}`, {
-          signal: controller.signal,
-        }),
-      ]);
-
+      const res = await fetch(
+        `/api/search?q=${encodeURIComponent(searchQuery.trim())}`,
+        { signal: controller.signal },
+      );
       if (controller.signal.aborted) return;
-
-      const ticketsData = await ticketsRes.json();
-      const companiesData = await companiesRes.json();
-      const contactsData = await contactsRes.json();
-
+      const data = (await res.json()) as SearchResponse;
       if (controller.signal.aborted) return;
-
-      setTickets(
-        Array.isArray(ticketsData) ? ticketsData : ticketsData.data || [],
-      );
-      setCompanies(
-        Array.isArray(companiesData) ? companiesData : companiesData.data || [],
-      );
-      setContacts(
-        Array.isArray(contactsData) ? contactsData : contactsData.data || [],
-      );
+      setResults(data.results ?? EMPTY_RESULTS);
     } catch (err) {
-      if (err instanceof DOMException && err.name === "AbortError") {
-        return;
-      }
+      if (err instanceof DOMException && err.name === "AbortError") return;
       console.error("Search failed:", err);
-      setTickets([]);
-      setCompanies([]);
-      setContacts([]);
+      setResults(EMPTY_RESULTS);
     } finally {
-      if (!controller.signal.aborted) {
-        setLoading(false);
-      }
+      if (!controller.signal.aborted) setLoading(false);
     }
   }, []);
 
   const handleQueryChange = useCallback(
     (value: string) => {
       setQuery(value);
-
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
-
-      debounceRef.current = setTimeout(() => {
-        fetchResults(value);
-      }, 300);
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => fetchResults(value), 300);
     },
     [fetchResults],
   );
@@ -202,8 +162,7 @@ export function Header() {
     router.replace(pathname, { locale: newLocale });
   }
 
-  const hasResults =
-    tickets.length > 0 || companies.length > 0 || contacts.length > 0;
+  const hasResults = Object.values(results).some((arr) => arr.length > 0);
   const hasQuery = query.trim().length > 0;
 
   return (
@@ -254,67 +213,52 @@ export function Header() {
             </div>
           )}
 
-          {!loading && tickets.length > 0 && (
-            <CommandGroup heading={t("tickets")}>
-              {tickets.map((ticket) => (
-                <CommandItem
-                  key={`ticket-${ticket.id}`}
-                  value={`ticket-${ticket.id}-${ticket.subject}`}
-                  onSelect={() => handleSelect(`/tickets/${ticket.id}`)}
-                >
-                  <Ticket className="h-4 w-4 text-muted-foreground" />
-                  <div className="flex flex-col gap-0.5 overflow-hidden">
-                    <span className="truncate">{ticket.subject}</span>
-                    <span className="text-xs text-muted-foreground truncate">
-                      {ticket.status}
-                      {ticket.company ? ` - ${ticket.company.name}` : ""}
-                    </span>
-                  </div>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          )}
+          {!loading &&
+            SEARCH_GROUPS.map(({ type, labelNl, labelEn }) => {
+              const items = results[type];
+              if (!items || items.length === 0) return null;
+              const Icon = GROUP_ICON[type];
+              const heading = locale === "nl" ? labelNl : labelEn;
+              return (
+                <CommandGroup key={type} heading={heading}>
+                  {items.map((r) => (
+                    <CommandItem
+                      key={`${type}-${r.id}`}
+                      value={`${type}-${r.id}-${r.title}`}
+                      onSelect={() => handleSelect(r.url)}
+                    >
+                      <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      <div className="flex min-w-0 flex-1 flex-col gap-0.5 overflow-hidden">
+                        <span className="truncate">{r.title}</span>
+                        {(r.snippet || r.subtitle) && (
+                          <span className="truncate text-xs text-muted-foreground">
+                            {r.snippet || r.subtitle}
+                          </span>
+                        )}
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className="ml-auto shrink-0 text-[10px]"
+                      >
+                        {heading}
+                      </Badge>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              );
+            })}
 
-          {!loading && companies.length > 0 && (
-            <CommandGroup heading={t("companies")}>
-              {companies.map((company) => (
-                <CommandItem
-                  key={`company-${company.id}`}
-                  value={`company-${company.id}-${company.name}`}
-                  onSelect={() => handleSelect(`/companies/${company.id}`)}
-                >
-                  <Building2 className="h-4 w-4 text-muted-foreground" />
-                  <div className="flex flex-col gap-0.5 overflow-hidden">
-                    <span className="truncate">{company.name}</span>
-                    {company.shortName && (
-                      <span className="text-xs text-muted-foreground truncate">
-                        {company.shortName}
-                      </span>
-                    )}
-                  </div>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          )}
-
-          {!loading && contacts.length > 0 && (
-            <CommandGroup heading={t("contacts")}>
-              {contacts.map((contact) => (
-                <CommandItem
-                  key={`contact-${contact.id}`}
-                  value={`contact-${contact.id}-${contact.name}`}
-                  onSelect={() => handleSelect(`/contacts/${contact.id}`)}
-                >
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                  <div className="flex flex-col gap-0.5 overflow-hidden">
-                    <span className="truncate">{contact.name}</span>
-                    <span className="text-xs text-muted-foreground truncate">
-                      {contact.email || ""}
-                      {contact.company ? ` - ${contact.company.name}` : ""}
-                    </span>
-                  </div>
-                </CommandItem>
-              ))}
+          {!loading && hasQuery && hasResults && (
+            <CommandGroup>
+              <CommandItem
+                value="__all_results__"
+                onSelect={() =>
+                  handleSelect(`/search?q=${encodeURIComponent(query.trim())}`)
+                }
+              >
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                {t("allResults", { q: query.trim() })}
+              </CommandItem>
             </CommandGroup>
           )}
         </CommandList>

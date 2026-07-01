@@ -10,5 +10,11 @@ if [ -f prisma/migrations/custom/constraints.sql ]; then
   npx prisma db execute --file prisma/migrations/custom/constraints.sql || echo "Constraints may already exist, continuing..."
 fi
 
+# Apply pg_trgm extension + search indexes (idempotent)
+if [ -f prisma/migrations/custom/search-trgm.sql ]; then
+  echo "Applying search (pg_trgm) indexes..."
+  npx prisma db execute --file prisma/migrations/custom/search-trgm.sql || echo "Search indexes may already exist, continuing..."
+fi
+
 echo "Starting app..."
 exec node server.js

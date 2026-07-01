@@ -2,7 +2,8 @@
 
 import { useTranslations } from "next-intl";
 
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod/v4";
 import { typedResolver } from "@/lib/form-utils";
@@ -142,10 +143,11 @@ function typeBadgeVariant(
 
 // -- Page component -----------------------------------------------------------
 
-export default function AssetsPage() {
+function AssetsPageContent() {
   const t = useTranslations("assets");
   const tc = useTranslations("common");
-  const [search, setSearch] = useState("");
+  const searchParams = useSearchParams();
+  const [search, setSearch] = useState(searchParams.get("search") || "");
   const [type, setType] = useState("all");
   const [companyId, setCompanyId] = useState("all");
   const [showCreate, setShowCreate] = useState(false);
@@ -539,5 +541,13 @@ function CreateAssetDialog({
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+export default function AssetsPage() {
+  return (
+    <Suspense fallback={null}>
+      <AssetsPageContent />
+    </Suspense>
   );
 }

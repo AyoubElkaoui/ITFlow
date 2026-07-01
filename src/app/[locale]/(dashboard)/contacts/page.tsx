@@ -2,7 +2,8 @@
 
 import { useTranslations } from "next-intl";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { typedResolver } from "@/lib/form-utils";
 import {
@@ -197,11 +198,12 @@ function CreateContactDialog({ open, onOpenChange }: CreateContactDialogProps) {
 // ContactsPage
 // ---------------------------------------------------------------------------
 
-export default function ContactsPage() {
+function ContactsPageContent() {
   const t = useTranslations("contacts");
   const tc = useTranslations("common");
   const ttoast = useTranslations("toasts");
-  const [search, setSearch] = useState("");
+  const searchParams = useSearchParams();
+  const [search, setSearch] = useState(searchParams.get("search") || "");
   const [companyFilter, setCompanyFilter] = useState("all");
   const [showCreate, setShowCreate] = useState(false);
   const [editingContact, setEditingContact] = useState<ContactRow | null>(null);
@@ -401,5 +403,13 @@ export default function ContactsPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function ContactsPage() {
+  return (
+    <Suspense fallback={null}>
+      <ContactsPageContent />
+    </Suspense>
   );
 }

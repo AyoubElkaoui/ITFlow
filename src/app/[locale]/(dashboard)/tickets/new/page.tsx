@@ -44,6 +44,7 @@ export default function NewTicketPage() {
   const ts = useTranslations("status");
   const tp = useTranslations("priority");
   const tcat = useTranslations("category");
+  const tsrc = useTranslations("ticketSource");
   const tt = useTranslations("tickets");
   const ttoast = useTranslations("toasts");
   const createTicket = useCreateTicket();
@@ -67,6 +68,8 @@ export default function NewTicketPage() {
       status: "OPEN",
       priority: "NORMAL",
       category: undefined,
+      source: "OVERIG",
+      plannedFor: undefined,
       assignedToId: undefined,
       tasksPerformed: "",
       pcName: "",
@@ -263,6 +266,53 @@ export default function NewTicketPage() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Herkomst + geplande datum */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="space-y-2">
+                <Label className="text-base">{tsrc("label")}</Label>
+                <Select
+                  value={watch("source") || "OVERIG"}
+                  onValueChange={(value) =>
+                    setValue("source", value as TicketCreateInput["source"])
+                  }
+                >
+                  <SelectTrigger className="h-11">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="OPDRACHT">{tsrc("OPDRACHT")}</SelectItem>
+                    <SelectItem value="INBOUND">{tsrc("INBOUND")}</SelectItem>
+                    <SelectItem value="OVERIG">{tsrc("OVERIG")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {watch("source") === "OPDRACHT" && (
+                <div className="space-y-2">
+                  <Label htmlFor="plannedFor" className="text-base">
+                    {tt("plannedFor")}
+                  </Label>
+                  <Input
+                    id="plannedFor"
+                    type="date"
+                    className="h-11"
+                    value={
+                      watch("plannedFor")
+                        ? new Date(watch("plannedFor") as Date)
+                            .toISOString()
+                            .slice(0, 10)
+                        : ""
+                    }
+                    onChange={(e) =>
+                      setValue(
+                        "plannedFor",
+                        e.target.value ? new Date(e.target.value) : null,
+                      )
+                    }
+                  />
+                </div>
+              )}
             </div>
 
             {/* Subject */}

@@ -43,6 +43,14 @@ enum TicketCategory {
   OTHER
 }
 
+// Hoe het werk binnenkwam. Default OVERIG: bestaande tickets zijn niet retroactief
+// te classificeren, dus die blijven neutraal — het onderscheid geldt vanaf nu.
+enum TicketSource {
+  OPDRACHT // "ga naar klant X, doe Y" — vaak gepland
+  INBOUND // klant belt/vraagt online — ad hoc
+  OVERIG
+}
+
 enum AssetType {
   LAPTOP
   DESKTOP
@@ -194,7 +202,9 @@ model Ticket {
   status       TicketStatus    @default(OPEN)
   priority     Priority        @default(NORMAL)
   category     TicketCategory?
-  assignedToId String?
+  source       TicketSource    @default(OVERIG)
+  plannedFor   DateTime? // geplande datum (zinvol bij OPDRACHT, niet afgedwongen)
+  assignedToId String? // = assignee (bestaande relatie, hergebruikt)
   createdById  String
 
   // IT Snippet fields
@@ -247,6 +257,8 @@ model Ticket {
   @@index([kanbanOrder])
   @@index([assignedToId])
   @@index([archivedAt])
+  @@index([source])
+  @@index([plannedFor])
 }
 
 model TimeEntry {

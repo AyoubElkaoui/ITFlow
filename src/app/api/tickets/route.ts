@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
   const priority = searchParams.get("priority");
   const companyId = searchParams.get("companyId");
   const assignedToId = searchParams.get("assignedToId");
+  const source = searchParams.get("source"); // OPDRACHT | INBOUND | OVERIG
   const archived = searchParams.get("archived"); // "true" | "false" | null (alles)
   const from = searchParams.get("from");
   const to = searchParams.get("to");
@@ -46,6 +47,9 @@ export async function GET(request: NextRequest) {
     }),
     ...(companyId && { companyId }),
     ...(assignedToId && { assignedToId }),
+    ...(source && {
+      source: source as "OPDRACHT" | "INBOUND" | "OVERIG",
+    }),
     ...(archived === "true"
       ? { archivedAt: { not: null } }
       : archived === "false"

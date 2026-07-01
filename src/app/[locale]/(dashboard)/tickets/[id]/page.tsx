@@ -11,6 +11,7 @@ import {
 import { useCreateTimeEntry } from "@/hooks/use-time-entries";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -82,6 +83,8 @@ interface Ticket {
   status: string;
   priority: string;
   category: string | null;
+  source: string;
+  plannedFor: string | null;
   tasksPerformed: string | null;
   pcName: string | null;
   serialNumber: string | null;
@@ -119,6 +122,7 @@ export default function TicketDetailPage({
   const t = useTranslations("tickets");
   const tc = useTranslations("common");
   const ts = useTranslations("status");
+  const tsrc = useTranslations("ticketSource");
   const ttoast = useTranslations("toasts");
   const { data: ticket, isLoading } = useTicket(id);
   const { data: session } = useSession();
@@ -274,6 +278,18 @@ export default function TicketDetailPage({
               </span>
               <StatusBadge status={tk.status} />
               <PriorityBadge priority={tk.priority} />
+              {tk.source && tk.source !== "OVERIG" && (
+                <Badge
+                  variant="outline"
+                  className={
+                    tk.source === "OPDRACHT"
+                      ? "border-indigo-400 text-indigo-600 dark:text-indigo-400"
+                      : "border-teal-400 text-teal-600 dark:text-teal-400"
+                  }
+                >
+                  {tsrc(tk.source as "OPDRACHT" | "INBOUND")}
+                </Badge>
+              )}
             </div>
             <h1 className="text-lg md:text-2xl font-bold mt-1 leading-tight">{tk.subject}</h1>
           </div>
@@ -578,6 +594,15 @@ export default function TicketDetailPage({
                   resolveMet={tk.slaResolveMet}
                 />
               </div>
+              {tk.plannedFor && (
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground flex items-center gap-1.5">
+                    <CalendarDays className="h-3.5 w-3.5" />
+                    {t("plannedFor")}
+                  </span>
+                  <span>{format(new Date(tk.plannedFor), "dd MMM yyyy")}</span>
+                </div>
+              )}
               <div className="border-t border-border pt-4 flex justify-between items-center">
                 <span className="text-muted-foreground flex items-center gap-1.5">
                   <ShieldCheck className="h-3.5 w-3.5" />

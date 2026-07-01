@@ -83,7 +83,8 @@
     "settings": "Settings",
     "dagafsluiting": "Day close",
     "urenOverzicht": "Hours overview",
-    "teFactureren": "To invoice"
+    "teFactureren": "To invoice",
+    "opdrachten": "Assignments"
   },
   "status": {
     "OPEN": "Open",
@@ -222,7 +223,12 @@
     "startWork": "Start work",
     "stopWork": "Stop work",
     "workTime": "Work time",
-    "materials": "Materials"
+    "materials": "Materials",
+    "plannedFor": "Planned date",
+    "opdrachten": "Assignments",
+    "noPlanned": "Unplanned",
+    "myAssignments": "My assignments",
+    "allAssignees": "All assignees"
   },
   "newTicket": {
     "title": "New Ticket",
@@ -862,5 +868,11 @@
     "allDone": "Nothing to invoice",
     "allDoneHint": "All tickets are processed or none are pending.",
     "overflowLink": "Open To-invoice overview"
+  },
+  "ticketSource": {
+    "label": "Source",
+    "OPDRACHT": "Assignment",
+    "INBOUND": "Inbound",
+    "OVERIG": "Other"
   }
 }

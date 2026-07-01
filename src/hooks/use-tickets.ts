@@ -18,6 +18,7 @@ interface TicketFilters {
   priority?: string;
   companyId?: string;
   assignedToId?: string;
+  source?: string; // OPDRACHT | INBOUND | OVERIG
   archived?: string; // "true" | "false" — weglaten = alles
   from?: string;
   to?: string;
@@ -32,6 +33,7 @@ export function useTickets(filters: TicketFilters = {}) {
   if (filters.priority) params.set("priority", filters.priority);
   if (filters.companyId) params.set("companyId", filters.companyId);
   if (filters.assignedToId) params.set("assignedToId", filters.assignedToId);
+  if (filters.source) params.set("source", filters.source);
   if (filters.archived) params.set("archived", filters.archived);
   if (filters.from) params.set("from", filters.from);
   if (filters.to) params.set("to", filters.to);
@@ -49,6 +51,16 @@ export function useTicket(id: string) {
     queryKey: ["ticket", id],
     queryFn: () => fetchJson(`/api/tickets/${id}`),
     enabled: !!id,
+  });
+}
+
+// Openstaande OPDRACHT-tickets ("ga doen"-lijst), gesorteerd op geplande datum.
+export function useOpdrachten(assignedToId?: string) {
+  const params = new URLSearchParams();
+  if (assignedToId) params.set("assignedToId", assignedToId);
+  return useQuery({
+    queryKey: ["opdrachten", assignedToId ?? "all"],
+    queryFn: () => fetchJson(`/api/tickets/opdrachten?${params}`),
   });
 }
 

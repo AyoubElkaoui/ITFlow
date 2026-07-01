@@ -49,6 +49,8 @@ interface TicketData {
   officeLicense: string | null;
   pendingTasks: string | null;
   equipmentTaken: string | null;
+  source?: string;
+  plannedFor?: string | null;
   createdAt: string;
 }
 
@@ -65,6 +67,7 @@ export function EditTicketDialog({ open, onOpenChange, ticket }: Props) {
   const ts = useTranslations("status");
   const tp = useTranslations("priority");
   const tcat = useTranslations("category");
+  const tsrc = useTranslations("ticketSource");
   const ttoast = useTranslations("toasts");
 
   const updateTicket = useUpdateTicket(ticket.id);
@@ -92,6 +95,8 @@ export function EditTicketDialog({ open, onOpenChange, ticket }: Props) {
       officeLicense: ticket.officeLicense ?? "",
       pendingTasks: ticket.pendingTasks ?? "",
       equipmentTaken: ticket.equipmentTaken ?? "",
+      source: (ticket.source as TicketUpdateInput["source"]) ?? "OVERIG",
+      plannedFor: ticket.plannedFor ? new Date(ticket.plannedFor) : null,
       createdAt: new Date(ticket.createdAt),
     },
   });
@@ -117,6 +122,8 @@ export function EditTicketDialog({ open, onOpenChange, ticket }: Props) {
       officeLicense: ticket.officeLicense ?? "",
       pendingTasks: ticket.pendingTasks ?? "",
       equipmentTaken: ticket.equipmentTaken ?? "",
+      source: (ticket.source as TicketUpdateInput["source"]) ?? "OVERIG",
+      plannedFor: ticket.plannedFor ? new Date(ticket.plannedFor) : null,
       createdAt: new Date(ticket.createdAt),
     });
   }, [ticket, form]);
@@ -407,6 +414,55 @@ export function EditTicketDialog({ open, onOpenChange, ticket }: Props) {
                   rows={3}
                   {...form.register("equipmentTaken")}
                 />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Herkomst + planning */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{tsrc("label")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>{tsrc("label")}</Label>
+                  <Select
+                    value={form.watch("source") || "OVERIG"}
+                    onValueChange={(v) =>
+                      form.setValue("source", v as TicketUpdateInput["source"])
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="OPDRACHT">{tsrc("OPDRACHT")}</SelectItem>
+                      <SelectItem value="INBOUND">{tsrc("INBOUND")}</SelectItem>
+                      <SelectItem value="OVERIG">{tsrc("OVERIG")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-plannedFor">{t("plannedFor")}</Label>
+                  <Input
+                    id="edit-plannedFor"
+                    type="date"
+                    value={
+                      form.watch("plannedFor")
+                        ? new Date(form.watch("plannedFor") as Date)
+                            .toISOString()
+                            .slice(0, 10)
+                        : ""
+                    }
+                    onChange={(e) =>
+                      form.setValue(
+                        "plannedFor",
+                        e.target.value ? new Date(e.target.value) : null,
+                      )
+                    }
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>

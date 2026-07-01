@@ -84,7 +84,8 @@
     "settings": "Instellingen",
     "dagafsluiting": "Dagafsluiting",
     "urenOverzicht": "Uren-overzicht",
-    "teFactureren": "Te factureren"
+    "teFactureren": "Te factureren",
+    "opdrachten": "Opdrachten"
   },
   "status": {
     "OPEN": "Open",
@@ -223,7 +224,12 @@
     "startWork": "Start werk",
     "stopWork": "Stop werk",
     "workTime": "Werk-tijd",
-    "materials": "Materiaal"
+    "materials": "Materiaal",
+    "plannedFor": "Geplande datum",
+    "opdrachten": "Opdrachten",
+    "noPlanned": "Ongepland",
+    "myAssignments": "Mijn opdrachten",
+    "allAssignees": "Alle uitvoerders"
   },
   "newTicket": {
     "title": "Nieuw ticket",
@@ -863,5 +869,11 @@
     "allDone": "Niets te factureren",
     "allDoneHint": "Alle tickets zijn verwerkt of er staan geen tickets klaar.",
     "overflowLink": "Open Te factureren-overzicht"
+  },
+  "ticketSource": {
+    "label": "Herkomst",
+    "OPDRACHT": "Opdracht",
+    "INBOUND": "Inbound",
+    "OVERIG": "Overig"
   }
 }

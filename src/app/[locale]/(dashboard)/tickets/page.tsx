@@ -56,10 +56,12 @@ export default function TicketsPage() {
   const ts = useTranslations("status");
   const tp = useTranslations("priority");
   const tf = useTranslations("teFactureren");
+  const tsrc = useTranslations("ticketSource");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [priority, setPriority] = useState("all");
   const [companyId, setCompanyId] = useState("all");
+  const [source, setSource] = useState("all");
   const [showArchived, setShowArchived] = useState(false);
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -69,6 +71,7 @@ export default function TicketsPage() {
     status: status !== "all" ? status : undefined,
     priority: priority !== "all" ? priority : undefined,
     companyId: companyId !== "all" ? companyId : undefined,
+    source: source !== "all" ? source : undefined,
     archived: showArchived ? undefined : "false",
     page,
     pageSize: PAGE_SIZE,
@@ -177,6 +180,24 @@ export default function TicketsPage() {
                 allowAll
               />
             </div>
+
+            <Select
+              value={source}
+              onValueChange={(v) => {
+                setSource(v);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder={tsrc("label")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{tsrc("label")}</SelectItem>
+                <SelectItem value="OPDRACHT">{tsrc("OPDRACHT")}</SelectItem>
+                <SelectItem value="INBOUND">{tsrc("INBOUND")}</SelectItem>
+                <SelectItem value="OVERIG">{tsrc("OVERIG")}</SelectItem>
+              </SelectContent>
+            </Select>
 
             <div className="flex items-center gap-2">
               <Switch

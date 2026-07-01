@@ -45,6 +45,8 @@ export const ticketCreateSchema = z.object({
   category: z
     .enum(["HARDWARE", "SOFTWARE", "NETWORK", "ACCOUNT", "OTHER"])
     .optional(),
+  source: z.enum(["OPDRACHT", "INBOUND", "OVERIG"]).default("OVERIG"),
+  plannedFor: z.coerce.date().nullable().optional(),
   assignedToId: z.string().optional(),
   // IT Snippet fields
   tasksPerformed: z.string().optional(),

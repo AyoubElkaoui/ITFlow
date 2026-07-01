@@ -19,6 +19,8 @@ interface StockFilters {
 
 interface StockItemCreateInput {
   name: string;
+  sku?: string;
+  unit?: string;
   category?:
     | "CABLE"
     | "ADAPTER"
@@ -40,15 +42,20 @@ interface StockItemCreateInput {
 
 interface StockItemUpdateInput {
   name?: string;
+  sku?: string;
+  unit?: string;
   category?: string;
   quantity?: number;
   minStock?: number;
   location?: string;
+  isActive?: boolean;
 }
 
 interface StockMovementCreateInput {
-  type: "IN" | "OUT";
-  quantity: number;
+  type?: "IN" | "OUT";
+  quantity?: number;
+  targetQty?: number;
+  reason?: "INKOOP" | "UITGIFTE" | "TICKET" | "CORRECTIE";
   note?: string;
   companyId?: string;
   assetName?: string;

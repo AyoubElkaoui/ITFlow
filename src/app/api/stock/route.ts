@@ -6,6 +6,8 @@ import { getSessionUser } from "@/lib/auth-utils";
 
 const stockItemCreateSchema = z.object({
   name: z.string().min(1, "Name is required"),
+  sku: z.string().optional(),
+  unit: z.string().optional(),
   category: z
     .enum([
       "CABLE",

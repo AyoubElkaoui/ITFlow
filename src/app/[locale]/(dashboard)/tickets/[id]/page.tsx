@@ -53,6 +53,7 @@ import {
   MessageSquare,
   Link2,
   ImageIcon,
+  Package,
   Pencil,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -63,6 +64,7 @@ import {
 } from "@/hooks/use-ticket-time-logs";
 import { EditTicketDialog } from "@/components/tickets/edit-ticket-dialog";
 import { TicketTimeLogs } from "@/components/tickets/ticket-time-logs";
+import { TicketMaterials } from "@/components/tickets/ticket-materials";
 import { TicketNotes } from "@/components/tickets/ticket-notes";
 import { TicketAssets } from "@/components/tickets/ticket-assets";
 import { TicketAttachments } from "@/components/tickets/ticket-attachments";
@@ -436,6 +438,10 @@ export default function TicketDetailPage({
                       <Link2 className="h-4 w-4 mr-1.5" />
                       {t("linkedAssets")}
                     </TabsTrigger>
+                    <TabsTrigger value="materials">
+                      <Package className="h-4 w-4 mr-1.5" />
+                      {t("materials")}
+                    </TabsTrigger>
                     <TabsTrigger value="attachments">
                       <ImageIcon className="h-4 w-4 mr-1.5" />
                       {t("attachments")}
@@ -540,6 +546,11 @@ export default function TicketDetailPage({
                 {/* Gekoppelde assets */}
                 <TabsContent value="assets" className="mt-4">
                   <TicketAssets ticketId={tk.id} companyId={tk.company.id} />
+                </TabsContent>
+
+                {/* Materiaal (voorraad verbruikt op dit ticket) */}
+                <TabsContent value="materials" className="mt-4">
+                  <TicketMaterials ticketId={tk.id} />
                 </TabsContent>
 
                 {/* Bijlagen */}

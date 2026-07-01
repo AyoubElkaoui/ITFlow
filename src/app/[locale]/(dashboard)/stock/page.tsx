@@ -42,12 +42,16 @@ import {
   Trash2,
   Pencil,
   ArrowDownUp,
+  SlidersHorizontal,
+  History,
   AlertTriangle,
   Boxes,
 } from "lucide-react";
 import { toast } from "sonner";
 import { EditStockItemDialog } from "@/components/stock/edit-stock-item-dialog";
 import { StockMovementDialog } from "@/components/stock/stock-movement-dialog";
+import { StockAdjustDialog } from "@/components/stock/stock-adjust-dialog";
+import { StockHistoryDrawer } from "@/components/stock/stock-history-drawer";
 
 // -- Types --------------------------------------------------------------------
 
@@ -72,6 +76,8 @@ type StockCategory = (typeof STOCK_CATEGORIES)[number];
 interface StockItemRow {
   id: string;
   name: string;
+  sku: string | null;
+  unit: string | null;
   category: StockCategory;
   quantity: number;
   minStock: number;
@@ -85,6 +91,8 @@ interface StockItemRow {
 
 const stockFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
+  sku: z.string().optional(),
+  unit: z.string().optional(),
   category: z
     .enum([
       "CABLE",
@@ -120,6 +128,8 @@ export default function StockPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [editingItem, setEditingItem] = useState<StockItemRow | null>(null);
   const [movementItem, setMovementItem] = useState<StockItemRow | null>(null);
+  const [adjustItem, setAdjustItem] = useState<StockItemRow | null>(null);
+  const [historyItem, setHistoryItem] = useState<StockItemRow | null>(null);
 
   const { data, isLoading } = useStockItems({
     search: search || undefined,
@@ -258,7 +268,7 @@ export default function StockPage() {
               {/* Mobiele kaartweergave */}
               <div className="md:hidden space-y-2">
                 {items.map((item) => {
-                  const isEmpty = item.quantity === 0;
+                  const isEmpty = item.quantity <= 0;
                   const isLow = !isEmpty && item.quantity <= item.minStock;
                   const borderColor = isEmpty ? "border-red-400 dark:border-red-700" : isLow ? "border-orange-400 dark:border-orange-700" : "";
                   const iconColor = isEmpty ? "text-red-500" : "text-orange-500";
@@ -289,8 +299,14 @@ export default function StockPage() {
                         </div>
                       </div>
                       <div className="flex gap-1 mt-2 justify-end">
+                        <Button variant="ghost" size="icon" className="h-7 w-7" title="Bijboeken / corrigeren" onClick={() => setAdjustItem(item)}>
+                          <SlidersHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
+                        </Button>
                         <Button variant="ghost" size="icon" className="h-7 w-7" title={t("addMovement")} onClick={() => setMovementItem(item)}>
                           <ArrowDownUp className="h-3.5 w-3.5 text-muted-foreground" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" title="Historie" onClick={() => setHistoryItem(item)}>
+                          <History className="h-3.5 w-3.5 text-muted-foreground" />
                         </Button>
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingItem(item)}>
                           <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
@@ -329,6 +345,7 @@ export default function StockPage() {
                               {isEmpty && <AlertTriangle className="h-4 w-4 text-red-500" />}
                               {isLow && <AlertTriangle className="h-4 w-4 text-orange-500" />}
                             </div>
+                            {item.sku && <span className="text-xs text-muted-foreground">{item.sku}</span>}
                           </TableCell>
                           <TableCell><Badge variant="secondary">{t(item.category)}</Badge></TableCell>
                           <TableCell className="text-right">
@@ -339,12 +356,15 @@ export default function StockPage() {
                                 ? "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300"
                                 : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
                             }>{item.quantity}</Badge>
+                            {item.unit && <span className="ml-1 text-xs text-muted-foreground">{item.unit}</span>}
                           </TableCell>
                           <TableCell className="text-right text-sm text-muted-foreground">{item.minStock}</TableCell>
                           <TableCell className="text-sm text-muted-foreground">{item.location || "—"}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-1">
+                              <Button variant="ghost" size="icon" title="Bijboeken / corrigeren" onClick={() => setAdjustItem(item)}><SlidersHorizontal className="h-4 w-4 text-muted-foreground" /></Button>
                               <Button variant="ghost" size="icon" title={t("addMovement")} onClick={() => setMovementItem(item)}><ArrowDownUp className="h-4 w-4 text-muted-foreground" /></Button>
+                              <Button variant="ghost" size="icon" title="Historie" onClick={() => setHistoryItem(item)}><History className="h-4 w-4 text-muted-foreground" /></Button>
                               <Button variant="ghost" size="icon" onClick={() => setEditingItem(item)}><Pencil className="h-4 w-4 text-muted-foreground" /></Button>
                               <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)}><Trash2 className="h-4 w-4 text-muted-foreground" /></Button>
                             </div>
@@ -377,7 +397,7 @@ export default function StockPage() {
         />
       )}
 
-      {/* Stock Movement Dialog */}
+      {/* Stock Movement Dialog (uitgifte/inname — getraceerde apparatuur) */}
       {movementItem && (
         <StockMovementDialog
           open={!!movementItem}
@@ -387,6 +407,31 @@ export default function StockPage() {
           stockItemId={movementItem.id}
           stockItemName={movementItem.name}
           currentQuantity={movementItem.quantity}
+        />
+      )}
+
+      {/* Bijboeken / corrigeren */}
+      {adjustItem && (
+        <StockAdjustDialog
+          open={!!adjustItem}
+          onOpenChange={(open) => {
+            if (!open) setAdjustItem(null);
+          }}
+          stockItemId={adjustItem.id}
+          stockItemName={adjustItem.name}
+          currentQuantity={adjustItem.quantity}
+        />
+      )}
+
+      {/* Historie */}
+      {historyItem && (
+        <StockHistoryDrawer
+          open={!!historyItem}
+          onOpenChange={(open) => {
+            if (!open) setHistoryItem(null);
+          }}
+          stockItemId={historyItem.id}
+          stockItemName={historyItem.name}
         />
       )}
     </div>
@@ -410,6 +455,8 @@ function CreateStockItemDialog({
     resolver: typedResolver(stockFormSchema),
     defaultValues: {
       name: "",
+      sku: "",
+      unit: "stuk",
       category: "OTHER",
       quantity: 0,
       minStock: 0,
@@ -447,6 +494,18 @@ function CreateStockItemDialog({
                 {form.formState.errors.name.message}
               </p>
             )}
+          </div>
+
+          {/* SKU & Unit */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="stock-sku">SKU</Label>
+              <Input id="stock-sku" {...form.register("sku")} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="stock-unit">Eenheid</Label>
+              <Input id="stock-unit" placeholder="stuk" {...form.register("unit")} />
+            </div>
           </div>
 
           {/* Category */}

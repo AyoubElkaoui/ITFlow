@@ -1,11 +1,12 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useUpdateStockItem } from "@/hooks/use-stock";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -42,10 +43,13 @@ type StockCategory = (typeof STOCK_CATEGORIES)[number];
 interface StockItemData {
   id: string;
   name: string;
+  sku: string | null;
+  unit: string | null;
   category: StockCategory;
   quantity: number;
   minStock: number;
   location: string | null;
+  isActive: boolean;
 }
 
 interface EditStockItemDialogProps {
@@ -64,28 +68,39 @@ export function EditStockItemDialog({
   const updateItem = useUpdateStockItem(item.id);
 
   const [name, setName] = useState(item.name);
+  const [sku, setSku] = useState(item.sku || "");
+  const [unit, setUnit] = useState(item.unit || "");
   const [category, setCategory] = useState<StockCategory>(item.category);
-  const [quantity, setQuantity] = useState(String(item.quantity));
   const [minStock, setMinStock] = useState(String(item.minStock));
   const [location, setLocation] = useState(item.location || "");
+  const [isActive, setIsActive] = useState(item.isActive);
 
-  useEffect(() => {
+  // Reset velden wanneer een ander item wordt bewerkt (zonder effect).
+  const [seededId, setSeededId] = useState(item.id);
+  if (item.id !== seededId) {
+    setSeededId(item.id);
     setName(item.name);
+    setSku(item.sku || "");
+    setUnit(item.unit || "");
     setCategory(item.category);
-    setQuantity(String(item.quantity));
     setMinStock(String(item.minStock));
     setLocation(item.location || "");
-  }, [item]);
+    setIsActive(item.isActive);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     try {
+      // Bewust GEEN quantity hier: currentQty muteert alleen via movements
+      // (Bijboeken / Corrigeren). Dit voorkomt losse cache-mutatie.
       await updateItem.mutateAsync({
         name,
+        sku: sku || undefined,
+        unit: unit || undefined,
         category,
-        quantity: parseInt(quantity) || 0,
         minStock: parseInt(minStock) || 0,
         location: location || undefined,
+        isActive,
       });
       toast.success(t("itemUpdated"));
       onOpenChange(false);
@@ -132,15 +147,25 @@ export function EditStockItemDialog({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-quantity">{t("currentStock")}</Label>
+              <Label htmlFor="edit-sku">SKU</Label>
               <Input
-                id="edit-quantity"
-                type="number"
-                min={0}
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
+                id="edit-sku"
+                value={sku}
+                onChange={(e) => setSku(e.target.value)}
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-unit">Eenheid</Label>
+              <Input
+                id="edit-unit"
+                placeholder="stuk"
+                value={unit}
+                onChange={(e) => setUnit(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="edit-min-stock">{t("minStock")}</Label>
               <Input
@@ -151,16 +176,26 @@ export function EditStockItemDialog({
                 onChange={(e) => setMinStock(e.target.value)}
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-location">{t("location")}</Label>
+              <Input
+                id="edit-location"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+              />
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="edit-location">{t("location")}</Label>
-            <Input
-              id="edit-location"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-            />
+          <div className="flex items-center gap-2">
+            <Switch id="edit-active" checked={isActive} onCheckedChange={setIsActive} />
+            <Label htmlFor="edit-active" className="cursor-pointer">
+              Actief
+            </Label>
           </div>
+
+          <p className="text-xs text-muted-foreground">
+            Aantal wijzig je via Bijboeken / Corrigeren op de voorraadlijst.
+          </p>
 
           <div className="flex justify-end gap-2">
             <Button

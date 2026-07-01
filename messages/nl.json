@@ -222,7 +222,8 @@
     "attachments": "Bijlagen",
     "startWork": "Start werk",
     "stopWork": "Stop werk",
-    "workTime": "Werk-tijd"
+    "workTime": "Werk-tijd",
+    "materials": "Materiaal"
   },
   "newTicket": {
     "title": "Nieuw ticket",

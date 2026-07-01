@@ -221,7 +221,8 @@
     "attachments": "Attachments",
     "startWork": "Start work",
     "stopWork": "Stop work",
-    "workTime": "Work time"
+    "workTime": "Work time",
+    "materials": "Materials"
   },
   "newTicket": {
     "title": "New Ticket",

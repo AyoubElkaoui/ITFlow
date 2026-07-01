@@ -74,6 +74,14 @@ enum StockMovementType {
   OUT
 }
 
+// Reden van een voorraadmutatie. Bepaalt teken + of er een Asset wordt aangemaakt.
+enum StockMovementReason {
+  INKOOP // IN,  + (bijboeken)
+  UITGIFTE // OUT, - -> MAAKT een Asset (getraceerde apparatuur, huidig /stock-gedrag)
+  TICKET // OUT, - -> GEEN asset (materiaal verbruikt op een ticket)
+  CORRECTIE // IN of OUT, geen asset (voorraadcorrectie naar absoluut aantal)
+}
+
 model User {
   id               String   @id @default(cuid())
   email            String   @unique
@@ -100,6 +108,7 @@ model User {
   createdCredentials Credential[]
   workDays        WorkDay[]
   timeLogs        TicketTimeLog[]
+  stockMovements  StockMovement[]
 
   @@index([email])
 }
@@ -228,6 +237,7 @@ model Ticket {
   tasks        Task[]
   credentials  Credential[]
   timeLogs     TicketTimeLog[]
+  stockMovements StockMovement[]
 
   @@index([companyId])
   @@index([status])
@@ -414,9 +424,11 @@ model AssetTicket {
 model StockItem {
   id        String        @id @default(cuid())
   name      String
+  sku       String?
+  unit      String?       @default("stuk")
   category  StockCategory @default(OTHER)
-  quantity  Int           @default(0)
-  minStock  Int           @default(0)
+  quantity  Int           @default(0) // cache = som van movements (in dezelfde tx bijgewerkt)
+  minStock  Int           @default(0) // besteldrempel voor low-stock
   location  String?
   isActive  Boolean       @default(true)
   createdAt DateTime      @default(now())
@@ -430,20 +442,26 @@ model StockItem {
 }
 
 model StockMovement {
-  id          String            @id @default(cuid())
+  id          String               @id @default(cuid())
   stockItemId String
   type        StockMovementType
-  quantity    Int
+  quantity    Int // altijd positief; teken volgt uit type (IN=+, OUT=-)
+  reason      StockMovementReason? // null = legacy (vóór backfill)
   note        String?
   companyId   String?
+  ticketId    String?
+  userId      String?
   performedBy String
-  createdAt   DateTime          @default(now())
+  createdAt   DateTime             @default(now())
 
   stockItem StockItem @relation(fields: [stockItemId], references: [id], onDelete: Cascade)
   company   Company?  @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  ticket    Ticket?   @relation(fields: [ticketId], references: [id], onDelete: SetNull)
+  user      User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([stockItemId])
   @@index([companyId])
+  @@index([ticketId])
   @@index([createdAt])
 }
 

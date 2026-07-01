@@ -7,6 +7,9 @@ import { getSessionUser } from "@/lib/auth-utils";
 const stockItemUpdateSchema = z
   .object({
     name: z.string().min(1),
+    sku: z.string().optional(),
+    unit: z.string().optional(),
+    isActive: z.boolean(),
     category: z.enum([
       "CABLE",
       "ADAPTER",

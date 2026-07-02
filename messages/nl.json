@@ -818,7 +818,9 @@
     "loadFailed": "Dag kon niet geladen worden",
     "noClients": "Nog geen klanten. Voeg een klant toe om te beginnen.",
     "remove": "Verwijderen",
-    "proposalHint": "Voorstel uit ticket-tijd: {proposal}u (netto {net}u). Pas de uren aan naar je netto-dag."
+    "proposalHint": "Voorstel uit ticket-tijd: {proposal}u (netto {net}u). Pas de uren aan naar je netto-dag.",
+    "tabClose": "Afsluiten",
+    "tabOverview": "Overzicht"
   },
   "urenOverzicht": {
     "title": "Uren-overzicht",

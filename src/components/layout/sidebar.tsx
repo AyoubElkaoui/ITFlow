@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   Ticket,
-  Kanban,
   ClipboardList,
   Receipt,
   Clock,
@@ -43,12 +42,10 @@ interface NavItem {
 const navigation: NavItem[] = [
   { nameKey: "dashboard", href: "/", icon: LayoutDashboard },
   { nameKey: "tickets", href: "/tickets", icon: Ticket },
-  { nameKey: "board", href: "/tickets/board", icon: Kanban },
   { nameKey: "opdrachten", href: "/tickets/opdrachten", icon: ClipboardList },
   { nameKey: "teFactureren", href: "/tickets/te-factureren", icon: Receipt },
   { nameKey: "time", href: "/time", icon: Clock },
   { nameKey: "dagafsluiting", href: "/dagafsluiting", icon: CalendarCheck },
-  { nameKey: "urenOverzicht", href: "/uren-overzicht", icon: BarChart3 },
   { nameKey: "companies", href: "/companies", icon: Building2 },
   { nameKey: "contacts", href: "/contacts", icon: Users },
   { nameKey: "assets", href: "/assets", icon: Monitor },

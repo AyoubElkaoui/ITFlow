@@ -818,7 +818,9 @@
     "loadFailed": "Failed to load day",
     "noClients": "No clients yet. Add a client to get started.",
     "remove": "Remove",
-    "proposalHint": "Proposed from ticket time: {proposal}h (net {net}h). Adjust hours to your net day."
+    "proposalHint": "Proposed from ticket time: {proposal}h (net {net}h). Adjust hours to your net day.",
+    "tabClose": "Close day",
+    "tabOverview": "Overview"
   },
   "urenOverzicht": {
     "title": "Hours overview",

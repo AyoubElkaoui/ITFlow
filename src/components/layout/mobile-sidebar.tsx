@@ -35,7 +35,6 @@ const navigation: NavItem[] = [
   { nameKey: "teFactureren", href: "/tickets/te-factureren", icon: Receipt },
   { nameKey: "time", href: "/time", icon: Clock },
   { nameKey: "dagafsluiting", href: "/dagafsluiting", icon: CalendarCheck },
-  { nameKey: "urenOverzicht", href: "/uren-overzicht", icon: BarChart3 },
   { nameKey: "companies", href: "/companies", icon: Building2 },
   { nameKey: "assets", href: "/assets", icon: Monitor },
   { nameKey: "projects", href: "/projects", icon: FolderKanban },

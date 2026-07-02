@@ -12,13 +12,6 @@ enum Role {
   USER
 }
 
-enum TaskStatus {
-  TODO
-  IN_PROGRESS
-  WAITING
-  DONE
-}
-
 enum TicketStatus {
   OPEN
   IN_PROGRESS
@@ -111,8 +104,6 @@ model User {
   notifications   Notification[]
   kbArticles      KbArticle[]
   activeTimer     ActiveTimer?
-  assignedTasks   Task[]       @relation("AssignedTasks")
-  createdTasks    Task[]       @relation("CreatedTasks")
   createdCredentials Credential[]
   workDays        WorkDay[]
   timeLogs        TicketTimeLog[]
@@ -244,7 +235,6 @@ model Ticket {
   notes       TicketNote[]
   assetLinks   AssetTicket[]
   attachments  TicketAttachment[]
-  tasks        Task[]
   credentials  Credential[]
   timeLogs     TicketTimeLog[]
   stockMovements StockMovement[]
@@ -357,29 +347,6 @@ model Credential {
 
   @@index([companyId])
   @@index([ticketId])
-}
-
-model Task {
-  id           String     @id @default(cuid())
-  title        String
-  description  String?
-  status       TaskStatus @default(TODO)
-  priority     Priority   @default(NORMAL)
-  dueDate      DateTime?
-  ticketId     String?
-  assignedToId String?
-  createdById  String
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-
-  ticket     Ticket? @relation(fields: [ticketId], references: [id], onDelete: SetNull)
-  assignedTo User?   @relation("AssignedTasks", fields: [assignedToId], references: [id], onDelete: SetNull)
-  createdBy  User    @relation("CreatedTasks", fields: [createdById], references: [id])
-
-  @@index([status])
-  @@index([assignedToId])
-  @@index([ticketId])
-  @@index([dueDate])
 }
 
 model TicketNote {

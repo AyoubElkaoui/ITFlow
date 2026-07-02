@@ -14,7 +14,6 @@ import {
   Package,
   BookOpen,
   BarChart3,
-  FolderKanban,
   Users,
   X,
 } from "lucide-react";
@@ -38,7 +37,6 @@ export function MobileNav() {
     { href: "/contacts", icon: Users, label: t("contacts") },
     { href: "/assets", icon: Monitor, label: t("assets") },
     { href: "/stock", icon: Package, label: t("stock") },
-    { href: "/tasks", icon: FolderKanban, label: "Taken" },
     { href: "/kb", icon: BookOpen, label: t("kb") },
     { href: "/reports", icon: BarChart3, label: t("reports") },
   ];

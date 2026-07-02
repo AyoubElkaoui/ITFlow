@@ -1,6 +1,5 @@
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
-import { MobileSidebar } from "@/components/layout/mobile-sidebar";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { PwaInstallPrompt } from "@/components/layout/pwa-install-prompt";
 
@@ -18,14 +17,7 @@ export default function DashboardLayout({
 
       {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        <div className="flex items-center gap-2 md:block">
-          <div className="p-2 md:hidden">
-            <MobileSidebar />
-          </div>
-          <div className="flex-1">
-            <Header />
-          </div>
-        </div>
+        <Header />
         {/* Extra bottom padding on mobile for the nav bar */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 md:p-6 mobile-scroll-padding">
           {children}

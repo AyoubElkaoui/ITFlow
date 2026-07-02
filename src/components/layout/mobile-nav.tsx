@@ -3,43 +3,30 @@
 import { usePathname } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-import {
-  LayoutDashboard,
-  Ticket,
-  Clock,
-  Plus,
-  MoreHorizontal,
-  Building2,
-  Monitor,
-  Package,
-  BookOpen,
-  BarChart3,
-  Users,
-  X,
-} from "lucide-react";
+import { Plus, MoreHorizontal, X } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useSession } from "next-auth/react";
 import { useState } from "react";
+import { bottomBarItems, moreItems, adminItems } from "@/lib/nav-items";
 
 export function MobileNav() {
   const pathname = usePathname();
   const t = useTranslations("nav");
+  const { data: session } = useSession();
+  const isAdmin =
+    (session?.user as { role?: string } | undefined)?.role === "ADMIN";
   const [moreOpen, setMoreOpen] = useState(false);
 
   const stripped = pathname.replace(/^\/(nl|en)/, "") || "/";
 
   const isActive = (href: string) => {
     if (href === "/") return stripped === "/";
-    return stripped.startsWith(href);
+    return stripped === href || stripped.startsWith(href + "/");
   };
 
-  const morePages = [
-    { href: "/companies", icon: Building2, label: t("companies") },
-    { href: "/contacts", icon: Users, label: t("contacts") },
-    { href: "/assets", icon: Monitor, label: t("assets") },
-    { href: "/stock", icon: Package, label: t("stock") },
-    { href: "/kb", icon: BookOpen, label: t("kb") },
-    { href: "/reports", icon: BarChart3, label: t("reports") },
-  ];
+  // Alles wat niet in de bottom-bar staat (+ admin voor admins) valt onder "Meer".
+  const overflow = [...moreItems, ...(isAdmin ? adminItems : [])];
+  const moreActive = overflow.some((i) => isActive(i.href));
 
   return (
     <>
@@ -53,8 +40,8 @@ export function MobileNav() {
 
       {/* Meer sheet */}
       {moreOpen && (
-        <div className="fixed bottom-16 left-0 right-0 z-50 md:hidden bg-card border-t border-border rounded-t-2xl shadow-xl pb-safe">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+        <div className="fixed bottom-16 left-0 right-0 z-50 md:hidden max-h-[70vh] overflow-y-auto bg-card border-t border-border rounded-t-2xl shadow-xl pb-safe">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border sticky top-0 bg-card">
             <span className="font-semibold text-sm">Meer pagina&apos;s</span>
             <button
               onClick={() => setMoreOpen(false)}
@@ -64,7 +51,7 @@ export function MobileNav() {
             </button>
           </div>
           <div className="grid grid-cols-4 gap-1 p-4">
-            {morePages.map(({ href, icon: Icon, label }) => (
+            {moreItems.map(({ href, icon: Icon, nameKey }) => (
               <Link
                 key={href}
                 href={href}
@@ -73,47 +60,67 @@ export function MobileNav() {
                   "flex flex-col items-center gap-1.5 rounded-xl p-3 transition-colors",
                   isActive(href)
                     ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted"
+                    : "text-muted-foreground hover:bg-muted",
                 )}
               >
                 <Icon className="h-6 w-6" />
                 <span className="text-[10px] text-center leading-tight">
-                  {label}
+                  {t(nameKey)}
                 </span>
               </Link>
             ))}
           </div>
+
+          {isAdmin && (
+            <>
+              <div className="px-4 pb-1 pt-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {t("admin")}
+              </div>
+              <div className="grid grid-cols-4 gap-1 px-4 pb-4">
+                {adminItems.map(({ href, icon: Icon, nameKey }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={() => setMoreOpen(false)}
+                    className={cn(
+                      "flex flex-col items-center gap-1.5 rounded-xl p-3 transition-colors",
+                      isActive(href)
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted",
+                    )}
+                  >
+                    <Icon className="h-6 w-6" />
+                    <span className="text-[10px] text-center leading-tight">
+                      {t(nameKey)}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       )}
 
       {/* Bottom nav bar */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden border-t border-border bg-card/95 backdrop-blur-sm">
-        <div className="grid grid-cols-5" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
-          {/* Dashboard */}
-          <Link
-            href="/"
-            className={cn(
-              "flex flex-col items-center justify-center gap-1 h-16 text-xs transition-colors",
-              isActive("/") && stripped === "/"
-                ? "text-primary"
-                : "text-muted-foreground"
-            )}
-          >
-            <LayoutDashboard className="h-5 w-5" />
-            <span className="text-[10px]">Home</span>
-          </Link>
-
-          {/* Tickets */}
-          <Link
-            href="/tickets"
-            className={cn(
-              "flex flex-col items-center justify-center gap-1 h-16 transition-colors",
-              isActive("/tickets") ? "text-primary" : "text-muted-foreground"
-            )}
-          >
-            <Ticket className="h-5 w-5" />
-            <span className="text-[10px]">{t("tickets")}</span>
-          </Link>
+        <div
+          className="grid grid-cols-5"
+          style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+        >
+          {/* Home + Tickets (eerste twee primary) */}
+          {bottomBarItems.slice(0, 2).map(({ href, icon: Icon, nameKey }) => (
+            <Link
+              key={href}
+              href={href}
+              className={cn(
+                "flex flex-col items-center justify-center gap-1 h-16 transition-colors",
+                isActive(href) ? "text-primary" : "text-muted-foreground",
+              )}
+            >
+              <Icon className="h-5 w-5" />
+              <span className="text-[10px]">{t(nameKey)}</span>
+            </Link>
+          ))}
 
           {/* Nieuw ticket FAB */}
           <Link
@@ -125,27 +132,27 @@ export function MobileNav() {
             </div>
           </Link>
 
-          {/* Uren */}
-          <Link
-            href="/time"
-            className={cn(
-              "flex flex-col items-center justify-center gap-1 h-16 transition-colors",
-              isActive("/time") ? "text-primary" : "text-muted-foreground"
-            )}
-          >
-            <Clock className="h-5 w-5" />
-            <span className="text-[10px]">{t("time")}</span>
-          </Link>
+          {/* Overige primary (Uren) */}
+          {bottomBarItems.slice(2).map(({ href, icon: Icon, nameKey }) => (
+            <Link
+              key={href}
+              href={href}
+              className={cn(
+                "flex flex-col items-center justify-center gap-1 h-16 transition-colors",
+                isActive(href) ? "text-primary" : "text-muted-foreground",
+              )}
+            >
+              <Icon className="h-5 w-5" />
+              <span className="text-[10px]">{t(nameKey)}</span>
+            </Link>
+          ))}
 
           {/* Meer */}
           <button
             onClick={() => setMoreOpen(!moreOpen)}
             className={cn(
               "flex flex-col items-center justify-center gap-1 h-16 w-full transition-colors",
-              moreOpen ||
-              morePages.some(({ href }) => isActive(href))
-                ? "text-primary"
-                : "text-muted-foreground"
+              moreOpen || moreActive ? "text-primary" : "text-muted-foreground",
             )}
           >
             <MoreHorizontal className="h-5 w-5" />

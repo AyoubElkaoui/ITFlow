@@ -4,68 +4,12 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-import {
-  LayoutDashboard,
-  Ticket,
-  ClipboardList,
-  Receipt,
-  Clock,
-  CalendarCheck,
-  Building2,
-  Monitor,
-  BarChart3,
-  Users,
-  Shield,
-  ScrollText,
-  FileText,
-  BookOpen,
-  Timer,
-  SlidersHorizontal,
-  RefreshCw,
-  ChevronLeft,
-  ChevronRight,
-  Settings,
-  Package,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
-import type { LucideIcon } from "lucide-react";
-
-interface NavItem {
-  nameKey: string;
-  href: string;
-  icon: LucideIcon;
-}
-
-const navigation: NavItem[] = [
-  { nameKey: "dashboard", href: "/", icon: LayoutDashboard },
-  { nameKey: "tickets", href: "/tickets", icon: Ticket },
-  { nameKey: "opdrachten", href: "/tickets/opdrachten", icon: ClipboardList },
-  { nameKey: "teFactureren", href: "/tickets/te-factureren", icon: Receipt },
-  { nameKey: "time", href: "/time", icon: Clock },
-  { nameKey: "dagafsluiting", href: "/dagafsluiting", icon: CalendarCheck },
-  { nameKey: "companies", href: "/companies", icon: Building2 },
-  { nameKey: "contacts", href: "/contacts", icon: Users },
-  { nameKey: "assets", href: "/assets", icon: Monitor },
-  { nameKey: "stock", href: "/stock", icon: Package },
-  { nameKey: "reports", href: "/reports", icon: BarChart3 },
-  { nameKey: "kb", href: "/kb", icon: BookOpen },
-];
-
-const adminNavigation: NavItem[] = [
-  { nameKey: "users", href: "/admin/users", icon: Shield },
-  { nameKey: "templates", href: "/admin/templates", icon: FileText },
-  { nameKey: "sla", href: "/admin/sla", icon: Timer },
-  {
-    nameKey: "customFields",
-    href: "/admin/custom-fields",
-    icon: SlidersHorizontal,
-  },
-  { nameKey: "recurring", href: "/admin/recurring", icon: RefreshCw },
-  { nameKey: "audit", href: "/admin/audit", icon: ScrollText },
-];
+import { navItems, adminItems } from "@/lib/nav-items";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -106,9 +50,9 @@ export function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 space-y-1 p-2">
-        {navigation.map((item) => {
+        {navItems.map((item) => {
           // Use exact match when a more specific sibling route exists
-          const hasMoreSpecificMatch = navigation.some(
+          const hasMoreSpecificMatch = navItems.some(
             (other) =>
               other.href !== item.href &&
               other.href.startsWith(item.href + "/") &&
@@ -146,7 +90,7 @@ export function Sidebar() {
                 {t("admin")}
               </div>
             )}
-            {adminNavigation.map((item) => {
+            {adminItems.map((item) => {
               const isActive = strippedPath.startsWith(item.href);
               return (
                 <Link

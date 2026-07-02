@@ -52,7 +52,6 @@ import {
   UserCircle,
   ShieldCheck,
   MessageSquare,
-  Link2,
   ImageIcon,
   Package,
   Pencil,
@@ -65,9 +64,8 @@ import {
 } from "@/hooks/use-ticket-time-logs";
 import { EditTicketDialog } from "@/components/tickets/edit-ticket-dialog";
 import { TicketTimeLogs } from "@/components/tickets/ticket-time-logs";
-import { TicketMaterials } from "@/components/tickets/ticket-materials";
+import { TicketMaterialEquipment } from "@/components/tickets/ticket-material-equipment";
 import { TicketNotes } from "@/components/tickets/ticket-notes";
-import { TicketAssets } from "@/components/tickets/ticket-assets";
 import { TicketAttachments } from "@/components/tickets/ticket-attachments";
 import { SlaIndicator } from "@/components/tickets/sla-indicator";
 import { Link } from "@/i18n/navigation";
@@ -450,13 +448,9 @@ export default function TicketDetailPage({
                       <MessageSquare className="h-4 w-4 mr-1.5" />
                       {t("notes")}
                     </TabsTrigger>
-                    <TabsTrigger value="assets">
-                      <Link2 className="h-4 w-4 mr-1.5" />
-                      {t("linkedAssets")}
-                    </TabsTrigger>
                     <TabsTrigger value="materials">
                       <Package className="h-4 w-4 mr-1.5" />
-                      {t("materials")}
+                      {t("materialEquipment")}
                     </TabsTrigger>
                     <TabsTrigger value="attachments">
                       <ImageIcon className="h-4 w-4 mr-1.5" />
@@ -559,14 +553,12 @@ export default function TicketDetailPage({
                   <TicketNotes ticketId={tk.id} />
                 </TabsContent>
 
-                {/* Gekoppelde assets */}
-                <TabsContent value="assets" className="mt-4">
-                  <TicketAssets ticketId={tk.id} companyId={tk.company.id} />
-                </TabsContent>
-
-                {/* Materiaal (voorraad verbruikt op dit ticket) */}
+                {/* Materiaal & apparatuur — voorraad-verbruik + gekoppelde assets, één plek */}
                 <TabsContent value="materials" className="mt-4">
-                  <TicketMaterials ticketId={tk.id} />
+                  <TicketMaterialEquipment
+                    ticketId={tk.id}
+                    companyId={tk.company.id}
+                  />
                 </TabsContent>
 
                 {/* Bijlagen */}

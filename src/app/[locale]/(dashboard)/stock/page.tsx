@@ -46,12 +46,14 @@ import {
   History,
   AlertTriangle,
   Boxes,
+  Mail,
 } from "lucide-react";
 import { toast } from "sonner";
 import { EditStockItemDialog } from "@/components/stock/edit-stock-item-dialog";
 import { StockMovementDialog } from "@/components/stock/stock-movement-dialog";
 import { StockAdjustDialog } from "@/components/stock/stock-adjust-dialog";
 import { StockHistoryDrawer } from "@/components/stock/stock-history-drawer";
+import { OrderMailDialog } from "@/components/stock/order-mail-dialog";
 
 // -- Types --------------------------------------------------------------------
 
@@ -130,6 +132,7 @@ export default function StockPage() {
   const [movementItem, setMovementItem] = useState<StockItemRow | null>(null);
   const [adjustItem, setAdjustItem] = useState<StockItemRow | null>(null);
   const [historyItem, setHistoryItem] = useState<StockItemRow | null>(null);
+  const [showOrderMail, setShowOrderMail] = useState(false);
 
   const { data, isLoading } = useStockItems({
     search: search || undefined,
@@ -159,10 +162,16 @@ export default function StockPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t("title")}</h1>
-        <Button onClick={() => setShowCreate(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          {t("addItem")}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setShowOrderMail(true)}>
+            <Mail className="mr-2 h-4 w-4" />
+            Bestellijst mailen
+          </Button>
+          <Button onClick={() => setShowCreate(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            {t("addItem")}
+          </Button>
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -434,6 +443,9 @@ export default function StockPage() {
           stockItemName={historyItem.name}
         />
       )}
+
+      {/* Bestellijst mailen */}
+      <OrderMailDialog open={showOrderMail} onOpenChange={setShowOrderMail} />
     </div>
   );
 }

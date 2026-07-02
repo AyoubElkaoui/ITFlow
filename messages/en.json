@@ -228,7 +228,8 @@
     "opdrachten": "Assignments",
     "noPlanned": "Unplanned",
     "myAssignments": "My assignments",
-    "allAssignees": "All assignees"
+    "allAssignees": "All assignees",
+    "materialEquipment": "Materials & equipment"
   },
   "newTicket": {
     "title": "New Ticket",

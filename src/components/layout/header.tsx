@@ -166,7 +166,7 @@ export function Header() {
   const hasQuery = query.trim().length > 0;
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-2 md:gap-4 border-b border-border bg-card px-3 md:px-6">
+    <header className="pt-safe sticky top-0 z-30 flex min-h-14 items-center gap-2 md:gap-4 border-b border-border bg-card px-3 md:px-6">
       {/* Search trigger */}
       <div className="relative flex-1 max-w-md">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

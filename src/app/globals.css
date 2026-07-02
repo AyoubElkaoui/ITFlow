@@ -131,6 +131,23 @@
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* Safe-area padding utilities (statusbalk boven, home-indicator onder) */
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Verberg de scrollbar maar houd scroll (bv. horizontaal scrollbare TabsList) */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Bottom padding voor mobiele content zodat bottom nav niet voor content zit */
 .mobile-scroll-padding {
   padding-bottom: 1.5rem; /* desktop */

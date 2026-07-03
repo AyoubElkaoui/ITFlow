@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { ticketTimeLogCreateSchema } from "@/lib/validations";
 import { safeLogAudit } from "@/lib/audit";
 import { getSessionUser } from "@/lib/auth-utils";
+import { syncTimeEntryFromLog } from "@/lib/time-sync";
 
 const logSelect = {
   id: true,
@@ -84,6 +85,8 @@ export async function POST(
           where: { id: r.id },
           data: { endedAt: now, minutes: mins },
         });
+        // Gestopte log is nu definitief -> spiegel naar een facturabele TimeEntry.
+        await syncTimeEntryFromLog(tx, { ...r, minutes: mins });
       }
 
       // Zet dit ticket op in-progress (mijn werk-status).
@@ -119,16 +122,21 @@ export async function POST(
   }
 
   const { startedAt, minutes, note } = parsed.data;
-  const log = await prisma.ticketTimeLog.create({
-    data: {
-      ticketId: id,
-      userId: user.id,
-      startedAt,
-      endedAt: new Date(startedAt.getTime() + minutes * 60000),
-      minutes,
-      note: note || null,
-    },
-    select: logSelect,
+  const log = await prisma.$transaction(async (tx) => {
+    const created = await tx.ticketTimeLog.create({
+      data: {
+        ticketId: id,
+        userId: user.id,
+        startedAt,
+        endedAt: new Date(startedAt.getTime() + minutes * 60000),
+        minutes,
+        note: note || null,
+      },
+      select: logSelect,
+    });
+    // Handmatige log is meteen definitief -> spiegel naar een facturabele TimeEntry.
+    await syncTimeEntryFromLog(tx, created);
+    return created;
   });
 
   safeLogAudit({

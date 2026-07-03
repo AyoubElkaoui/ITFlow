@@ -53,6 +53,8 @@ export function useCreateTimeEntry() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["timeEntries"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });
+      // Uren tellen mee in de ticket-detail (totaal + facturatie-lijst) -> ververs mee.
+      qc.invalidateQueries({ queryKey: ["ticket"] });
     },
   });
 }
@@ -69,6 +71,8 @@ export function useUpdateTimeEntry(id: string) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["timeEntries"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });
+      // Uren tellen mee in de ticket-detail (totaal + facturatie-lijst) -> ververs mee.
+      qc.invalidateQueries({ queryKey: ["ticket"] });
     },
   });
 }
@@ -81,6 +85,8 @@ export function useDeleteTimeEntry() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["timeEntries"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });
+      // Uren tellen mee in de ticket-detail (totaal + facturatie-lijst) -> ververs mee.
+      qc.invalidateQueries({ queryKey: ["ticket"] });
     },
   });
 }

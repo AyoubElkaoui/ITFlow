@@ -109,10 +109,11 @@ export function useArchiveTicket() {
           archivedAt: archived ? new Date().toISOString() : null,
         }),
       }),
-    onSuccess: () => {
+    onSuccess: (_data, { id }) => {
       qc.invalidateQueries({ queryKey: ["tickets"] });
       qc.invalidateQueries({ queryKey: ["kanban-tickets"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });
+      qc.invalidateQueries({ queryKey: ["ticket", id] });
     },
   });
 }

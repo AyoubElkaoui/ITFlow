@@ -36,6 +36,10 @@ function invalidate(qc: ReturnType<typeof useQueryClient>, ticketId: string) {
   qc.invalidateQueries({ queryKey: ["ticket", ticketId] });
   qc.invalidateQueries({ queryKey: ["tickets"] });
   qc.invalidateQueries({ queryKey: ["workday"] });
+  // Werk-tijd wordt nu automatisch een facturabele TimeEntry -> ververs de
+  // Uren-pagina en het dashboard mee.
+  qc.invalidateQueries({ queryKey: ["timeEntries"] });
+  qc.invalidateQueries({ queryKey: ["dashboard"] });
 }
 
 // Start een lopende log (stopt automatisch mijn andere lopende log) + zet ticket op IN_PROGRESS.

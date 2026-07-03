@@ -50,3 +50,21 @@ export function zonedDayRange(
   const end = new Date(endGuess.getTime() - tzOffsetMs(endGuess, timeZone));
   return { start, end };
 }
+
+/**
+ * Kalenderdag ("YYYY-MM-DD") van een timestamp in `timeZone`. Bijvoorbeeld: een
+ * werk-log gestart op 23:30 NL hoort bij díe dag, niet bij de UTC-dag erna.
+ */
+export function zonedYmd(
+  date: Date,
+  timeZone: string = APP_TIME_ZONE,
+): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+  return `${get("year")}-${get("month")}-${get("day")}`;
+}

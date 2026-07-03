@@ -206,6 +206,7 @@
     "pendingTasks": "Pending Tasks",
     "equipmentTaken": "Equipment Taken",
     "logTime": "Log Time",
+    "timeAutoHint": "Hours from Work time (timer or manual) are added here automatically as a billable entry. Only add manually below for corrections or hours without a work session.",
     "noTimeEntries": "No time entries yet",
     "created": "Created",
     "updated": "Updated",

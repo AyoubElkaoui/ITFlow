@@ -206,6 +206,7 @@
     "pendingTasks": "Openstaande taken",
     "equipmentTaken": "Meegenomen apparatuur",
     "logTime": "Uren loggen",
+    "timeAutoHint": "Uren uit Werk-tijd (timer of handmatig) komen hier automatisch als facturabele regel bij. Voeg hieronder alleen handmatig toe voor correcties of uren zonder werksessie.",
     "noTimeEntries": "Nog geen uurregistraties",
     "created": "Aangemaakt",
     "updated": "Bijgewerkt",

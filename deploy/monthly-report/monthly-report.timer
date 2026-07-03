@@ -1,0 +1,14 @@
+[Unit]
+Description=Dagelijkse trigger voor de ITFlow maandrapportage (verstuurt alleen op de laatste dag)
+
+[Timer]
+# Elke dag om 20:00 lokale tijd. Het endpoint bepaalt zelf of vandaag de laatste dag
+# van de maand is; alleen dan wordt de mail verstuurd. Zo hoeft de timer geen
+# "laatste dag"-logica te bevatten (die bestaat niet native in systemd).
+OnCalendar=*-*-* 20:00
+# Was de machine uit/in slaapstand om 20:00? Dan alsnog vuren bij eerstvolgende start.
+Persistent=true
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target

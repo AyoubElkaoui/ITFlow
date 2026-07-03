@@ -19,7 +19,9 @@ export async function GET(request: NextRequest) {
   if (from || to) {
     where.createdAt = {
       ...(from && { gte: new Date(from) }),
-      ...(to && { lte: new Date(new Date(to).setHours(23, 59, 59)) }),
+      // Hele einddag meenemen. `setHours()` muteert en geeft een millis-getal terug,
+      // waardoor `new Date(...)` er decennia naast zat — daarom expliciete ISO-string.
+      ...(to && { lte: new Date(`${to}T23:59:59.999Z`) }),
     };
   }
   if (companyId && companyId !== "all") where.companyId = companyId;

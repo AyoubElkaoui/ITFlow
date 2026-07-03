@@ -1,0 +1,8 @@
+[Unit]
+Description=ITFlow maandrapportage per mail (trigger)
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/monthly-report.sh
+# Korte netwerk-call; ruim beveiligd tegen hangen.
+TimeoutStartSec=120

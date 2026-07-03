@@ -260,6 +260,9 @@ model TimeEntry {
   hours       Decimal  @db.Decimal(5, 2)
   description String?
   billable    Boolean  @default(true)
+  // 1-op-1 afgeleid van een TicketTimeLog (werk-tijd). null = handmatig ingevoerde uren.
+  // Uniek zodat de sync idempotent kan upserten en werk-tijd nooit dubbel telt.
+  sourceLogId String?  @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

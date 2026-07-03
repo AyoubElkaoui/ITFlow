@@ -28,7 +28,8 @@ export async function GET(request: NextRequest) {
       ? {
           date: {
             ...(from && { gte: new Date(from) }),
-            ...(to && { lte: new Date(to) }),
+            // Hele einddag meenemen (consistent met de andere datumfilters).
+            ...(to && { lte: new Date(`${to}T23:59:59.999Z`) }),
           },
         }
       : {}),

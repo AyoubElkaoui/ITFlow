@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { ticketTimeLogUpdateSchema } from "@/lib/validations";
 import { safeLogAudit } from "@/lib/audit";
 import { getSessionUser } from "@/lib/auth-utils";
+import { syncTimeEntryFromLog, deleteTimeEntryForLog } from "@/lib/time-sync";
 
 const logSelect = {
   id: true,
@@ -48,10 +49,15 @@ export async function PATCH(
       1,
       Math.round((now.getTime() - new Date(existing.startedAt).getTime()) / 60000),
     );
-    const log = await prisma.ticketTimeLog.update({
-      where: { id: logId },
-      data: { endedAt: now, minutes },
-      select: logSelect,
+    const log = await prisma.$transaction(async (tx) => {
+      const updated = await tx.ticketTimeLog.update({
+        where: { id: logId },
+        data: { endedAt: now, minutes },
+        select: logSelect,
+      });
+      // Log is nu definitief -> spiegel naar een facturabele TimeEntry.
+      await syncTimeEntryFromLog(tx, updated);
+      return updated;
     });
     safeLogAudit({
       entityType: "TicketTimeLog",
@@ -85,10 +91,15 @@ export async function PATCH(
     data.endedAt = new Date(new Date(startedAt).getTime() + minutes * 60000);
   }
 
-  const log = await prisma.ticketTimeLog.update({
-    where: { id: logId },
-    data,
-    select: logSelect,
+  const log = await prisma.$transaction(async (tx) => {
+    const updated = await tx.ticketTimeLog.update({
+      where: { id: logId },
+      data,
+      select: logSelect,
+    });
+    // Uren/omschrijving kunnen zijn gewijzigd -> afgeleide TimeEntry bijwerken.
+    await syncTimeEntryFromLog(tx, updated);
+    return updated;
   });
 
   safeLogAudit({
@@ -124,7 +135,11 @@ export async function DELETE(
     return NextResponse.json({ error: "Time log not found" }, { status: 404 });
   }
 
-  await prisma.ticketTimeLog.delete({ where: { id: logId } });
+  await prisma.$transaction(async (tx) => {
+    // Verwijder eerst de afgeleide TimeEntry, dan de log zelf.
+    await deleteTimeEntryForLog(tx, logId);
+    await tx.ticketTimeLog.delete({ where: { id: logId } });
+  });
 
   safeLogAudit({
     entityType: "TicketTimeLog",

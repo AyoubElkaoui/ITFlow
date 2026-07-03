@@ -466,6 +466,9 @@ export default function TicketDetailPage({
 
                 {/* Uren (facturatie) */}
                 <TabsContent value="time" className="mt-4">
+                  <p className="mb-3 text-xs text-muted-foreground">
+                    {t("timeAutoHint")}
+                  </p>
                   {tk.timeEntries.length > 0 ? (
                     <>
                       {/* Mobiele kaartweergave */}

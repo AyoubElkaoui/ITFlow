@@ -15,14 +15,31 @@ function createPrismaClient(): PrismaClient {
     );
   }
   const url = new URL(dbUrl);
+
+  // Supabase pooler: force TRANSACTION mode (port 6543) instead of SESSION mode
+  // (5432) whenever we hit the pooler host. Session mode caps at ~15 concurrent
+  // clients ("EMAXCONNSESSION - max clients reached in session mode"); on a
+  // serverless host (Vercel) every function instance opens its own pool, so a
+  // handful of concurrent requests exhausts that cap and every DB query 500s.
+  // Transaction mode multiplexes many clients over few connections — the
+  // supported setup for serverless. Self-hosted Postgres (host "db") is untouched.
+  const isSupabasePooler = url.hostname.endsWith("pooler.supabase.com");
+  const port =
+    isSupabasePooler && (Number(url.port) || 5432) === 5432
+      ? 6543
+      : Number(url.port) || 5432;
+
   const pool = new Pool({
     host: url.hostname,
-    port: Number(url.port) || 5432,
+    port,
     user: decodeURIComponent(url.username),
     password: decodeURIComponent(url.password),
     database: url.pathname.slice(1),
-    max: 10,
-    idleTimeoutMillis: 30000,
+    // Small per-instance pool: on serverless each instance holds its own pool,
+    // so keep the connection footprint low. 5 covers the couple of parallel
+    // queries a single request issues (e.g. Promise.all([findMany, count])).
+    max: 5,
+    idleTimeoutMillis: 10000,
     connectionTimeoutMillis: 10000,
     ssl:
       url.searchParams.get("sslmode") === "require"

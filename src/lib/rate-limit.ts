@@ -106,12 +106,16 @@ export function getClientIp(request: Request): string {
   return "unknown";
 }
 
-// Pre-configured rate limiters for common use cases
+// Pre-configured rate limiters for common use cases.
+// Note: general/write are keyed PER authenticated user (see middleware), not per
+// IP, so a whole office behind one NAT/proxy IP doesn't share a single bucket.
+// The limits are sized for a multi-user dashboard that polls (notifications,
+// search, ticket lists) and does bulk operations.
 export const API_RATE_LIMITS = {
-  /** General API: 100 requests per minute */
-  general: { limit: 100, windowSeconds: 60 },
-  /** Auth endpoints (login, 2FA): 10 requests per minute */
+  /** General API (GET), per user: 300 requests per minute */
+  general: { limit: 300, windowSeconds: 60 },
+  /** Auth endpoints (login, 2FA), per IP: 10 requests per minute */
   auth: { limit: 10, windowSeconds: 60 },
-  /** Write operations (POST/PUT/DELETE): 30 requests per minute */
-  write: { limit: 30, windowSeconds: 60 },
+  /** Write operations (POST/PUT/DELETE), per user: 120 requests per minute */
+  write: { limit: 120, windowSeconds: 60 },
 } as const;

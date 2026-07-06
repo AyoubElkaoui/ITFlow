@@ -32,10 +32,26 @@ export async function middleware(request: NextRequest) {
         ? API_RATE_LIMITS.write
         : API_RATE_LIMITS.general;
 
-    const result = checkRateLimit(
-      `${ip}:${isAuthRoute ? "auth" : "api"}`,
-      config,
-    );
+    // Key non-auth routes per authenticated user, NOT per IP: a whole office
+    // behind one NAT/proxy IP (or requests where x-forwarded-for is missing and
+    // getClientIp falls back to "unknown") would otherwise share a single bucket
+    // and collectively trip the limit — locking everyone out of viewing AND
+    // creating tickets. Auth routes stay IP-keyed for brute-force protection.
+    let identifier = `${ip}:${isAuthRoute ? "auth" : "api"}`;
+    if (!isAuthRoute) {
+      const rlToken = await getToken({
+        req: request,
+        secret: process.env.NEXTAUTH_SECRET,
+        cookieName:
+          request.nextUrl.protocol === "https:"
+            ? "__Secure-authjs.session-token"
+            : "authjs.session-token",
+      });
+      const userId = (rlToken?.id ?? rlToken?.sub) as string | undefined;
+      if (userId) identifier = `user:${userId}:api`;
+    }
+
+    const result = checkRateLimit(identifier, config);
 
     if (!result.success) {
       return NextResponse.json(

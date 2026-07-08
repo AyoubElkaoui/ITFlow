@@ -79,9 +79,15 @@ async function buildWeekly(): Promise<WeeklyData> {
       prisma.ticket.count({ where: { status: "IN_PROGRESS", archivedAt: null } }),
       prisma.ticket.count({ where: { status: "WAITING", archivedAt: null } }),
       prisma.ticket.count({ where: { createdAt: { gte: weekAgo } } }),
-      // Klaar-om-te-factureren = Opgelost + Te factureren + Gesloten, nog niet verwerkt.
+      // Deze week klaar-om-te-factureren geworden = Opgelost/Te factureren/Gesloten,
+      // nog niet verwerkt, en in de afgelopen 7 dagen gewijzigd (statuswissel zet
+      // updatedAt op nu). Bewust NIET de hele backlog — alleen de week.
       prisma.ticket.count({
-        where: { status: { in: [...DONE_STATUSES] }, archivedAt: null },
+        where: {
+          status: { in: [...DONE_STATUSES] },
+          archivedAt: null,
+          updatedAt: { gte: weekAgo },
+        },
       }),
       prisma.ticket.findMany({
         where: {
@@ -235,7 +241,7 @@ function renderHtml(d: WeeklyData): string {
                 ${kpi(d.tickets.open, "Open", "#0f172a")}
                 ${kpi(d.tickets.inProgress, "In behandeling", "#0f172a")}
                 ${kpi(d.tickets.newThisWeek, "Nieuw / week", "#2563eb")}
-                ${kpi(d.tickets.teFactureren, "Te factureren", "#7c3aed")}
+                ${kpi(d.tickets.teFactureren, "Te factureren / week", "#7c3aed")}
               </tr>
             </table>
           </td>

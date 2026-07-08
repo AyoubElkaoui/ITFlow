@@ -4,6 +4,7 @@ import { getSessionUser } from "@/lib/auth-utils";
 import { sendEmail } from "@/lib/resend";
 import { logger } from "@/lib/logger";
 import { APP_TIME_ZONE } from "@/lib/tz";
+import { OPEN_STATUSES, DONE_STATUSES } from "@/lib/ticket-status";
 
 // Wekelijks rapport per mail: open tickets + voorraad die besteld moet worden.
 // Bedoeld voor een Vercel Cron (maandag 09:00 NL) — zie vercel.json.
@@ -53,7 +54,7 @@ interface WeeklyData {
     inProgress: number;
     waiting: number;
     newThisWeek: number;
-    resolvedThisWeek: number;
+    teFactureren: number;
     list: {
       ticketNumber: number;
       subject: string;
@@ -72,16 +73,19 @@ async function buildWeekly(): Promise<WeeklyData> {
   const now = new Date();
   const weekAgo = new Date(now.getTime() - 7 * 24 * 3600 * 1000);
 
-  const [open, inProgress, waiting, newThisWeek, resolvedThisWeek, list, items] =
+  const [open, inProgress, waiting, newThisWeek, teFactureren, list, items] =
     await Promise.all([
       prisma.ticket.count({ where: { status: "OPEN", archivedAt: null } }),
       prisma.ticket.count({ where: { status: "IN_PROGRESS", archivedAt: null } }),
       prisma.ticket.count({ where: { status: "WAITING", archivedAt: null } }),
       prisma.ticket.count({ where: { createdAt: { gte: weekAgo } } }),
-      prisma.ticket.count({ where: { resolvedAt: { gte: weekAgo } } }),
+      // Klaar-om-te-factureren = Opgelost + Te factureren + Gesloten, nog niet verwerkt.
+      prisma.ticket.count({
+        where: { status: { in: [...DONE_STATUSES] }, archivedAt: null },
+      }),
       prisma.ticket.findMany({
         where: {
-          status: { in: ["OPEN", "IN_PROGRESS", "WAITING"] },
+          status: { in: [...OPEN_STATUSES] },
           archivedAt: null,
         },
         select: {
@@ -108,7 +112,7 @@ async function buildWeekly(): Promise<WeeklyData> {
       inProgress,
       waiting,
       newThisWeek,
-      resolvedThisWeek,
+      teFactureren,
       list: list.map((t) => ({
         ticketNumber: t.ticketNumber,
         subject: t.subject,
@@ -231,7 +235,7 @@ function renderHtml(d: WeeklyData): string {
                 ${kpi(d.tickets.open, "Open", "#0f172a")}
                 ${kpi(d.tickets.inProgress, "In behandeling", "#0f172a")}
                 ${kpi(d.tickets.newThisWeek, "Nieuw / week", "#2563eb")}
-                ${kpi(d.tickets.resolvedThisWeek, "Opgelost / week", "#16a34a")}
+                ${kpi(d.tickets.teFactureren, "Te factureren", "#7c3aed")}
               </tr>
             </table>
           </td>

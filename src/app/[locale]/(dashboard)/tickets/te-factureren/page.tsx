@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { CompanySelect } from "@/components/shared/company-select";
+import { DONE_STATUS_PARAM } from "@/lib/ticket-status";
 
 interface BillableTicket {
   id: string;
@@ -113,9 +114,9 @@ export default function TeFacturerenPage() {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   const { data, isLoading } = useTickets({
-    // "Opgelost" (RESOLVED) telt als klaar-om-te-factureren, samen met de expliciete
-    // BILLABLE-status. Zodra een ticket op Opgelost staat, verschijnt het hier.
-    status: "RESOLVED,BILLABLE",
+    // Te factureren = alles wat als klaar telt: Opgelost, Te factureren én Gesloten.
+    // Zodra een ticket een van die statussen krijgt, verschijnt het hier.
+    status: DONE_STATUS_PARAM,
     search: search || undefined,
     companyId: companyId !== "all" ? companyId : undefined,
     archived: showArchived ? undefined : "false",

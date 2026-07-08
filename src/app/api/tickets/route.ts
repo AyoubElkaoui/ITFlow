@@ -34,14 +34,30 @@ export async function GET(request: NextRequest) {
         { pcName: { contains: search, mode: "insensitive" as const } },
       ],
     }),
-    ...(status && {
-      status: status as
-        | "OPEN"
-        | "IN_PROGRESS"
-        | "WAITING"
-        | "RESOLVED"
-        | "CLOSED",
-    }),
+    ...(status &&
+      (status.includes(",")
+        ? {
+            // Meerdere statussen (komma-gescheiden), bv. Te factureren = RESOLVED + BILLABLE.
+            status: {
+              in: status.split(",").map((s) => s.trim()) as (
+                | "OPEN"
+                | "IN_PROGRESS"
+                | "WAITING"
+                | "RESOLVED"
+                | "CLOSED"
+                | "BILLABLE"
+              )[],
+            },
+          }
+        : {
+            status: status as
+              | "OPEN"
+              | "IN_PROGRESS"
+              | "WAITING"
+              | "RESOLVED"
+              | "CLOSED"
+              | "BILLABLE",
+          })),
     ...(priority && {
       priority: priority as "LOW" | "NORMAL" | "HIGH" | "URGENT",
     }),

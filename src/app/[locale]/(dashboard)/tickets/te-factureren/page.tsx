@@ -113,7 +113,9 @@ export default function TeFacturerenPage() {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   const { data, isLoading } = useTickets({
-    status: "BILLABLE",
+    // "Opgelost" (RESOLVED) telt als klaar-om-te-factureren, samen met de expliciete
+    // BILLABLE-status. Zodra een ticket op Opgelost staat, verschijnt het hier.
+    status: "RESOLVED,BILLABLE",
     search: search || undefined,
     companyId: companyId !== "all" ? companyId : undefined,
     archived: showArchived ? undefined : "false",

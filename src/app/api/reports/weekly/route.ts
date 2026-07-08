@@ -327,7 +327,7 @@ export async function GET(request: NextRequest) {
     const data = await buildWeekly();
     return NextResponse.json({
       preview: true,
-      to: process.env.WEEKLY_REPORT_TO || process.env.ORDER_MAIL_TO || "ayoub@itfin.nl",
+      to: process.env.WEEKLY_REPORT_TO || process.env.ORDER_MAIL_TO || "administratie@itfin.nl",
       ...data,
     });
   }
@@ -339,7 +339,7 @@ export async function GET(request: NextRequest) {
   }
 
   const to =
-    process.env.WEEKLY_REPORT_TO || process.env.ORDER_MAIL_TO || "ayoub@itfin.nl";
+    process.env.WEEKLY_REPORT_TO || process.env.ORDER_MAIL_TO || "administratie@itfin.nl";
   const data = await buildWeekly();
 
   try {

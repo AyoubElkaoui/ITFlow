@@ -5,20 +5,30 @@ import { createPortalToken } from "@/lib/portal-auth";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { email, password } = body;
+  const identifier =
+    typeof body.identifier === "string"
+      ? body.identifier
+      : typeof body.email === "string"
+        ? body.email
+        : "";
+  const { password } = body;
+  const normalizedIdentifier = identifier.trim().toLowerCase();
 
-  if (!email || !password) {
+  if (!normalizedIdentifier || !password) {
     return NextResponse.json(
-      { error: "Email and password are required" },
+      { error: "Email/username and password are required" },
       { status: 400 },
     );
   }
 
   const contact = await prisma.contact.findFirst({
     where: {
-      email: email.toLowerCase().trim(),
       portalEnabled: true,
       isActive: true,
+      OR: [
+        { email: normalizedIdentifier },
+        { portalUsername: normalizedIdentifier },
+      ],
     },
     include: {
       company: { select: { id: true, name: true } },
@@ -27,7 +37,7 @@ export async function POST(request: NextRequest) {
 
   if (!contact || !contact.password) {
     return NextResponse.json(
-      { error: "Invalid email or password" },
+      { error: "Invalid credentials" },
       { status: 401 },
     );
   }
@@ -35,7 +45,7 @@ export async function POST(request: NextRequest) {
   const isValid = await compare(password, contact.password);
   if (!isValid) {
     return NextResponse.json(
-      { error: "Invalid email or password" },
+      { error: "Invalid credentials" },
       { status: 401 },
     );
   }

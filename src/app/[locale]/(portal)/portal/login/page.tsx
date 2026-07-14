@@ -20,7 +20,7 @@ import {
 export default function PortalLoginPage() {
   const t = useTranslations("portal");
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -34,7 +34,7 @@ export default function PortalLoginPage() {
       const res = await fetch("/api/portal/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ identifier, password }),
       });
 
       if (!res.ok) {
@@ -81,14 +81,14 @@ export default function PortalLoginPage() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">{t("email")}</Label>
+                <Label htmlFor="identifier">{t("emailOrUsername")}</Label>
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder={t("emailPlaceholder")}
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="identifier"
+                  type="text"
+                  placeholder={t("emailOrUsernamePlaceholder")}
+                  autoComplete="username"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
                   required
                 />
               </div>

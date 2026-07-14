@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { hash } from "bcryptjs";
+import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/auth-utils";
 import { safeLogAudit } from "@/lib/audit";
@@ -29,6 +30,27 @@ export async function POST(
   const { id } = await params;
   const body = await request.json().catch(() => ({}));
   const sendEmail = body.sendEmail !== false;
+  const hasUsernameField = typeof body.username === "string";
+  const rawUsername =
+    hasUsernameField ? body.username.trim().toLowerCase() : "";
+  const portalUsername = hasUsernameField
+    ? rawUsername.length > 0
+      ? rawUsername
+      : null
+    : undefined;
+
+  if (
+    typeof portalUsername === "string" &&
+    !/^[a-z0-9._-]{3,50}$/.test(portalUsername)
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Username must be 3-50 characters and contain only letters, numbers, dot, underscore or hyphen",
+      },
+      { status: 400 },
+    );
+  }
 
   const contact = await prisma.contact.findUnique({
     where: { id },
@@ -49,13 +71,24 @@ export async function POST(
   const plainPassword = body.password || generatePassword();
   const hashedPassword = await hash(plainPassword, 10);
 
-  await prisma.contact.update({
-    where: { id },
-    data: {
-      portalEnabled: true,
-      password: hashedPassword,
-    },
-  });
+  try {
+    await prisma.contact.update({
+      where: { id },
+      data: {
+        portalEnabled: true,
+        password: hashedPassword,
+        ...(portalUsername !== undefined ? { portalUsername } : {}),
+      },
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return NextResponse.json(
+        { error: "Username is already in use" },
+        { status: 409 },
+      );
+    }
+    throw error;
+  }
 
   safeLogAudit({
     entityType: "Contact",

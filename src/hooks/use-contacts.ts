@@ -79,7 +79,7 @@ export function useDeleteContact() {
 export function useEnablePortalAccess(id: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: { sendEmail?: boolean; password?: string }) =>
+    mutationFn: (data: { sendEmail?: boolean; password?: string; username?: string }) =>
       fetchJson<{ success: boolean; password: string; emailSent: boolean; emailError?: string }>(
         `/api/contacts/${id}/portal-access`,
         {

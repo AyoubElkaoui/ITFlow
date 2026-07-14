@@ -27,13 +27,13 @@ interface Props {
     id: string;
     name: string;
     email: string | null;
+    portalUsername?: string | null;
     portalEnabled: boolean;
     company: { name: string };
   };
 }
 
 export function PortalAccessDialog({ open, onOpenChange, contact }: Props) {
-  const t = useTranslations("contacts");
   const tp = useTranslations("portalAccess");
   const tc = useTranslations("common");
 
@@ -42,6 +42,7 @@ export function PortalAccessDialog({ open, onOpenChange, contact }: Props) {
 
   const [sendEmail, setSendEmail] = useState(true);
   const [customPassword, setCustomPassword] = useState("");
+  const [username, setUsername] = useState(contact.portalUsername ?? "");
   const [useCustomPassword, setUseCustomPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
@@ -49,6 +50,7 @@ export function PortalAccessDialog({ open, onOpenChange, contact }: Props) {
   function resetState() {
     setSendEmail(true);
     setCustomPassword("");
+    setUsername(contact.portalUsername ?? "");
     setUseCustomPassword(false);
     setShowPassword(false);
     setGeneratedPassword(null);
@@ -58,6 +60,7 @@ export function PortalAccessDialog({ open, onOpenChange, contact }: Props) {
     try {
       const result = await enablePortal.mutateAsync({
         sendEmail,
+        username,
         ...(useCustomPassword && customPassword ? { password: customPassword } : {}),
       });
       setGeneratedPassword(result.password);
@@ -164,6 +167,17 @@ export function PortalAccessDialog({ open, onOpenChange, contact }: Props) {
           {/* Enable form */}
           {!contact.portalEnabled && contact.email && !generatedPassword && (
             <>
+              <div className="space-y-2">
+                <Label htmlFor="username">{tp("username")}</Label>
+                <Input
+                  id="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder={tp("usernamePlaceholder")}
+                  autoComplete="username"
+                />
+              </div>
+
               <div className="flex items-center gap-2">
                 <Checkbox
                   id="useCustomPassword"
@@ -202,6 +216,19 @@ export function PortalAccessDialog({ open, onOpenChange, contact }: Props) {
                 </Label>
               </div>
             </>
+          )}
+
+          {contact.portalEnabled && !generatedPassword && (
+            <div className="space-y-2">
+              <Label htmlFor="username-enabled">{tp("username")}</Label>
+              <Input
+                id="username-enabled"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder={tp("usernamePlaceholder")}
+                autoComplete="username"
+              />
+            </div>
           )}
 
           {/* Actions */}

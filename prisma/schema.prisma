@@ -167,6 +167,7 @@ model Contact {
   companyId     String
   name          String
   email         String?
+  portalUsername String? @unique
   phone         String?
   function      String?
   isPrimary     Boolean  @default(false)
@@ -181,6 +182,7 @@ model Contact {
 
   @@index([companyId])
   @@index([email])
+  @@index([portalUsername])
 }
 
 model Ticket {

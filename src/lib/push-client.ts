@@ -20,10 +20,24 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   return output;
 }
 
+// Haal de service-worker-registratie op. Registreert expliciet (idempotent) i.p.v.
+// `navigator.serviceWorker.ready` te awaiten — die belofte blijft NAMELIJK
+// oneindig hangen als er nog geen actieve worker is (statuskaart bleef laden).
+async function getRegistration(): Promise<ServiceWorkerRegistration | null> {
+  if (!isPushSupported()) return null;
+  try {
+    const existing = await navigator.serviceWorker.getRegistration();
+    if (existing) return existing;
+    return await navigator.serviceWorker.register("/sw.js");
+  } catch {
+    return null;
+  }
+}
+
 /** Is dit apparaat momenteel geabonneerd op push? */
 export async function getPushSubscription(): Promise<PushSubscription | null> {
-  if (!isPushSupported()) return null;
-  const reg = await navigator.serviceWorker.ready;
+  const reg = await getRegistration();
+  if (!reg) return null;
   return reg.pushManager.getSubscription();
 }
 
@@ -47,7 +61,10 @@ export async function enablePush(): Promise<void> {
     throw new Error("Push is niet geconfigureerd op de server (VAPID ontbreekt).");
   }
 
-  const reg = await navigator.serviceWorker.ready;
+  const reg = await getRegistration();
+  if (!reg) {
+    throw new Error("Service worker kon niet worden geregistreerd.");
+  }
   const existing = await reg.pushManager.getSubscription();
   const sub =
     existing ??

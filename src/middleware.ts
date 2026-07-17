@@ -10,8 +10,18 @@ const intlMiddleware = createIntlMiddleware(routing);
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Skip static files
-  if (pathname.startsWith("/_next") || pathname === "/favicon.ico") {
+  // Skip static files + PWA-assets. De service worker MOET onbewerkt (200) op
+  // /sw.js geserveerd worden — anders redirect de auth/i18n-middleware 'm naar
+  // login en kan de browser 'm niet registreren (geen PWA, geen push).
+  if (
+    pathname.startsWith("/_next") ||
+    pathname === "/favicon.ico" ||
+    pathname === "/sw.js" ||
+    pathname === "/sw.js.map" ||
+    pathname.startsWith("/swe-worker") ||
+    pathname === "/manifest.webmanifest" ||
+    pathname === "/robots.txt"
+  ) {
     return NextResponse.next();
   }
 

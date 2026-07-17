@@ -3,6 +3,6 @@
   "framework": "nextjs",
   "crons": [
     { "path": "/api/reports/weekly", "schedule": "0 7 * * 1" },
-    { "path": "/api/dagafsluiting/reminder", "schedule": "0 15 * * 1-5" }
+    { "path": "/api/dagafsluiting/reminder", "schedule": "30 14 * * 1-5" }
   ]
 }

@@ -3,10 +3,10 @@
 import { usePathname } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-import { Plus, MoreHorizontal, X } from "lucide-react";
+import { Plus, MoreHorizontal, X, Settings } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { bottomBarItems, moreItems, adminItems } from "@/lib/nav-items";
 
 export function MobileNav() {
@@ -16,6 +16,23 @@ export function MobileNav() {
   const isAdmin =
     (session?.user as { role?: string } | undefined)?.role === "ADMIN";
   const [moreOpen, setMoreOpen] = useState(false);
+
+  // Verberg de vaste onderbalk zodra het schermtoetsenbord open is. Op iOS Safari
+  // springt een `position: fixed` balk anders naar het midden van het scherm (het
+  // "blauwe blok" = de FAB) terwijl je typt.
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const onResize = () => {
+      const open = vv.height < window.innerHeight - 120;
+      setKeyboardOpen(open);
+      if (open) setMoreOpen(false);
+    };
+    vv.addEventListener("resize", onResize);
+    onResize();
+    return () => vv.removeEventListener("resize", onResize);
+  }, []);
 
   const stripped = pathname.replace(/^\/(nl|en)/, "") || "/";
 
@@ -27,6 +44,9 @@ export function MobileNav() {
   // Alles wat niet in de bottom-bar staat (+ admin voor admins) valt onder "Meer".
   const overflow = [...moreItems, ...(isAdmin ? adminItems : [])];
   const moreActive = overflow.some((i) => isActive(i.href));
+
+  // Toetsenbord open -> hele onderbalk weg (voorkomt het zwevende blauwe blok).
+  if (keyboardOpen) return null;
 
   return (
     <>
@@ -76,7 +96,7 @@ export function MobileNav() {
               <div className="px-4 pb-1 pt-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 {t("admin")}
               </div>
-              <div className="grid grid-cols-4 gap-1 px-4 pb-4">
+              <div className="grid grid-cols-4 gap-1 px-4 pb-2">
                 {adminItems.map(({ href, icon: Icon, nameKey }) => (
                   <Link
                     key={href}
@@ -98,6 +118,23 @@ export function MobileNav() {
               </div>
             </>
           )}
+
+          {/* Instellingen (o.a. telefoonmeldingen) — ontbrak op mobiel */}
+          <div className="border-t border-border p-2">
+            <Link
+              href="/settings"
+              onClick={() => setMoreOpen(false)}
+              className={cn(
+                "flex items-center gap-3 rounded-xl px-3 py-3 transition-colors",
+                isActive("/settings")
+                  ? "bg-primary/10 text-primary"
+                  : "text-foreground hover:bg-muted",
+              )}
+            >
+              <Settings className="h-5 w-5" />
+              <span className="text-sm font-medium">{t("settings")}</span>
+            </Link>
+          </div>
         </div>
       )}
 

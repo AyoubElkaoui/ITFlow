@@ -437,7 +437,7 @@ export default function TicketDetailPage({
             <CardContent className="pt-6">
               <Tabs defaultValue="timelogs">
                 <div className="overflow-x-auto">
-                  <TabsList className="w-full [&_[data-slot=tabs-trigger]]:flex-none">
+                  <TabsList className="h-auto flex-wrap justify-start md:h-9 md:flex-nowrap [&_[data-slot=tabs-trigger]]:flex-none">
                     <TabsTrigger value="timelogs">
                       <Clock className="h-4 w-4 mr-1.5" />
                       {t("workTime")}

@@ -5,7 +5,10 @@ import { prisma } from "@/lib/prisma";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
-  session: { strategy: "jwt" },
+  // Expliciete levensduur → persistente cookie (Max-Age gezet). Zonder dit kan de
+  // cookie een sessie-cookie worden die iOS bij het sluiten van de PWA wist,
+  // waardoor je bij elke herstart opnieuw moet inloggen.
+  session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
   pages: {
     signIn: "/login",
   },

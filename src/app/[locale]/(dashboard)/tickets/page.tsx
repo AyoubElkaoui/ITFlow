@@ -88,22 +88,23 @@ export default function TicketsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">{t("title")}</h1>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Link href="/tickets/te-factureren">
-            <Button variant="outline">
+            <Button variant="outline" size="sm" className="md:h-9">
               <Receipt className="mr-2 h-4 w-4" />
               {tf("title")}
             </Button>
           </Link>
           <Link href="/tickets/board">
-            <Button variant="outline">
+            <Button variant="outline" size="sm" className="md:h-9">
               <Kanban className="mr-2 h-4 w-4" />
               {t("boardView")}
             </Button>
           </Link>
-          <Link href="/tickets/new">
+          {/* Op mobiel dekt de blauwe + (FAB) dit al af */}
+          <Link href="/tickets/new" className="hidden md:block">
             <Button>
               <Plus className="mr-2 h-4 w-4" />
               {t("newTicket")}

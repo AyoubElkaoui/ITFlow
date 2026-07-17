@@ -10,18 +10,12 @@ const intlMiddleware = createIntlMiddleware(routing);
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Skip static files + PWA-assets. De service worker MOET onbewerkt (200) op
-  // /sw.js geserveerd worden — anders redirect de auth/i18n-middleware 'm naar
-  // login en kan de browser 'm niet registreren (geen PWA, geen push).
-  if (
-    pathname.startsWith("/_next") ||
-    pathname === "/favicon.ico" ||
-    pathname === "/sw.js" ||
-    pathname === "/sw.js.map" ||
-    pathname.startsWith("/swe-worker") ||
-    pathname === "/manifest.webmanifest" ||
-    pathname === "/robots.txt"
-  ) {
+  // Skip _next én ALLE statische bestanden met een extensie (.js .svg .png .ico
+  // .webmanifest .txt ...). Cruciaal: de service worker precachet publieke
+  // assets (o.a. de default *.svg); haalt de auth/i18n-middleware die door de
+  // login-redirect, dan faalt `cache.addAll` en installeert de SW NOOIT →
+  // geen PWA en geen push. Een pad met een punt in het laatste segment = bestand.
+  if (pathname.startsWith("/_next") || /\.[^/]+$/.test(pathname)) {
     return NextResponse.next();
   }
 

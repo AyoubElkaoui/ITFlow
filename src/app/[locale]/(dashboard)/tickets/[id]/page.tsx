@@ -350,7 +350,7 @@ export default function TicketDetailPage({
       {/* Info Cards */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Card>
-          <CardContent className="pt-6">
+          <CardContent>
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
               <Building2 className="h-4 w-4" />
               {t("company")}
@@ -364,7 +364,7 @@ export default function TicketDetailPage({
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent>
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
               <User className="h-4 w-4" />
               {t("contact")}
@@ -375,7 +375,7 @@ export default function TicketDetailPage({
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent>
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
               <Tag className="h-4 w-4" />
               {t("category")}
@@ -386,7 +386,7 @@ export default function TicketDetailPage({
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent>
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
               <Clock className="h-4 w-4" />
               {t("timeLogged")}

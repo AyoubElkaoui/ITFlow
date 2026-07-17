@@ -11,15 +11,5 @@ export async function GET() {
   }
 
   const key = process.env.VAPID_PUBLIC_KEY ?? null;
-  // Diagnose (geen geheimen): laat zien of de server-side sleutels aanwezig zijn.
-  // Zonder VAPID_PRIVATE_KEY kan de server geen push versturen (subscribe lukt wel).
-  return NextResponse.json({
-    key,
-    diag: {
-      hasPublic: !!process.env.VAPID_PUBLIC_KEY,
-      hasPrivate: !!process.env.VAPID_PRIVATE_KEY,
-      subject: process.env.VAPID_SUBJECT ?? null,
-      publicKeyPrefix: key ? key.slice(0, 12) : null,
-    },
-  });
+  return NextResponse.json({ key });
 }

@@ -9,6 +9,15 @@ export function isPushSupported(): boolean {
   );
 }
 
+// Race een belofte tegen een timeout zodat een hangende SW-activatie niet
+// eeuwig blijft wachten maar een leesbare fout geeft.
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error(message)), ms)),
+  ]);
+}
+
 function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
@@ -61,10 +70,18 @@ export async function enablePush(): Promise<void> {
     throw new Error("Push is niet geconfigureerd op de server (VAPID ontbreekt).");
   }
 
-  const reg = await getRegistration();
-  if (!reg) {
+  const registered = await getRegistration();
+  if (!registered) {
     throw new Error("Service worker kon niet worden geregistreerd.");
   }
+  // subscribe() vereist een ACTIEVE service worker; net na registratie is die
+  // nog aan het installeren. Wacht tot 'ie actief is (met timeout-vangnet).
+  const reg = await withTimeout(
+    navigator.serviceWorker.ready,
+    15000,
+    "Service worker werd niet actief. Herlaad de pagina en probeer opnieuw.",
+  );
+
   const existing = await reg.pushManager.getSubscription();
   const sub =
     existing ??

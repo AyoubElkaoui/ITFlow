@@ -156,7 +156,7 @@ export async function POST(request: NextRequest) {
 
   // Notify assigned user (if different from creator)
   if (ticket.assignedToId && ticket.assignedToId !== user.id) {
-    createNotification({
+    await createNotification({
       userId: ticket.assignedToId,
       type: "ticket",
       title: `Nieuw ticket toegewezen: ${ticket.subject}`,
@@ -166,7 +166,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Notify admins about new ticket
-  notifyAdmins({
+  await notifyAdmins({
     type: "ticket",
     title: `Nieuw ticket: ${ticket.subject}`,
     message: `Aangemaakt door ${user.name} voor ${ticket.company?.shortName}`,

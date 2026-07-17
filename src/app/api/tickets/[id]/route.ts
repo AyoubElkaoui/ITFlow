@@ -100,7 +100,7 @@ export async function PATCH(
     parsed.data.assignedToId !== oldTicket?.assignedToId &&
     parsed.data.assignedToId !== user.id
   ) {
-    createNotification({
+    await createNotification({
       userId: parsed.data.assignedToId,
       type: "ticket",
       title: `Ticket toegewezen: ${ticket.subject}`,
@@ -116,7 +116,7 @@ export async function PATCH(
     oldTicket?.createdById &&
     oldTicket.createdById !== user.id
   ) {
-    createNotification({
+    await createNotification({
       userId: oldTicket.createdById,
       type: "ticket",
       title: `Ticket bijgewerkt: ${ticket.subject}`,

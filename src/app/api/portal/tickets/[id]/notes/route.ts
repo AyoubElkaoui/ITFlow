@@ -94,7 +94,7 @@ export async function POST(
   });
 
   // Notify admins about new portal message
-  notifyAdmins({
+  await notifyAdmins({
     type: "ticket_note",
     title: `Nieuw bericht op: ${ticket.subject}`,
     message: `${session.contactName} (${session.companyName}) stuurde een bericht`,

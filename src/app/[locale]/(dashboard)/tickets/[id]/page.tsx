@@ -142,6 +142,7 @@ export default function TicketDetailPage({
   const [timeBillable, setTimeBillable] = useState(true);
   const [isLoggingTime, setIsLoggingTime] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("timelogs");
 
   if (isLoading) {
     return (
@@ -435,31 +436,46 @@ export default function TicketDetailPage({
           {/* Secundaire blokken compact in tabs */}
           <Card>
             <CardContent className="pt-6">
-              <Tabs defaultValue="timelogs">
-                <div className="overflow-x-auto">
-                  <TabsList className="h-auto flex-wrap justify-start md:h-9 md:flex-nowrap [&_[data-slot=tabs-trigger]]:flex-none">
-                    <TabsTrigger value="timelogs">
-                      <Clock className="h-4 w-4 mr-1.5" />
-                      {t("workTime")}
-                    </TabsTrigger>
-                    <TabsTrigger value="time">
-                      <Clock className="h-4 w-4 mr-1.5" />
-                      {t("timeEntries")}
-                    </TabsTrigger>
-                    <TabsTrigger value="notes">
-                      <MessageSquare className="h-4 w-4 mr-1.5" />
-                      {t("notes")}
-                    </TabsTrigger>
-                    <TabsTrigger value="materials">
-                      <Package className="h-4 w-4 mr-1.5" />
-                      {t("materialEquipment")}
-                    </TabsTrigger>
-                    <TabsTrigger value="attachments">
-                      <ImageIcon className="h-4 w-4 mr-1.5" />
-                      {t("attachments")}
-                    </TabsTrigger>
-                  </TabsList>
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                {/* Mobiel: dropdown — 5 tab-secties passen niet netjes op een
+                    telefoon, dus kies je de sectie via een keuzemenu. */}
+                <div className="md:hidden">
+                  <Select value={activeTab} onValueChange={setActiveTab}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="timelogs">{t("workTime")}</SelectItem>
+                      <SelectItem value="time">{t("timeEntries")}</SelectItem>
+                      <SelectItem value="notes">{t("notes")}</SelectItem>
+                      <SelectItem value="materials">{t("materialEquipment")}</SelectItem>
+                      <SelectItem value="attachments">{t("attachments")}</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
+                {/* Desktop: volledige tab-balk */}
+                <TabsList className="hidden md:inline-flex">
+                  <TabsTrigger value="timelogs">
+                    <Clock className="h-4 w-4 mr-1.5" />
+                    {t("workTime")}
+                  </TabsTrigger>
+                  <TabsTrigger value="time">
+                    <Clock className="h-4 w-4 mr-1.5" />
+                    {t("timeEntries")}
+                  </TabsTrigger>
+                  <TabsTrigger value="notes">
+                    <MessageSquare className="h-4 w-4 mr-1.5" />
+                    {t("notes")}
+                  </TabsTrigger>
+                  <TabsTrigger value="materials">
+                    <Package className="h-4 w-4 mr-1.5" />
+                    {t("materialEquipment")}
+                  </TabsTrigger>
+                  <TabsTrigger value="attachments">
+                    <ImageIcon className="h-4 w-4 mr-1.5" />
+                    {t("attachments")}
+                  </TabsTrigger>
+                </TabsList>
 
                 {/* Werk-tijd (TicketTimeLog — bron voor dagafsluiting) */}
                 <TabsContent value="timelogs" className="mt-4">

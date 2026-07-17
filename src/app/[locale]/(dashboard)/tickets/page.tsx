@@ -195,6 +195,7 @@ export default function TicketsPage() {
                 <SelectItem value="all">{tsrc("label")}</SelectItem>
                 <SelectItem value="OPDRACHT">{tsrc("OPDRACHT")}</SelectItem>
                 <SelectItem value="INBOUND">{tsrc("INBOUND")}</SelectItem>
+                <SelectItem value="PORTAL">{tsrc("PORTAL")}</SelectItem>
                 <SelectItem value="OVERIG">{tsrc("OVERIG")}</SelectItem>
               </SelectContent>
             </Select>

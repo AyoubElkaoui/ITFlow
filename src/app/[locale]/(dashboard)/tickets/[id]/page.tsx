@@ -282,10 +282,12 @@ export default function TicketDetailPage({
                   className={
                     tk.source === "OPDRACHT"
                       ? "border-indigo-400 text-indigo-600 dark:text-indigo-400"
-                      : "border-teal-400 text-teal-600 dark:text-teal-400"
+                      : tk.source === "PORTAL"
+                        ? "border-amber-400 text-amber-600 dark:text-amber-400"
+                        : "border-teal-400 text-teal-600 dark:text-teal-400"
                   }
                 >
-                  {tsrc(tk.source as "OPDRACHT" | "INBOUND")}
+                  {tsrc(tk.source as "OPDRACHT" | "INBOUND" | "PORTAL")}
                 </Badge>
               )}
             </div>

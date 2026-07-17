@@ -113,6 +113,7 @@ export async function POST(request: NextRequest) {
         ? category
         : null,
       status: "OPEN",
+      source: "PORTAL", // door de klant zelf aangemaakt — herkenbaar in de staff-UI
       createdById: adminUser.id,
     },
     select: {

@@ -41,6 +41,7 @@ enum TicketCategory {
 enum TicketSource {
   OPDRACHT // "ga naar klant X, doe Y" — vaak gepland
   INBOUND // klant belt/vraagt online — ad hoc
+  PORTAL // door de klant zelf aangemaakt via het klantportaal (automatisch gezet)
   OVERIG
 }
 

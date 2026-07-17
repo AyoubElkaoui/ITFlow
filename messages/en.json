@@ -894,6 +894,7 @@
     "label": "Source",
     "OPDRACHT": "Assignment",
     "INBOUND": "Inbound",
-    "OVERIG": "Other"
+    "OVERIG": "Other",
+    "PORTAL": "Customer portal"
   }
 }

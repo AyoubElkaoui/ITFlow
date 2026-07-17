@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
     ...(companyId && { companyId }),
     ...(assignedToId && { assignedToId }),
     ...(source && {
-      source: source as "OPDRACHT" | "INBOUND" | "OVERIG",
+      source: source as "OPDRACHT" | "INBOUND" | "PORTAL" | "OVERIG",
     }),
     ...(archived === "true"
       ? { archivedAt: { not: null } }

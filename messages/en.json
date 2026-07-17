@@ -819,7 +819,7 @@
     "date": "Date",
     "start": "Start time",
     "netHours": "Net hours",
-    "noPause": "No break (8.5h)",
+    "noPause": "No break",
     "client": "Client",
     "hours": "Hours",
     "description": "Description",
@@ -842,7 +842,8 @@
     "remove": "Remove",
     "proposalHint": "Proposed from ticket time: {proposal}h (net {net}h). Adjust hours to your net day.",
     "tabClose": "Close day",
-    "tabOverview": "Overview"
+    "tabOverview": "Overview",
+    "pauseHint": "(7.5h with break · 8h without)"
   },
   "urenOverzicht": {
     "title": "Hours overview",

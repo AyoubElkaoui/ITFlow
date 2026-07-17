@@ -55,7 +55,7 @@ export function DayCloseView() {
 
   const [date, setDate] = useState(() => format(new Date(), "yyyy-MM-dd"));
   const [start, setStart] = useState("09:00");
-  const [netHours, setNetHours] = useState(8);
+  const [netHours, setNetHours] = useState(7.5);
   const [rows, setRows] = useState<Row[]>([]);
 
   const { data, isLoading, dataUpdatedAt } = useWorkDay(date);
@@ -121,8 +121,9 @@ export function DayCloseView() {
     setRows((prev) => prev.filter((_, i) => i !== index));
   }
 
+  // Mét pauze = 7,5u (standaard); geen pauze = 8u.
   function toggleNoPause(checked: boolean) {
-    setNetHours(checked ? 8.5 : 8);
+    setNetHours(checked ? 8 : 7.5);
   }
 
   async function copyDistribution() {
@@ -208,11 +209,14 @@ export function DayCloseView() {
           <div className="flex items-center gap-2 pb-2">
             <Switch
               id="noPause"
-              checked={target === 8.5}
+              checked={target === 8}
               onCheckedChange={toggleNoPause}
             />
             <Label htmlFor="noPause" className="cursor-pointer">
               {t("noPause")}
+              <span className="ml-1 text-xs text-muted-foreground">
+                {t("pauseHint")}
+              </span>
             </Label>
           </div>
         </CardContent>

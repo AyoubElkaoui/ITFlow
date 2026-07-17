@@ -24,10 +24,11 @@ interface SyncableLog {
   note: string | null;
 }
 
-// Rauwe minuten -> uren, afgerond op kwartier (Clockwise-eenheid), minimaal 0,25u
-// zodat een korte log niet naar 0 afrondt (TimeEntry.hours moet > 0 zijn).
+// Rauwe minuten -> uren, ALTIJD naar boven afgerond op een kwartier (Clockwise-
+// eenheid): we werken in kwartieren, dus ook 5 minuten telt als 0,25u. Minimaal
+// 0,25u (TimeEntry.hours moet > 0 zijn).
 export function minutesToBillableHours(minutes: number): number {
-  return Math.max(0.25, Math.round((minutes / 60) * 4) / 4);
+  return Math.max(0.25, Math.ceil((minutes / 60) * 4) / 4);
 }
 
 /**

@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma";
 import { workDayCloseSchema } from "@/lib/validations";
 import { safeLogAudit } from "@/lib/audit";
 import { getSessionUser } from "@/lib/auth-utils";
-import { zonedDayRange } from "@/lib/tz";
 import {
   generateClockwiseFormat,
   sumHours,
@@ -105,57 +104,52 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  // Voorstel uit mijn werk-tijd (TicketTimeLog) van die dag, o.b.v. startedAt.
-  // Kalenderdag in NL-tijd, tijdzone-veilig.
-  const { start: dayStart, end: dayEnd } = zonedDayRange(dateParam);
-  const now = new Date();
-  const logs = await prisma.ticketTimeLog.findMany({
-    where: { userId: user.id, startedAt: { gte: dayStart, lt: dayEnd } },
+  // Voorstel uit mijn geregistreerde uren (TimeEntry) van die dag. Werk-tijd
+  // (TicketTimeLog) wordt automatisch een TimeEntry, dus TimeEntry is de complete
+  // bron — handmatige uren én timer-uren, zonder dubbeltellen.
+  const day = dateOnly(dateParam);
+  const entries = await prisma.timeEntry.findMany({
+    where: { userId: user.id, date: day },
     select: {
-      minutes: true,
-      startedAt: true,
-      endedAt: true,
-      ticket: {
-        select: { subject: true, company: { select: companySelect } },
-      },
+      hours: true,
+      description: true,
+      company: { select: companySelect },
+      ticket: { select: { subject: true } },
     },
-    orderBy: { startedAt: "asc" },
   });
 
-  // Groepeer per klant: som RAUWE minuten (lopende log = tot nu), omschrijving = subjects.
+  // Groepeer per klant: som de uren, omschrijving = distinct notities/subjects.
   interface Acc {
     company: CompanyLite;
-    minutes: number;
-    subjects: string[];
+    hours: number;
+    descriptions: string[];
   }
   const byCompany = new Map<string, Acc>();
-  for (const log of logs) {
-    const company = log.ticket.company;
-    const endMs = log.endedAt ? new Date(log.endedAt).getTime() : now.getTime();
-    const mins =
-      log.minutes ??
-      Math.max(1, Math.round((endMs - new Date(log.startedAt).getTime()) / 60000));
+  for (const e of entries) {
+    const company = e.company;
     const acc = byCompany.get(company.id) ?? {
       company,
-      minutes: 0,
-      subjects: [],
+      hours: 0,
+      descriptions: [],
     };
-    acc.minutes += mins;
-    if (log.ticket.subject && !acc.subjects.includes(log.ticket.subject)) {
-      acc.subjects.push(log.ticket.subject);
+    acc.hours += Number(e.hours);
+    const label = e.description?.trim() || e.ticket?.subject?.trim();
+    if (label && !acc.descriptions.includes(label)) {
+      acc.descriptions.push(label);
     }
     byCompany.set(company.id, acc);
   }
 
-  // Minuten -> uren, per klant afgerond op 0.25 (rauwe minuten blijven bewaard).
+  // Uren per klant naar boven afgerond op 0.25 (we werken in kwartieren).
   const allocations: AllocationDTO[] = [...byCompany.values()].map((acc) => ({
     companyId: acc.company.id,
     company: acc.company,
-    hours: Math.round((acc.minutes / 60) * 4) / 4,
-    description: acc.subjects.join(", "),
+    hours: Math.ceil(acc.hours * 4) / 4,
+    description: acc.descriptions.join(", "),
   }));
 
-  const netHours = 8;
+  // Standaard werkdag = 7,5u netto (mét pauze). "Geen pauze" = 8u (in de UI).
+  const netHours = 7.5;
   const proposalHours = Math.round(sumHours(allocations) * 4) / 4;
 
   return NextResponse.json({

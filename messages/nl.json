@@ -819,7 +819,7 @@
     "date": "Datum",
     "start": "Starttijd",
     "netHours": "Netto uren",
-    "noPause": "Geen pauze (8,5u)",
+    "noPause": "Geen pauze",
     "client": "Klant",
     "hours": "Uren",
     "description": "Omschrijving",
@@ -842,7 +842,8 @@
     "remove": "Verwijderen",
     "proposalHint": "Voorstel uit ticket-tijd: {proposal}u (netto {net}u). Pas de uren aan naar je netto-dag.",
     "tabClose": "Afsluiten",
-    "tabOverview": "Overzicht"
+    "tabOverview": "Overzicht",
+    "pauseHint": "(7,5u met pauze · 8u zonder)"
   },
   "urenOverzicht": {
     "title": "Uren-overzicht",

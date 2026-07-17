@@ -101,7 +101,42 @@ export default function OpdrachtenPage() {
               <h3 className="text-lg font-medium">{t("noTickets")}</h3>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            {/* Mobiel: kaarten */}
+            <div className="md:hidden space-y-2">
+              {tickets.map((tk) => {
+                const planned = tk.plannedFor ? new Date(tk.plannedFor) : null;
+                const overdue = planned ? isBefore(planned, today) : false;
+                return (
+                  <Link
+                    key={tk.id}
+                    href={`/tickets/${tk.id}`}
+                    className="block rounded-lg border p-3"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="font-medium">{tk.subject}</span>
+                      <StatusBadge status={tk.status} />
+                    </div>
+                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                      <span className="font-mono">
+                        #{String(tk.ticketNumber).padStart(3, "0")}
+                      </span>
+                      <span>{tk.company.shortName}</span>
+                      {planned ? (
+                        <span className={cn("tabular-nums", overdue && "font-medium text-red-600")}>
+                          {format(planned, "dd MMM yyyy")}
+                        </span>
+                      ) : (
+                        <span>{t("noPlanned")}</span>
+                      )}
+                      {tk.assignedTo?.name && <span>· {tk.assignedTo.name}</span>}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+            {/* Desktop: tabel */}
+            <div className="hidden md:block overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -166,6 +201,7 @@ export default function OpdrachtenPage() {
                 </TableBody>
               </Table>
             </div>
+            </>
           )}
         </CardContent>
       </Card>

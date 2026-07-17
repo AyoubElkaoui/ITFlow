@@ -175,7 +175,7 @@ export default function StockPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-3 gap-3 md:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
         <Card>
           <CardContent className="pt-4 px-4 pb-4">
             <div className="flex items-center gap-2">

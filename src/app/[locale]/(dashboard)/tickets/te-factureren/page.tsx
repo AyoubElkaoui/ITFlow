@@ -260,10 +260,10 @@ export default function TeFacturerenPage() {
                       <ChevronDown
                         className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "" : "-rotate-90"}`}
                       />
-                      <span className="font-medium">
+                      <span className="font-medium truncate">
                         {group.company.shortName}
                       </span>
-                      <span className="text-sm text-muted-foreground">
+                      <span className="hidden truncate text-sm text-muted-foreground sm:block">
                         {group.company.name}
                       </span>
                       <Badge variant="secondary" className="ml-1">

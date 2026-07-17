@@ -8,7 +8,7 @@ import {
   usePortalTicketNotes,
   useCreatePortalNote,
 } from "@/hooks/use-portal";
-import { ArrowLeft, Send } from "lucide-react";
+import { ArrowLeft, Paperclip, Send } from "lucide-react";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 
@@ -55,6 +55,13 @@ export default function PortalTicketDetailPage({
           closedAt: string | null;
           contact: { name: string } | null;
           assignedTo: { name: string } | null;
+          attachments: Array<{
+            id: string;
+            url: string;
+            name: string;
+            mimeType: string;
+            size: number;
+          }>;
         }
       | undefined;
     isLoading: boolean;
@@ -149,6 +156,45 @@ export default function PortalTicketDetailPage({
               <p className="text-sm whitespace-pre-wrap">
                 {ticket.description}
               </p>
+            </div>
+          )}
+
+          {ticket.attachments && ticket.attachments.length > 0 && (
+            <div>
+              <p className="text-sm font-medium text-muted-foreground mb-2">
+                {t("attachments")}
+              </p>
+              <div className="flex flex-wrap gap-3">
+                {ticket.attachments.map((att) =>
+                  att.mimeType.startsWith("image/") ? (
+                    <a
+                      key={att.id}
+                      href={att.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={att.url}
+                        alt={att.name}
+                        className="h-24 w-24 rounded-md border object-cover"
+                      />
+                    </a>
+                  ) : (
+                    <a
+                      key={att.id}
+                      href={att.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-muted"
+                    >
+                      <Paperclip className="h-4 w-4" />
+                      <span className="truncate max-w-[12rem]">{att.name}</span>
+                    </a>
+                  ),
+                )}
+              </div>
             </div>
           )}
 

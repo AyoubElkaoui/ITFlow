@@ -32,6 +32,10 @@ export async function GET(
       closedAt: true,
       contact: { select: { id: true, name: true } },
       assignedTo: { select: { id: true, name: true } },
+      attachments: {
+        select: { id: true, url: true, name: true, mimeType: true, size: true },
+        orderBy: { createdAt: "asc" },
+      },
     },
   });
 

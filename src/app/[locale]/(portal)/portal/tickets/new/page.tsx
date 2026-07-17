@@ -1,9 +1,10 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { useCreatePortalTicket } from "@/hooks/use-portal";
+import { Paperclip, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,18 +35,49 @@ export default function PortalNewTicketPage() {
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("NORMAL");
   const [category, setCategory] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const MAX_SIZE = 10 * 1024 * 1024;
+
+  function addFiles(selected: FileList | null) {
+    if (!selected) return;
+    const next = Array.from(selected).filter((f) => f.size <= MAX_SIZE);
+    setFiles((prev) => [...prev, ...next]);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  function removeFile(index: number) {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!subject.trim()) return;
 
     try {
-      await createTicket.mutateAsync({
+      const ticket = (await createTicket.mutateAsync({
         subject: subject.trim(),
         description: description.trim() || undefined,
         priority,
         category: category || undefined,
-      });
+      })) as { id: string };
+
+      // Bijlagen uploaden nadat het ticket bestaat (heeft een id nodig).
+      if (files.length > 0) {
+        setUploading(true);
+        for (const file of files) {
+          const fd = new FormData();
+          fd.append("file", file);
+          await fetch(`/api/portal/tickets/${ticket.id}/attachments`, {
+            method: "POST",
+            body: fd,
+          }).catch(() => {});
+        }
+        setUploading(false);
+      }
+
       router.push("/portal/tickets");
     } catch {
       // Error handled by mutation
@@ -117,9 +149,56 @@ export default function PortalNewTicketPage() {
               </div>
             </div>
 
+            <div className="space-y-2">
+              <Label>{t("attachments")}</Label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*,application/pdf"
+                className="hidden"
+                onChange={(e) => addFiles(e.target.files)}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Paperclip className="mr-2 h-4 w-4" />
+                {t("addFiles")}
+              </Button>
+              <p className="text-xs text-muted-foreground">{t("attachmentsHint")}</p>
+
+              {files.length > 0 && (
+                <ul className="space-y-1.5 pt-1">
+                  {files.map((file, i) => (
+                    <li
+                      key={i}
+                      className="flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm"
+                    >
+                      <span className="truncate">{file.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeFile(i)}
+                        className="text-muted-foreground hover:text-destructive"
+                        aria-label={t("removeFile")}
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
             <div className="flex gap-3 pt-2">
-              <Button type="submit" disabled={createTicket.isPending}>
-                {createTicket.isPending ? t("creating") : t("createTicket")}
+              <Button
+                type="submit"
+                disabled={createTicket.isPending || uploading}
+              >
+                {createTicket.isPending || uploading
+                  ? t("creating")
+                  : t("createTicket")}
               </Button>
               <Button
                 type="button"

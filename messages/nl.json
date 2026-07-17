@@ -740,7 +740,11 @@
     "previous": "Vorige",
     "next": "Volgende",
     "searchPlaceholder": "Zoek tickets...",
-    "profile": "Profiel"
+    "profile": "Profiel",
+    "attachments": "Bijlagen",
+    "addFiles": "Bestanden toevoegen",
+    "attachmentsHint": "Voeg foto’s of PDF’s toe (bijv. een screenshot van de foutmelding). Max 10MB per bestand.",
+    "removeFile": "Verwijderen"
   },
   "portalProfile": {
     "title": "Mijn profiel",

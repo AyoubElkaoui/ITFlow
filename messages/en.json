@@ -740,7 +740,11 @@
     "previous": "Previous",
     "next": "Next",
     "searchPlaceholder": "Search tickets...",
-    "profile": "Profile"
+    "profile": "Profile",
+    "attachments": "Attachments",
+    "addFiles": "Add files",
+    "attachmentsHint": "Add photos or PDFs (e.g. a screenshot of the error). Max 10MB per file.",
+    "removeFile": "Remove"
   },
   "portalProfile": {
     "title": "My Profile",

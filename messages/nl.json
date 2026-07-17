@@ -634,7 +634,21 @@
     "enable2fa": "2FA inschakelen",
     "disable2fa": "2FA uitschakelen",
     "enabled": "Ingeschakeld",
-    "disabled": "Uitgeschakeld"
+    "disabled": "Uitgeschakeld",
+    "push": {
+      "title": "Telefoonmeldingen",
+      "label": "Push op dit apparaat",
+      "description": "Ontvang een melding op dit apparaat bij nieuwe tickets, toewijzingen en reacties.",
+      "statusOn": "Aan",
+      "statusOff": "Uit",
+      "enable": "Aanzetten",
+      "disable": "Uitzetten",
+      "enabled": "Meldingen aangezet op dit apparaat",
+      "disabled": "Meldingen uitgezet op dit apparaat",
+      "enableFailed": "Kon meldingen niet aanzetten",
+      "disableFailed": "Kon meldingen niet uitzetten",
+      "iosHint": "Op iPhone/iPad werkt dit alleen nadat je de app via Safari deelknop → “Zet op beginscherm” hebt toegevoegd, en de app vanaf het beginscherm opent."
+    }
   },
   "projects": {
     "title": "Projecten",
@@ -680,7 +694,8 @@
     "password": "Wachtwoord",
     "passwordPlaceholder": "Minimaal 6 tekens",
     "generatedPassword": "Gegenereerd wachtwoord",
-    "passwordCopied": "Wachtwoord gekopieerd"
+    "passwordCopied": "Wachtwoord gekopieerd",
+    "noEmailHint": "Dit contact heeft geen e-mailadres. Geef een gebruikersnaam op — het contact logt dan in met gebruikersnaam en wachtwoord. Er wordt geen uitnodigingsmail verstuurd; deel het wachtwoord zelf."
   },
   "portal": {
     "title": "Klantenportaal",

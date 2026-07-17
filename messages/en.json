@@ -634,7 +634,21 @@
     "enable2fa": "Enable 2FA",
     "disable2fa": "Disable 2FA",
     "enabled": "Enabled",
-    "disabled": "Disabled"
+    "disabled": "Disabled",
+    "push": {
+      "title": "Phone notifications",
+      "label": "Push on this device",
+      "description": "Get notified on this device for new tickets, assignments and replies.",
+      "statusOn": "On",
+      "statusOff": "Off",
+      "enable": "Enable",
+      "disable": "Disable",
+      "enabled": "Notifications enabled on this device",
+      "disabled": "Notifications disabled on this device",
+      "enableFailed": "Could not enable notifications",
+      "disableFailed": "Could not disable notifications",
+      "iosHint": "On iPhone/iPad this only works after adding the app via Safari share → “Add to Home Screen” and opening it from the home screen."
+    }
   },
   "projects": {
     "title": "Projects",
@@ -680,7 +694,8 @@
     "password": "Password",
     "passwordPlaceholder": "Minimum 6 characters",
     "generatedPassword": "Generated password",
-    "passwordCopied": "Password copied"
+    "passwordCopied": "Password copied",
+    "noEmailHint": "This contact has no email address. Set a username — they will sign in with username and password. No invite email is sent; share the password yourself."
   },
   "portal": {
     "title": "Client Portal",

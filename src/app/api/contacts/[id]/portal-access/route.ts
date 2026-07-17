@@ -61,9 +61,18 @@ export async function POST(
     return NextResponse.json({ error: "Contact not found" }, { status: 404 });
   }
 
-  if (!contact.email) {
+  // Een contact kan inloggen met e-mail OF gebruikersnaam. Minstens één van
+  // beide is vereist. portalUsername === undefined = veld niet meegestuurd,
+  // dan telt de bestaande waarde op het contact mee.
+  const effectiveUsername =
+    portalUsername !== undefined ? portalUsername : contact.portalUsername;
+
+  if (!contact.email && !effectiveUsername) {
     return NextResponse.json(
-      { error: "Contact has no email address" },
+      {
+        error:
+          "Geef een e-mailadres of gebruikersnaam op zodat dit contact kan inloggen.",
+      },
       { status: 400 },
     );
   }
@@ -98,10 +107,13 @@ export async function POST(
     changes: { portalEnabled: { old: contact.portalEnabled, new: true } },
   });
 
-  if (sendEmail) {
+  // Alleen een uitnodiging mailen als er een e-mailadres is.
+  const shouldSendEmail = sendEmail && !!contact.email;
+
+  if (shouldSendEmail) {
     try {
       await sendPortalInvite({
-        to: contact.email,
+        to: contact.email!,
         contactName: contact.name,
         companyName: contact.company.name,
         password: plainPassword,
@@ -120,7 +132,7 @@ export async function POST(
   return NextResponse.json({
     success: true,
     password: plainPassword,
-    emailSent: sendEmail,
+    emailSent: shouldSendEmail,
   });
 }
 

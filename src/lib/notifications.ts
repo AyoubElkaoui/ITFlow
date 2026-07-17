@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { sendPushToUser } from "@/lib/push";
 
 export async function createNotification(params: {
   userId: string;
@@ -7,7 +8,18 @@ export async function createNotification(params: {
   message?: string;
   link?: string;
 }) {
-  return prisma.notification.create({ data: params });
+  const notification = await prisma.notification.create({ data: params });
+
+  // Push naar telefoon/desktop van de gebruiker — fire-and-forget zodat een
+  // trage of falende push nooit de aanmaak van de melding blokkeert.
+  void sendPushToUser(params.userId, {
+    title: params.title,
+    body: params.message,
+    url: params.link,
+    tag: notification.id,
+  }).catch((err) => console.error("[push] sendPushToUser mislukt:", err));
+
+  return notification;
 }
 
 // Helper to notify all admins

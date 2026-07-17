@@ -128,9 +128,11 @@ export function PortalAccessDialog({ open, onOpenChange, contact }: Props) {
             )}
           </div>
 
-          {!contact.email && (
-            <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3">
-              <p className="text-sm text-destructive">{tp("noEmail")}</p>
+          {!contact.email && !generatedPassword && (
+            <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
+              <p className="text-sm text-amber-800 dark:text-amber-300">
+                {tp("noEmailHint")}
+              </p>
             </div>
           )}
 
@@ -165,7 +167,7 @@ export function PortalAccessDialog({ open, onOpenChange, contact }: Props) {
           )}
 
           {/* Enable form */}
-          {!contact.portalEnabled && contact.email && !generatedPassword && (
+          {!contact.portalEnabled && !generatedPassword && (
             <>
               <div className="space-y-2">
                 <Label htmlFor="username">{tp("username")}</Label>
@@ -202,19 +204,21 @@ export function PortalAccessDialog({ open, onOpenChange, contact }: Props) {
                 </div>
               )}
 
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="sendEmail"
-                  checked={sendEmail}
-                  onCheckedChange={(c) => setSendEmail(c === true)}
-                />
-                <Label htmlFor="sendEmail" className="text-sm font-normal">
-                  <span className="flex items-center gap-1.5">
-                    <Mail className="h-3.5 w-3.5" />
-                    {tp("sendInviteEmail")}
-                  </span>
-                </Label>
-              </div>
+              {contact.email && (
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="sendEmail"
+                    checked={sendEmail}
+                    onCheckedChange={(c) => setSendEmail(c === true)}
+                  />
+                  <Label htmlFor="sendEmail" className="text-sm font-normal">
+                    <span className="flex items-center gap-1.5">
+                      <Mail className="h-3.5 w-3.5" />
+                      {tp("sendInviteEmail")}
+                    </span>
+                  </Label>
+                </div>
+              )}
             </>
           )}
 
@@ -256,7 +260,8 @@ export function PortalAccessDialog({ open, onOpenChange, contact }: Props) {
                 </Button>
               </>
             ) : (
-              contact.email && !generatedPassword && (
+              !generatedPassword &&
+              (contact.email || username.trim().length > 0) && (
                 <Button
                   onClick={handleEnable}
                   disabled={enablePortal.isPending}

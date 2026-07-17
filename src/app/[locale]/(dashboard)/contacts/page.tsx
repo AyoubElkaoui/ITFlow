@@ -57,6 +57,7 @@ interface ContactRow {
   isPrimary: boolean;
   isActive: boolean;
   portalEnabled: boolean;
+  portalUsername: string | null;
   company: {
     id: string;
     shortName: string;

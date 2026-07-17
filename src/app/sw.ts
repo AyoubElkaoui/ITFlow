@@ -1,3 +1,4 @@
+/// <reference lib="webworker" />
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
 import {
   Serwist,
@@ -77,3 +78,45 @@ const serwist = new Serwist({
 });
 
 serwist.addEventListeners();
+
+// --- Web push -------------------------------------------------------------
+// Toon een notificatie wanneer de server een push stuurt.
+self.addEventListener("push", (event) => {
+  let data: { title?: string; body?: string; url?: string; tag?: string } = {};
+  try {
+    data = event.data?.json() ?? {};
+  } catch {
+    data = { title: event.data?.text() };
+  }
+
+  const title = data.title || "ITFlow";
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: data.body,
+      tag: data.tag,
+      icon: "/api/pwa/icon?size=192",
+      badge: "/api/pwa/icon?size=96",
+      data: { url: data.url || "/" },
+    }),
+  );
+});
+
+// Open (of focus) de app op de bijbehorende link bij klik op een notificatie.
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = (event.notification.data as { url?: string })?.url || "/";
+
+  event.waitUntil(
+    self.clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((clients) => {
+        const client = clients[0] as WindowClient | undefined;
+        if (client) {
+          client.focus();
+          client.navigate(url).catch(() => {});
+          return;
+        }
+        return self.clients.openWindow(url);
+      }),
+  );
+});

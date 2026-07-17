@@ -108,6 +108,7 @@ model User {
   workDays        WorkDay[]
   timeLogs        TicketTimeLog[]
   stockMovements  StockMovement[]
+  pushSubscriptions PushSubscription[]
 
   @@index([email])
 }
@@ -463,6 +464,23 @@ model Notification {
 
   @@index([userId, isRead])
   @@index([createdAt])
+}
+
+// Web-push abonnement per apparaat/browser. Eén admin kan meerdere devices
+// hebben (telefoon, laptop). Verlopen abonnementen (404/410 bij versturen)
+// worden automatisch opgeruimd in lib/push.ts.
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model SlaPolicy {

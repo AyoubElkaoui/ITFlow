@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Shield, ShieldCheck, ShieldOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { TwoFactorSetupDialog } from "@/components/auth/two-factor-setup-dialog";
+import { PushNotificationsCard } from "@/components/settings/push-notifications-card";
 
 export default function SettingsPage() {
   const t = useTranslations("settings");
@@ -104,6 +105,8 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+
+      <PushNotificationsCard />
 
       <TwoFactorSetupDialog open={showSetup} onOpenChange={handleSetupClose} />
     </div>

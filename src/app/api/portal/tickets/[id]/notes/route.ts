@@ -26,16 +26,26 @@ export async function GET(
     return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
   }
 
-  // Only return non-internal notes
+  // Alleen niet-interne notities; herleid een nette afzender voor de klant.
   const notes = await prisma.ticketNote.findMany({
     where: { ticketId: id, isInternal: false },
     include: {
       user: { select: { id: true, name: true } },
+      authorContact: { select: { id: true, name: true } },
     },
     orderBy: { createdAt: "asc" },
   });
 
-  return NextResponse.json(notes);
+  const shaped = notes.map((note) => ({
+    id: note.id,
+    content: note.content,
+    createdAt: note.createdAt,
+    // Eigen bericht (door dit contact via het portaal) vs. reactie van support.
+    isMine: note.authorContactId === session.contactId,
+    authorName: note.authorContact?.name ?? note.user.name,
+  }));
+
+  return NextResponse.json(shaped);
 }
 
 export async function POST(
@@ -84,8 +94,11 @@ export async function POST(
   const note = await prisma.ticketNote.create({
     data: {
       ticketId: id,
+      // userId is technisch verplicht (FK naar User); we hangen de notitie aan
+      // een systeem-admin, maar de echte herkomst is het contact hieronder.
       userId: adminUser.id,
-      content: `[${session.contactName}]: ${content.trim()}`,
+      authorContactId: session.contactId,
+      content: content.trim(),
       isInternal: false,
     },
     include: {

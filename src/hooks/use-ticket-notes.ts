@@ -24,6 +24,11 @@ export interface TicketNote {
     name: string;
     email: string;
   };
+  // Aanwezig wanneer de notitie via het klantportaal door een contact is geschreven.
+  authorContact?: {
+    id: string;
+    name: string;
+  } | null;
 }
 
 export function useTicketNotes(ticketId: string) {

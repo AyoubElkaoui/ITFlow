@@ -605,9 +605,12 @@
     "whatAreYouWorkingOn": "Waar werkt u aan?"
   },
   "ticketNotes": {
-    "writeNote": "Schrijf een notitie...",
+    "writeNote": "Schrijf een notitie of reactie...",
     "internalNote": "Interne notitie",
+    "internalHint": "Alleen zichtbaar voor het team.",
+    "customerHint": "Wordt als reactie naar de klant gestuurd (zichtbaar in het portaal).",
     "addNote": "Notitie toevoegen",
+    "sendReply": "Reactie naar klant sturen",
     "adding": "Toevoegen..."
   },
   "bulk": {
@@ -731,6 +734,7 @@
     "ticketNotFound": "Ticket niet gevonden",
     "backToTickets": "Terug naar tickets",
     "messages": "Berichten",
+    "you": "U",
     "noMessages": "Nog geen berichten",
     "writeMessage": "Schrijf een bericht...",
     "created": "Aangemaakt",

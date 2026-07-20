@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 const noteFormSchema = z.object({
@@ -61,23 +62,39 @@ export function NoteForm({ ticketId, onSuccess }: NoteFormProps) {
         )}
       </div>
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Checkbox
-            id="isInternal"
-            checked={form.watch("isInternal")}
-            onCheckedChange={(checked) =>
-              form.setValue("isInternal", checked === true)
-            }
-          />
-          <Label htmlFor="isInternal" className="text-sm font-normal">
-            {t("internalNote")}
-          </Label>
-        </div>
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="isInternal"
+              checked={form.watch("isInternal")}
+              onCheckedChange={(checked) =>
+                form.setValue("isInternal", checked === true)
+              }
+            />
+            <Label htmlFor="isInternal" className="text-sm font-normal">
+              {t("internalNote")}
+            </Label>
+          </div>
 
-        <Button type="submit" size="sm" disabled={createNote.isPending}>
-          {createNote.isPending ? t("adding") : t("addNote")}
-        </Button>
+          <Button type="submit" size="sm" disabled={createNote.isPending}>
+            {createNote.isPending
+              ? t("adding")
+              : form.watch("isInternal")
+                ? t("addNote")
+                : t("sendReply")}
+          </Button>
+        </div>
+        <p
+          className={cn(
+            "text-xs",
+            form.watch("isInternal")
+              ? "text-muted-foreground"
+              : "text-blue-600 dark:text-blue-400",
+          )}
+        >
+          {form.watch("isInternal") ? t("internalHint") : t("customerHint")}
+        </p>
       </div>
     </form>
   );

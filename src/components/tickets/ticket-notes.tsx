@@ -47,7 +47,11 @@ function NoteItem({
   const updateNote = useUpdateNote(ticketId);
   const deleteNote = useDeleteNote(ticketId);
 
-  const isOwner = currentUserId === note.userId;
+  // Notitie geschreven door een klant via het portaal (heeft voorrang op user).
+  const isPortal = !!note.authorContact;
+  const displayName = note.authorContact?.name ?? note.user.name;
+  // Alleen eigen (staff-)notities zijn bewerkbaar; klant-notities niet.
+  const isOwner = currentUserId === note.userId && !isPortal;
 
   async function handleSave() {
     if (!editContent.trim()) return;
@@ -86,27 +90,36 @@ function NoteItem({
       className={cn(
         "rounded-lg border p-4",
         note.isInternal && "bg-amber-50/50 border-amber-200/60 dark:bg-amber-950/20 dark:border-amber-900/40",
+        isPortal && "bg-blue-50/50 border-blue-200/60 dark:bg-blue-950/20 dark:border-blue-900/40",
       )}
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
           <Avatar size="sm">
-            <AvatarFallback>{getInitials(note.user.name)}</AvatarFallback>
+            <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
           </Avatar>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">{note.user.name}</span>
+            <span className="text-sm font-medium">{displayName}</span>
             <span className="text-xs text-muted-foreground">
               {formatDistanceToNow(new Date(note.createdAt), {
                 addSuffix: true,
               })}
             </span>
-            {note.isInternal && (
+            {isPortal && (
+              <Badge
+                variant="outline"
+                className="text-xs bg-blue-100/80 text-blue-700 border-blue-300 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800"
+              >
+                Klant
+              </Badge>
+            )}
+            {note.isInternal && !isPortal && (
               <Badge
                 variant="outline"
                 className="text-xs bg-amber-100/80 text-amber-700 border-amber-300 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800"
               >
-                Internal
+                Intern
               </Badge>
             )}
           </div>

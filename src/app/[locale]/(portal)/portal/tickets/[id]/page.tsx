@@ -73,7 +73,8 @@ export default function PortalTicketDetailPage({
           id: string;
           content: string;
           createdAt: string;
-          user: { name: string };
+          authorName: string;
+          isMine: boolean;
         }>
       | undefined;
   };
@@ -244,10 +245,17 @@ export default function PortalTicketDetailPage({
           ) : (
             <div className="space-y-3">
               {notes.map((note) => (
-                <div key={note.id} className="rounded-lg border p-3 space-y-1">
+                <div
+                  key={note.id}
+                  className={
+                    note.isMine
+                      ? "rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-1"
+                      : "rounded-lg border p-3 space-y-1"
+                  }
+                >
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">
-                      {note.user.name}
+                      {note.isMine ? t("you") : note.authorName}
                     </span>
                     <span className="text-xs text-muted-foreground">
                       {format(new Date(note.createdAt), "d MMM yyyy HH:mm", {

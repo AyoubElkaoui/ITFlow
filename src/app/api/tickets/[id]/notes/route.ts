@@ -19,6 +19,7 @@ export async function GET(
     where: { ticketId: id },
     include: {
       user: { select: { id: true, name: true, email: true } },
+      authorContact: { select: { id: true, name: true } },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -63,6 +64,7 @@ export async function POST(
     },
     include: {
       user: { select: { id: true, name: true, email: true } },
+      authorContact: { select: { id: true, name: true } },
     },
   });
 

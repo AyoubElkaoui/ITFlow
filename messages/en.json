@@ -605,9 +605,12 @@
     "whatAreYouWorkingOn": "What are you working on?"
   },
   "ticketNotes": {
-    "writeNote": "Write a note...",
+    "writeNote": "Write a note or reply...",
     "internalNote": "Internal note",
+    "internalHint": "Only visible to the team.",
+    "customerHint": "Sent to the customer as a reply (visible in the portal).",
     "addNote": "Add Note",
+    "sendReply": "Send reply to customer",
     "adding": "Adding..."
   },
   "bulk": {
@@ -731,6 +734,7 @@
     "ticketNotFound": "Ticket not found",
     "backToTickets": "Back to tickets",
     "messages": "Messages",
+    "you": "You",
     "noMessages": "No messages yet",
     "writeMessage": "Write a message...",
     "created": "Created",

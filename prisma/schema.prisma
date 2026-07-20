@@ -179,8 +179,9 @@ model Contact {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  company Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  tickets Ticket[]
+  company     Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  tickets     Ticket[]
+  ticketNotes TicketNote[]
 
   @@index([companyId])
   @@index([email])
@@ -362,14 +363,20 @@ model TicketNote {
   userId     String
   content    String
   isInternal Boolean  @default(true)
+  // Gezet wanneer de notitie via het klantportaal door een Contact is geschreven.
+  // userId blijft (technisch) verplicht en verwijst dan naar een systeem-admin,
+  // maar voor weergave/herkomst is authorContact leidend.
+  authorContactId String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  user   User   @relation(fields: [userId], references: [id])
+  ticket        Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user          User     @relation(fields: [userId], references: [id])
+  authorContact Contact? @relation(fields: [authorContactId], references: [id], onDelete: SetNull)
 
   @@index([ticketId])
   @@index([userId])
+  @@index([authorContactId])
 }
 
 model TicketTemplate {

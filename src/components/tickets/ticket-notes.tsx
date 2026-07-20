@@ -186,6 +186,9 @@ export function TicketNotes({ ticketId }: TicketNotesProps) {
   const { data: notes, isLoading } = useTicketNotes(ticketId);
   const currentUserId = session?.user?.id;
 
+  // Alleen interne team-notities hier; klant-berichten staan in de Berichten-tab.
+  const internalNotes = (notes ?? []).filter((n) => n.isInternal);
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -209,13 +212,13 @@ export function TicketNotes({ ticketId }: TicketNotesProps) {
 
       <Separator />
 
-      {!notes || notes.length === 0 ? (
+      {internalNotes.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-8 text-center">
           <p className="text-sm text-muted-foreground">No notes yet</p>
         </div>
       ) : (
         <div className="space-y-3">
-          {notes.map((note) => (
+          {internalNotes.map((note) => (
             <NoteItem
               key={note.id}
               note={note}

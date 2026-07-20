@@ -7,14 +7,10 @@ import { typedResolver } from "@/lib/form-utils";
 import { useCreateNote } from "@/hooks/use-ticket-notes";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 const noteFormSchema = z.object({
   content: z.string().min(1, "Content is required"),
-  isInternal: z.boolean().default(true),
 });
 
 type NoteFormValues = z.infer<typeof noteFormSchema>;
@@ -24,21 +20,20 @@ interface NoteFormProps {
   onSuccess?: () => void;
 }
 
+// Interne team-notities. Klant-communicatie loopt via de Berichten-tab
+// (TicketConversation); dit formulier maakt daarom altijd een interne notitie.
 export function NoteForm({ ticketId, onSuccess }: NoteFormProps) {
   const t = useTranslations("ticketNotes");
   const createNote = useCreateNote(ticketId);
 
   const form = useForm<NoteFormValues>({
     resolver: typedResolver(noteFormSchema),
-    defaultValues: {
-      content: "",
-      isInternal: true,
-    },
+    defaultValues: { content: "" },
   });
 
   async function onSubmit(data: NoteFormValues) {
     try {
-      await createNote.mutateAsync(data);
+      await createNote.mutateAsync({ content: data.content, isInternal: true });
       toast.success(t("addNote"));
       form.reset();
       onSuccess?.();
@@ -62,39 +57,11 @@ export function NoteForm({ ticketId, onSuccess }: NoteFormProps) {
         )}
       </div>
 
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="isInternal"
-              checked={form.watch("isInternal")}
-              onCheckedChange={(checked) =>
-                form.setValue("isInternal", checked === true)
-              }
-            />
-            <Label htmlFor="isInternal" className="text-sm font-normal">
-              {t("internalNote")}
-            </Label>
-          </div>
-
-          <Button type="submit" size="sm" disabled={createNote.isPending}>
-            {createNote.isPending
-              ? t("adding")
-              : form.watch("isInternal")
-                ? t("addNote")
-                : t("sendReply")}
-          </Button>
-        </div>
-        <p
-          className={cn(
-            "text-xs",
-            form.watch("isInternal")
-              ? "text-muted-foreground"
-              : "text-blue-600 dark:text-blue-400",
-          )}
-        >
-          {form.watch("isInternal") ? t("internalHint") : t("customerHint")}
-        </p>
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs text-muted-foreground">{t("internalHint")}</p>
+        <Button type="submit" size="sm" disabled={createNote.isPending}>
+          {createNote.isPending ? t("adding") : t("addNote")}
+        </Button>
       </div>
     </form>
   );

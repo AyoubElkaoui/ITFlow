@@ -66,6 +66,7 @@ import { EditTicketDialog } from "@/components/tickets/edit-ticket-dialog";
 import { TicketTimeLogs } from "@/components/tickets/ticket-time-logs";
 import { TicketMaterialEquipment } from "@/components/tickets/ticket-material-equipment";
 import { TicketNotes } from "@/components/tickets/ticket-notes";
+import { TicketConversation } from "@/components/tickets/ticket-conversation";
 import { TicketAttachments } from "@/components/tickets/ticket-attachments";
 import { SlaIndicator } from "@/components/tickets/sla-indicator";
 import { Link } from "@/i18n/navigation";
@@ -445,6 +446,7 @@ export default function TicketDetailPage({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="conversation">{t("customerMessages")}</SelectItem>
                       <SelectItem value="timelogs">{t("workTime")}</SelectItem>
                       <SelectItem value="time">{t("timeEntries")}</SelectItem>
                       <SelectItem value="notes">{t("notes")}</SelectItem>
@@ -455,6 +457,10 @@ export default function TicketDetailPage({
                 </div>
                 {/* Desktop: volledige tab-balk */}
                 <TabsList className="hidden md:inline-flex">
+                  <TabsTrigger value="conversation">
+                    <MessageSquare className="h-4 w-4 mr-1.5" />
+                    {t("customerMessages")}
+                  </TabsTrigger>
                   <TabsTrigger value="timelogs">
                     <Clock className="h-4 w-4 mr-1.5" />
                     {t("workTime")}
@@ -476,6 +482,16 @@ export default function TicketDetailPage({
                     {t("attachments")}
                   </TabsTrigger>
                 </TabsList>
+
+                {/* Berichten — klant-conversatie: lezen en direct reageren.
+                    Een reactie is zichtbaar voor de klant in het portaal (+ e-mail). */}
+                <TabsContent value="conversation" className="mt-4">
+                  <TicketConversation
+                    ticketId={tk.id}
+                    contactName={tk.contact?.name}
+                    messagesClassName="max-h-[50vh] pr-1"
+                  />
+                </TabsContent>
 
                 {/* Werk-tijd (TicketTimeLog — bron voor dagafsluiting) */}
                 <TabsContent value="timelogs" className="mt-4">

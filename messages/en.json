@@ -231,7 +231,8 @@
     "noPlanned": "Unplanned",
     "myAssignments": "My assignments",
     "allAssignees": "All assignees",
-    "materialEquipment": "Materials & equipment"
+    "materialEquipment": "Materials & equipment",
+    "customerMessages": "Messages"
   },
   "newTicket": {
     "title": "New Ticket",

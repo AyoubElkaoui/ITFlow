@@ -231,7 +231,8 @@
     "noPlanned": "Ongepland",
     "myAssignments": "Mijn opdrachten",
     "allAssignees": "Alle uitvoerders",
-    "materialEquipment": "Materiaal & apparatuur"
+    "materialEquipment": "Materiaal & apparatuur",
+    "customerMessages": "Berichten"
   },
   "newTicket": {
     "title": "Nieuw ticket",

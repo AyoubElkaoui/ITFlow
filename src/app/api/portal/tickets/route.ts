@@ -19,7 +19,11 @@ export async function GET(request: NextRequest) {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const where: any = {
-    companyId: session.companyId,
+    // Een portal-gebruiker ziet ALLEEN tickets die aan hém/haar als contact
+    // gekoppeld zijn: door ons op hun naam gezet, of door henzelf via het
+    // portaal aangemaakt (die krijgen bij aanmaken automatisch contactId = hijzelf).
+    // Bewust NIET op companyId filteren — dat zou álle bedrijfstickets tonen.
+    contactId: session.contactId,
     ...(status && {
       status: status as
         | "OPEN"

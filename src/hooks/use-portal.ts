@@ -134,6 +134,7 @@ export function useUpdatePortalProfile() {
   return useMutation({
     mutationFn: (data: {
       name?: string;
+      email?: string;
       phone?: string;
       currentPassword?: string;
       newPassword?: string;

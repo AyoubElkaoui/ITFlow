@@ -27,6 +27,7 @@ export default function PortalProfilePage() {
 
   // Profile form
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [profileInitialized, setProfileInitialized] = useState(false);
 
@@ -38,6 +39,7 @@ export default function PortalProfilePage() {
   // Initialize form values when profile loads
   if (profile && !profileInitialized) {
     setName(profile.name);
+    setEmail(profile.email || "");
     setPhone(profile.phone || "");
     setProfileInitialized(true);
   }
@@ -45,7 +47,7 @@ export default function PortalProfilePage() {
   async function handleProfileUpdate(e: React.FormEvent) {
     e.preventDefault();
     try {
-      await updateProfile.mutateAsync({ name, phone });
+      await updateProfile.mutateAsync({ name, email, phone });
       toast.success(t("profileUpdated"));
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("updateFailed"));
@@ -123,12 +125,13 @@ export default function PortalProfilePage() {
               </Label>
               <Input
                 id="email"
-                value={profile?.email || ""}
-                disabled
-                className="bg-muted"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
               />
               <p className="text-xs text-muted-foreground">
-                {t("emailReadonly")}
+                {t("emailHint")}
               </p>
             </div>
 

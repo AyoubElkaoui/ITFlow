@@ -13,13 +13,14 @@ const ALLOWED = [
 ];
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
-// Controleer dat het ticket bij het bedrijf van de ingelogde portal-gebruiker hoort.
-async function assertOwnedTicket(id: string, companyId: string) {
+// Controleer dat het ticket aan dit contact gekoppeld is (op naam gezet of
+// door henzelf via het portaal aangemaakt) — niet enkel hetzelfde bedrijf.
+async function assertOwnedTicket(id: string, contactId: string) {
   const ticket = await prisma.ticket.findUnique({
     where: { id },
-    select: { id: true, companyId: true },
+    select: { id: true, contactId: true },
   });
-  if (!ticket || ticket.companyId !== companyId) return null;
+  if (!ticket || ticket.contactId !== contactId) return null;
   return ticket;
 }
 
@@ -36,7 +37,7 @@ export async function GET(
   }
 
   const { id } = await params;
-  if (!(await assertOwnedTicket(id, session.companyId))) {
+  if (!(await assertOwnedTicket(id, session.contactId))) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
@@ -60,7 +61,7 @@ export async function POST(
   }
 
   const { id } = await params;
-  if (!(await assertOwnedTicket(id, session.companyId))) {
+  if (!(await assertOwnedTicket(id, session.contactId))) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

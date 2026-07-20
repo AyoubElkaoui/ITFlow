@@ -16,13 +16,13 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Verify ticket belongs to the contact's company
+  // Verify ticket belongs to this contact (op naam gezet of zelf aangemaakt)
   const ticket = await prisma.ticket.findUnique({
     where: { id },
-    select: { companyId: true },
+    select: { contactId: true },
   });
 
-  if (!ticket || ticket.companyId !== session.companyId) {
+  if (!ticket || ticket.contactId !== session.contactId) {
     return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
   }
 
@@ -51,13 +51,13 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Verify ticket belongs to the contact's company
+  // Verify ticket belongs to this contact (op naam gezet of zelf aangemaakt)
   const ticket = await prisma.ticket.findUnique({
     where: { id },
-    select: { companyId: true, subject: true },
+    select: { contactId: true, subject: true },
   });
 
-  if (!ticket || ticket.companyId !== session.companyId) {
+  if (!ticket || ticket.contactId !== session.contactId) {
     return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
   }
 

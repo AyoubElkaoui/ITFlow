@@ -41,7 +41,7 @@ export async function PATCH(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { name, phone, currentPassword, newPassword } = body;
+  const { name, email, phone, currentPassword, newPassword } = body;
 
   const contact = await prisma.contact.findUnique({
     where: { id: session.contactId },
@@ -57,6 +57,38 @@ export async function PATCH(request: NextRequest) {
 
   if (name && typeof name === "string" && name.trim().length > 0) {
     updateData.name = name.trim();
+  }
+
+  // E-mail wijzigen: valideren op formaat en of hij nog niet bij een ander
+  // contact in gebruik is (e-mail is een inlog-identifier voor het portaal).
+  if (email !== undefined) {
+    const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
+    if (normalizedEmail.length === 0) {
+      return NextResponse.json(
+        { error: "Email is required" },
+        { status: 400 },
+      );
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      return NextResponse.json(
+        { error: "Invalid email address" },
+        { status: 400 },
+      );
+    }
+    const existing = await prisma.contact.findFirst({
+      where: {
+        email: normalizedEmail,
+        NOT: { id: session.contactId },
+      },
+      select: { id: true },
+    });
+    if (existing) {
+      return NextResponse.json(
+        { error: "This email address is already in use" },
+        { status: 409 },
+      );
+    }
+    updateData.email = normalizedEmail;
   }
 
   if (phone !== undefined) {

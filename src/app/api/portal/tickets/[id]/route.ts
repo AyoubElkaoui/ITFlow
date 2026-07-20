@@ -26,6 +26,7 @@ export async function GET(
       priority: true,
       category: true,
       companyId: true,
+      contactId: true,
       createdAt: true,
       updatedAt: true,
       resolvedAt: true,
@@ -39,7 +40,8 @@ export async function GET(
     },
   });
 
-  if (!ticket || ticket.companyId !== session.companyId) {
+  // Alleen eigen tickets: gekoppeld aan dit contact (op naam gezet of zelf aangemaakt).
+  if (!ticket || ticket.contactId !== session.contactId) {
     return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
   }
 

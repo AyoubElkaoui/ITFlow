@@ -1,27 +1,43 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
+import { useRouter, usePathname } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { LogOut, Ticket, User } from "lucide-react";
-import { usePortalSession } from "@/hooks/use-portal";
+import { usePortalSession, clearPortalSessionData } from "@/hooks/use-portal";
 
 export function PortalHeader() {
   const t = useTranslations("portal");
   const router = useRouter();
+  const pathname = usePathname();
+  const queryClient = useQueryClient();
   const { data: session } = usePortalSession();
 
+  // Op de loginpagina hoort geen ingelogde-gebruikersbalk te staan.
+  const isLoginPage = pathname === "/portal/login";
+
   async function handleLogout() {
+    // Wis eerst de client-side sessie zodat naam/bedrijf direct verdwijnen
+    // en niet blijven "hangen" na uitloggen.
+    clearPortalSessionData();
+    queryClient.removeQueries({ queryKey: ["portal-session"] });
+    queryClient.clear();
+
     try {
       await fetch("/api/portal/auth/logout", { method: "POST" });
-      // Router.push gebruiken voor correcte client-side navigatie
-      router.push("/portal/login");
     } catch (error) {
       console.error("Logout error:", error);
-      // Redirect toch naar login bij fout
+    } finally {
+      // Router.push gebruiken voor correcte client-side navigatie
       router.push("/portal/login");
     }
+  }
+
+  // Geen header op de loginpagina en niet zonder actieve sessie.
+  if (isLoginPage || !session) {
+    return null;
   }
 
   return (

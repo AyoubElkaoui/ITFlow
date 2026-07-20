@@ -749,8 +749,8 @@
   "portalProfile": {
     "title": "My Profile",
     "personalInfo": "Personal Information",
-    "personalInfoDescription": "Update your name and phone number",
-    "emailReadonly": "Email address cannot be changed. Contact your administrator.",
+    "personalInfoDescription": "Update your name, email address and phone number",
+    "emailHint": "You use this email address to sign in and to receive notifications.",
     "function": "Function",
     "profileUpdated": "Profile updated",
     "updateFailed": "Failed to update profile",

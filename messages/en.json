@@ -64,6 +64,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "tickets": "Tickets",
+    "messages": "Messages",
     "board": "Board",
     "time": "Time",
     "companies": "Companies",
@@ -612,6 +613,22 @@
     "addNote": "Add Note",
     "sendReply": "Send reply to customer",
     "adding": "Adding..."
+  },
+  "messages": {
+    "title": "Messages",
+    "subtitle": "All customer conversations in one place — read and reply directly.",
+    "empty": "No customer messages yet.",
+    "selectConversation": "Select a conversation to read and reply.",
+    "noMessages": "No messages in this conversation yet.",
+    "you": "You",
+    "awaitingReply": "Awaiting reply",
+    "replyPlaceholder": "Type your reply to the customer...",
+    "replyHint": "Sent to the customer (portal + email if known).",
+    "sendReply": "Send reply",
+    "sending": "Sending...",
+    "replySent": "Reply sent",
+    "replyFailed": "Could not send reply",
+    "back": "Back"
   },
   "bulk": {
     "changeStatus": "Change Status",

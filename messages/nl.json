@@ -64,6 +64,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "tickets": "Tickets",
+    "messages": "Berichten",
     "board": "Bord",
     "time": "Uren",
     "companies": "Bedrijven",
@@ -612,6 +613,22 @@
     "addNote": "Notitie toevoegen",
     "sendReply": "Reactie naar klant sturen",
     "adding": "Toevoegen..."
+  },
+  "messages": {
+    "title": "Berichten",
+    "subtitle": "Alle klantgesprekken op één plek — lezen en direct reageren.",
+    "empty": "Nog geen klantberichten.",
+    "selectConversation": "Selecteer een gesprek om te lezen en te reageren.",
+    "noMessages": "Nog geen berichten in dit gesprek.",
+    "you": "U",
+    "awaitingReply": "Wacht op reactie",
+    "replyPlaceholder": "Typ uw reactie aan de klant...",
+    "replyHint": "Wordt naar de klant gestuurd (portaal + e-mail indien bekend).",
+    "sendReply": "Reactie sturen",
+    "sending": "Versturen...",
+    "replySent": "Reactie verstuurd",
+    "replyFailed": "Kon reactie niet versturen",
+    "back": "Terug"
   },
   "bulk": {
     "changeStatus": "Status wijzigen",

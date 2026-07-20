@@ -18,6 +18,7 @@ import {
   SlidersHorizontal,
   RefreshCw,
   ScrollText,
+  MessageSquare,
 } from "lucide-react";
 
 // ÉÉN bron voor alle nav (desktop-sidebar + mobiele bottom-bar). Nieuwe fases voeg
@@ -33,6 +34,7 @@ export interface NavItem {
 export const navItems: NavItem[] = [
   { nameKey: "dashboard", href: "/", icon: LayoutDashboard, primary: true },
   { nameKey: "tickets", href: "/tickets", icon: Ticket, primary: true },
+  { nameKey: "messages", href: "/berichten", icon: MessageSquare },
   { nameKey: "opdrachten", href: "/tickets/opdrachten", icon: ClipboardList },
   { nameKey: "teFactureren", href: "/tickets/te-factureren", icon: Receipt },
   { nameKey: "time", href: "/time", icon: Clock, primary: true },

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requirePortalSession } from "@/lib/portal-auth";
 import { notifyAdmins } from "@/lib/notifications";
+import { resolveStaffOwnerId } from "@/lib/portal-attribution";
 
 export async function GET(
   _request: NextRequest,
@@ -64,7 +65,7 @@ export async function POST(
   // Verify ticket belongs to this contact (op naam gezet of zelf aangemaakt)
   const ticket = await prisma.ticket.findUnique({
     where: { id },
-    select: { contactId: true, subject: true },
+    select: { contactId: true, subject: true, assignedToId: true, createdById: true },
   });
 
   if (!ticket || ticket.contactId !== session.contactId) {
@@ -78,13 +79,14 @@ export async function POST(
     return NextResponse.json({ error: "Content is required" }, { status: 400 });
   }
 
-  // Find admin user to attribute the note (portal notes are logged under an admin)
-  const adminUser = await prisma.user.findFirst({
-    where: { role: "ADMIN", isActive: true },
-    select: { id: true },
+  // Technische eigenaar = behandelaar/aanmaker van het ticket (niet zomaar een
+  // admin). De échte herkomst is het contact (authorContactId).
+  const ownerId = await resolveStaffOwnerId({
+    assignedToId: ticket.assignedToId,
+    createdById: ticket.createdById,
   });
 
-  if (!adminUser) {
+  if (!ownerId) {
     return NextResponse.json(
       { error: "System configuration error" },
       { status: 500 },
@@ -94,9 +96,7 @@ export async function POST(
   const note = await prisma.ticketNote.create({
     data: {
       ticketId: id,
-      // userId is technisch verplicht (FK naar User); we hangen de notitie aan
-      // een systeem-admin, maar de echte herkomst is het contact hieronder.
-      userId: adminUser.id,
+      userId: ownerId,
       authorContactId: session.contactId,
       content: content.trim(),
       isInternal: false,

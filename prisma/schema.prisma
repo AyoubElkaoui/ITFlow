@@ -182,10 +182,27 @@ model Contact {
   company     Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
   tickets     Ticket[]
   ticketNotes TicketNote[]
+  portalReads PortalTicketRead[]
 
   @@index([companyId])
   @@index([email])
   @@index([portalUsername])
+}
+
+// Houdt bij wanneer een portal-contact een ticket voor het laatst opende, zodat
+// we in het portaal een "ongelezen"-indicator kunnen tonen voor nieuwe reacties.
+model PortalTicketRead {
+  id         String   @id @default(cuid())
+  contactId  String
+  ticketId   String
+  lastReadAt DateTime @default(now())
+
+  contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  ticket  Ticket  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@unique([contactId, ticketId])
+  @@index([contactId])
+  @@index([ticketId])
 }
 
 model Ticket {
@@ -243,6 +260,7 @@ model Ticket {
   credentials  Credential[]
   timeLogs     TicketTimeLog[]
   stockMovements StockMovement[]
+  portalReads  PortalTicketRead[]
 
   @@index([companyId])
   @@index([status])

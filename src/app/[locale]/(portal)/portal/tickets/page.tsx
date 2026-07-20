@@ -67,6 +67,7 @@ export default function PortalTicketsPage() {
             category: string | null;
             createdAt: string;
             contact: { name: string } | null;
+            unreadCount: number;
           }>;
           total: number;
           page: number;
@@ -162,12 +163,23 @@ export default function PortalTicketsPage() {
                         {ticket.ticketNumber}
                       </TableCell>
                       <TableCell>
-                        <Link
-                          href={`/portal/tickets/${ticket.id}`}
-                          className="font-medium hover:underline"
-                        >
-                          {ticket.subject}
-                        </Link>
+                        <div className="flex items-center gap-2">
+                          <Link
+                            href={`/portal/tickets/${ticket.id}`}
+                            className={
+                              ticket.unreadCount > 0
+                                ? "font-semibold hover:underline"
+                                : "font-medium hover:underline"
+                            }
+                          >
+                            {ticket.subject}
+                          </Link>
+                          {ticket.unreadCount > 0 && (
+                            <Badge className="h-5 min-w-5 justify-center rounded-full px-1.5 text-xs">
+                              {ticket.unreadCount}
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Badge

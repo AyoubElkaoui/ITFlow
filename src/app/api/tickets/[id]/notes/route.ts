@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/auth-utils";
 import { safeLogAudit } from "@/lib/audit";
+import { notifyContactOfReply } from "@/lib/portal-notify";
 
 export async function GET(
   _request: NextRequest,
@@ -50,7 +51,15 @@ export async function POST(
   const isInternal =
     typeof body.isInternal === "boolean" ? body.isInternal : true;
 
-  const ticket = await prisma.ticket.findUnique({ where: { id } });
+  const ticket = await prisma.ticket.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      ticketNumber: true,
+      subject: true,
+      contact: { select: { name: true, email: true } },
+    },
+  });
   if (!ticket) {
     return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
   }
@@ -75,6 +84,19 @@ export async function POST(
     userId: user.id,
     metadata: { ticketId: id, isInternal },
   });
+
+  // Niet-interne notitie = reactie naar de klant: mail het contact (indien e-mail).
+  if (!isInternal && ticket.contact) {
+    notifyContactOfReply({
+      ticketId: ticket.id,
+      ticketNumber: ticket.ticketNumber,
+      subject: ticket.subject,
+      contactEmail: ticket.contact.email,
+      contactName: ticket.contact.name,
+      staffName: note.user.name,
+      message: note.content,
+    });
+  }
 
   return NextResponse.json(note, { status: 201 });
 }

@@ -45,5 +45,21 @@ export async function GET(
     return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
   }
 
+  // Ticket geopend -> markeer als gelezen (voor de ongelezen-indicator in de lijst).
+  try {
+    await prisma.portalTicketRead.upsert({
+      where: {
+        contactId_ticketId: {
+          contactId: session.contactId,
+          ticketId: id,
+        },
+      },
+      create: { contactId: session.contactId, ticketId: id },
+      update: { lastReadAt: new Date() },
+    });
+  } catch {
+    // Leesstatus is niet kritiek voor het tonen van het ticket.
+  }
+
   return NextResponse.json(ticket);
 }

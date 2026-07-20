@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requirePortalSession } from "@/lib/portal-auth";
 import { notifyAdmins } from "@/lib/notifications";
+import { resolveStaffOwnerId } from "@/lib/portal-attribution";
 
 export async function GET(request: NextRequest) {
   let session;
@@ -67,7 +68,42 @@ export async function GET(request: NextRequest) {
     prisma.ticket.count({ where }),
   ]);
 
-  return NextResponse.json({ data: tickets, total, page, pageSize });
+  // Ongelezen-indicator: tel per ticket de support-reacties (niet-intern, niet
+  // door de klant zelf) die nieuwer zijn dan het moment waarop de klant het
+  // ticket voor het laatst opende.
+  const ticketIds = tickets.map((t) => t.id);
+  let unreadByTicket: Record<string, number> = {};
+  if (ticketIds.length > 0) {
+    const [reads, replyNotes] = await Promise.all([
+      prisma.portalTicketRead.findMany({
+        where: { contactId: session.contactId, ticketId: { in: ticketIds } },
+        select: { ticketId: true, lastReadAt: true },
+      }),
+      prisma.ticketNote.findMany({
+        where: {
+          ticketId: { in: ticketIds },
+          isInternal: false,
+          authorContactId: null, // reacties van support, niet de eigen berichten
+        },
+        select: { ticketId: true, createdAt: true },
+      }),
+    ]);
+    const lastReadByTicket = new Map(reads.map((r) => [r.ticketId, r.lastReadAt]));
+    unreadByTicket = replyNotes.reduce<Record<string, number>>((acc, n) => {
+      const lastRead = lastReadByTicket.get(n.ticketId);
+      if (!lastRead || n.createdAt > lastRead) {
+        acc[n.ticketId] = (acc[n.ticketId] || 0) + 1;
+      }
+      return acc;
+    }, {});
+  }
+
+  const data = tickets.map((t) => ({
+    ...t,
+    unreadCount: unreadByTicket[t.id] || 0,
+  }));
+
+  return NextResponse.json({ data, total, page, pageSize });
 }
 
 export async function POST(request: NextRequest) {
@@ -85,13 +121,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Subject is required" }, { status: 400 });
   }
 
-  // Find a default admin user to set as createdBy
-  const adminUser = await prisma.user.findFirst({
-    where: { role: "ADMIN", isActive: true },
-    select: { id: true },
-  });
+  // Technische aanmaker (verplichte FK) = de hoofdgebruiker van ITFlow (oudste
+  // admin), niet zomaar een willekeurige admin. De klant zelf staat als contact
+  // op het ticket en source=PORTAL maakt duidelijk dat het uit het portaal komt.
+  const ownerId = await resolveStaffOwnerId();
 
-  if (!adminUser) {
+  if (!ownerId) {
     return NextResponse.json(
       { error: "System configuration error" },
       { status: 500 },
@@ -118,7 +153,7 @@ export async function POST(request: NextRequest) {
         : null,
       status: "OPEN",
       source: "PORTAL", // door de klant zelf aangemaakt — herkenbaar in de staff-UI
-      createdById: adminUser.id,
+      createdById: ownerId,
     },
     select: {
       id: true,

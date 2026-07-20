@@ -614,6 +614,12 @@
     "sendReply": "Send reply to customer",
     "adding": "Adding..."
   },
+  "portalMessages": {
+    "title": "Messages",
+    "subtitle": "All your conversations in one place. Unread replies are highlighted.",
+    "empty": "You don't have any messages yet.",
+    "you": "You"
+  },
   "messages": {
     "title": "Messages",
     "subtitle": "All customer conversations in one place — read and reply directly.",

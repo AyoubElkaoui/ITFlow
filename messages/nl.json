@@ -614,6 +614,12 @@
     "sendReply": "Reactie naar klant sturen",
     "adding": "Toevoegen..."
   },
+  "portalMessages": {
+    "title": "Berichten",
+    "subtitle": "Al uw gesprekken op één plek. Ongelezen reacties staan gemarkeerd.",
+    "empty": "U heeft nog geen berichten.",
+    "you": "U"
+  },
   "messages": {
     "title": "Berichten",
     "subtitle": "Alle klantgesprekken op één plek — lezen en direct reageren.",

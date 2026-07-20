@@ -1,7 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState, use } from "react";
+import { useState, use, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@/i18n/navigation";
 import {
   usePortalTicket,
@@ -81,6 +82,17 @@ export default function PortalTicketDetailPage({
 
   const createNote = useCreatePortalNote(id);
   const [message, setMessage] = useState("");
+  const queryClient = useQueryClient();
+
+  // Ticket geopend -> server markeert het als gelezen. Ververs de ongelezen-
+  // teller in de balk en de badges in de ticketlijst zodra het ticket geladen is.
+  useEffect(() => {
+    if (ticket) {
+      queryClient.invalidateQueries({ queryKey: ["portal-messages"] });
+      queryClient.invalidateQueries({ queryKey: ["portal-tickets"] });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ticket?.id]);
 
   async function handleSendMessage(e: React.FormEvent) {
     e.preventDefault();

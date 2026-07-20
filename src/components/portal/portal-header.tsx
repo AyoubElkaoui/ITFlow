@@ -5,8 +5,9 @@ import { useRouter, usePathname } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { LogOut, Ticket, User } from "lucide-react";
-import { usePortalSession } from "@/hooks/use-portal";
+import { Badge } from "@/components/ui/badge";
+import { LogOut, MessageSquare, Ticket, User } from "lucide-react";
+import { usePortalSession, usePortalUnreadCount } from "@/hooks/use-portal";
 
 export function PortalHeader() {
   const t = useTranslations("portal");
@@ -14,6 +15,7 @@ export function PortalHeader() {
   const pathname = usePathname();
   const queryClient = useQueryClient();
   const { data: session } = usePortalSession();
+  const unreadCount = usePortalUnreadCount();
 
   // Op de loginpagina hoort geen ingelogde-gebruikersbalk te staan.
   const isLoginPage = pathname === "/portal/login";
@@ -55,6 +57,17 @@ export function PortalHeader() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Link href="/portal/messages">
+            <Button variant="ghost" size="sm" className="relative">
+              <MessageSquare className="h-4 w-4 mr-1" />
+              <span className="hidden sm:inline">{t("messages")}</span>
+              {unreadCount > 0 && (
+                <Badge className="ml-1 h-5 min-w-5 justify-center rounded-full px-1.5 text-xs">
+                  {unreadCount}
+                </Badge>
+              )}
+            </Button>
+          </Link>
           <Link href="/portal/profile">
             <Button variant="ghost" size="sm">
               <User className="h-4 w-4 mr-1" />

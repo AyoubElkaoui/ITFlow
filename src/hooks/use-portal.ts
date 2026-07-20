@@ -102,6 +102,33 @@ export function useCreatePortalNote(ticketId: string) {
   });
 }
 
+// Messages / conversations
+export interface PortalConversation {
+  ticketId: string;
+  ticketNumber: number;
+  subject: string;
+  status: string;
+  lastMessage: string;
+  lastMessageAt: string;
+  lastFromClient: boolean;
+  unreadCount: number;
+}
+
+export function usePortalMessages() {
+  return useQuery<PortalConversation[]>({
+    queryKey: ["portal-messages"],
+    queryFn: () => fetchJson<PortalConversation[]>("/api/portal/messages"),
+    staleTime: 60 * 1000,
+    refetchInterval: 60 * 1000,
+  });
+}
+
+// Totaal aantal ongelezen support-reacties (voor de balk-indicator).
+export function usePortalUnreadCount() {
+  const { data } = usePortalMessages();
+  return (data ?? []).reduce((sum, c) => sum + c.unreadCount, 0);
+}
+
 // Profile hooks
 interface PortalProfile {
   id: string;

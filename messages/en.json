@@ -744,7 +744,15 @@
     "attachments": "Attachments",
     "addFiles": "Add files",
     "attachmentsHint": "Add photos or PDFs (e.g. a screenshot of the error). Max 10MB per file.",
-    "removeFile": "Remove"
+    "removeFile": "Remove",
+    "dashboardGreeting": "Welcome, {name}",
+    "dashboardGreetingFallback": "Welcome",
+    "dashboardSubtitle": "Request a ticket or check the status of your reports.",
+    "quickCreateTitle": "Quickly request a ticket",
+    "quickCreateDescription": "Briefly describe your question or issue — we'll pick it up as soon as possible.",
+    "quickCreateSubmit": "Submit ticket",
+    "quickCreateSuccess": "Your ticket has been created",
+    "quickCreateMoreOptions": "More options & attachments"
   },
   "portalProfile": {
     "title": "My Profile",

@@ -744,7 +744,15 @@
     "attachments": "Bijlagen",
     "addFiles": "Bestanden toevoegen",
     "attachmentsHint": "Voeg foto’s of PDF’s toe (bijv. een screenshot van de foutmelding). Max 10MB per bestand.",
-    "removeFile": "Verwijderen"
+    "removeFile": "Verwijderen",
+    "dashboardGreeting": "Welkom, {name}",
+    "dashboardGreetingFallback": "Welkom",
+    "dashboardSubtitle": "Vraag een ticket aan of bekijk de status van uw meldingen.",
+    "quickCreateTitle": "Snel een ticket aanvragen",
+    "quickCreateDescription": "Beschrijf kort uw vraag of probleem — wij pakken het zo snel mogelijk op.",
+    "quickCreateSubmit": "Ticket versturen",
+    "quickCreateSuccess": "Uw ticket is aangemaakt",
+    "quickCreateMoreOptions": "Meer opties & bijlagen"
   },
   "portalProfile": {
     "title": "Mijn profiel",

@@ -6,7 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { LogOut, Ticket, User } from "lucide-react";
-import { usePortalSession, clearPortalSessionData } from "@/hooks/use-portal";
+import { usePortalSession } from "@/hooks/use-portal";
 
 export function PortalHeader() {
   const t = useTranslations("portal");
@@ -19,24 +19,22 @@ export function PortalHeader() {
   const isLoginPage = pathname === "/portal/login";
 
   async function handleLogout() {
-    // Wis eerst de client-side sessie zodat naam/bedrijf direct verdwijnen
-    // en niet blijven "hangen" na uitloggen.
-    clearPortalSessionData();
-    queryClient.removeQueries({ queryKey: ["portal-session"] });
-    queryClient.clear();
-
     try {
       await fetch("/api/portal/auth/logout", { method: "POST" });
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
-      // Router.push gebruiken voor correcte client-side navigatie
+      // Wis de client-side cache zodat naam/bedrijf niet blijven "hangen"
+      // en navigeer naar de loginpagina.
+      queryClient.clear();
       router.push("/portal/login");
     }
   }
 
-  // Geen header op de loginpagina en niet zonder actieve sessie.
-  if (isLoginPage || !session) {
+  // Geen ingelogde-balk op de loginpagina. Op alle overige portalpagina's is de
+  // gebruiker gegarandeerd ingelogd (de middleware stuurt anders door naar
+  // login), dus tonen we de header daar altijd — ook als de naam nog laadt.
+  if (isLoginPage) {
     return null;
   }
 

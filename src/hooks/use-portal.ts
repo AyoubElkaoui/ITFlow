@@ -20,25 +20,15 @@ export function usePortalSession() {
   return useQuery({
     queryKey: ["portal-session"],
     queryFn: async (): Promise<PortalSession | null> => {
-      try {
-        // We get session info from the first successful API call
-        // For now, read from a cookie-derived endpoint or localStorage
-        const stored = sessionStorage.getItem("portal-session");
-        return stored ? JSON.parse(stored) : null;
-      } catch {
-        return null;
-      }
+      // Bron van waarheid = de httpOnly-cookie, server-side uitgelezen.
+      // Betrouwbaarder dan sessionStorage (dat bij het sluiten van de browser
+      // verdwijnt terwijl de login-cookie 7 dagen blijft).
+      const res = await fetch("/api/portal/session");
+      if (!res.ok) return null;
+      return res.json();
     },
-    staleTime: Infinity,
+    staleTime: 5 * 60 * 1000,
   });
-}
-
-export function setPortalSessionData(data: PortalSession) {
-  sessionStorage.setItem("portal-session", JSON.stringify(data));
-}
-
-export function clearPortalSessionData() {
-  sessionStorage.removeItem("portal-session");
 }
 
 interface PortalTicketFilters {

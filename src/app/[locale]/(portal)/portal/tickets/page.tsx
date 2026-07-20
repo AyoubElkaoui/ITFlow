@@ -3,8 +3,9 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Link } from "@/i18n/navigation";
-import { usePortalTickets } from "@/hooks/use-portal";
-import { Plus, Ticket, Search } from "lucide-react";
+import { usePortalTickets, usePortalSession } from "@/hooks/use-portal";
+import { QuickCreateTicket } from "@/components/portal/quick-create-ticket";
+import { Ticket, Search } from "lucide-react";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 
@@ -44,6 +45,7 @@ export default function PortalTicketsPage() {
   const t = useTranslations("portal");
   const ts = useTranslations("status");
   const tp = useTranslations("priority");
+  const { data: session } = usePortalSession();
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -80,15 +82,16 @@ export default function PortalTicketsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t("tickets")}</h1>
-        <Link href="/portal/tickets/new">
-          <Button>
-            <Plus className="h-4 w-4 mr-1" />
-            {t("newTicket")}
-          </Button>
-        </Link>
+      <div>
+        <h1 className="text-2xl font-bold">
+          {session?.contactName
+            ? t("dashboardGreeting", { name: session.contactName })
+            : t("dashboardGreetingFallback")}
+        </h1>
+        <p className="text-muted-foreground">{t("dashboardSubtitle")}</p>
       </div>
+
+      <QuickCreateTicket />
 
       <Card>
         <CardHeader className="pb-3">

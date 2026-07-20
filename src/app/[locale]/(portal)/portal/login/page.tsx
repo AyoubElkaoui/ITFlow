@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { Lock } from "lucide-react";
-import { setPortalSessionData } from "@/hooks/use-portal";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,7 @@ import {
 export default function PortalLoginPage() {
   const t = useTranslations("portal");
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +45,8 @@ export default function PortalLoginPage() {
       }
 
       const data = await res.json();
-      setPortalSessionData({
+      // Vul de sessie-cache alvast zodat de header direct de juiste naam toont.
+      queryClient.setQueryData(["portal-session"], {
         contactName: data.contactName,
         companyName: data.companyName,
       });
